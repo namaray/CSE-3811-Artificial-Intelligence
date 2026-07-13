@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Search Algorithms and Optimization - AI Notes</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    
+    <div class="container">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link">
+                <span>←</span> Back to Table of Contents
+            </a>
+        </nav>
+
+        <header>
+            <h1>Local Search Algorithms and Optimization</h1>
+            <p style="text-align: center; margin-top: -1.5rem; margin-bottom: 3rem;">Classes 7 & 8</p>
+        </header>
+
+        <section class="glass-panel">
+            <h2>Classical Search vs. Local Search</h2>
+            
+            <h3>Classical Search</h3>
+            <p>Designed to explore search spaces systematically by keeping one or more paths in memory and recording which alternatives have been explored. Suitable for observable, deterministic, known environments where the solution is a sequence of actions.</p>
+            
+            <h3>Local Search</h3>
+            <p>Evaluates and modifies one or more current states rather than systematically exploring paths from an initial state. It operates using a single current node and generally moves only to neighbors of that node. Paths are not retained.</p>
+            <ul>
+                <li><strong>Advantages:</strong> Uses very little memory (constant amount); can find reasonable solutions in large or infinite (continuous) state spaces.</li>
+                <li><strong>Suitable for:</strong> Pure optimization problems where the aim is to find the best state according to an objective function, and the path to the goal does not matter (e.g., 8 Queens problem).</li>
+            </ul>
+
+            <h3>State-space Landscape</h3>
+            <p>A landscape where location is defined by the state and elevation is defined by the heuristic cost function or objective function.</p>
+            <ul>
+                <li>If elevation corresponds to <em>cost</em>, the aim is to find the lowest valley (<strong>global minimum</strong>).</li>
+                <li>If elevation corresponds to an <em>objective function</em>, the aim is to find the highest peak (<strong>global maximum</strong>).</li>
+            </ul>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Local Search Algorithms</h2>
+
+            <h3>1. Hill-climbing Search (Steepest-ascent version)</h3>
+            <p>A loop that continually moves in the direction of increasing value (uphill). It terminates when it reaches a peak where no neighbor has a higher value.</p>
+            <p>Often gets stuck for the following reasons:</p>
+            <ul>
+                <li><strong>Local maxima:</strong> A peak higher than neighboring states but lower than the global maximum.</li>
+                <li><strong>Ridges:</strong> A sequence of local maxima that is very difficult for greedy algorithms to navigate.</li>
+                <li><strong>Plateaux:</strong> A flat area of the state-space landscape. It can be a flat local maximum (no uphill exit) or a shoulder (progress is possible).</li>
+            </ul>
+            <p><strong>Variants of Hill-climbing:</strong></p>
+            <ul>
+                <li><strong>Stochastic hill climbing:</strong> Chooses at random from among uphill moves; probability can vary with steepness.</li>
+                <li><strong>First-choice hill climbing:</strong> Generates successors randomly until one is better than the current state (good for thousands of successors).</li>
+                <li><strong>Random-restart hill climbing:</strong> Conducts a series of hill-climbing searches from randomly generated initial states.</li>
+            </ul>
+
+            <h3>2. Simulated Annealing</h3>
+            <p>Combines hill climbing with a random walk to yield both efficiency and completeness. Inspired by statistical physics.</p>
+            <ul>
+                <li>Instead of picking the best move, it picks a random move.</li>
+                <li>If the move improves the situation, it is always accepted.</li>
+                <li>Otherwise, it accepts the move with a probability less than 1: \( P = e^{\Delta E / T} \)</li>
+                <li>The probability decreases exponentially with the "badness" of the move (\( \Delta E \)) and also decreases as the "temperature" \( T \) goes down.</li>
+                <li>If the schedule lowers \( T \) slowly enough, it will find a global optimum with probability approaching 1.</li>
+            </ul>
+
+            <h3>3. Beam Search</h3>
+            <p><strong>Local beam search</strong> keeps track of \( k \) states rather than just one.</p>
+            <ul>
+                <li>At each step, all successors of all \( k \) states are generated.</li>
+                <li>If any one is a goal, it halts. Otherwise, it selects the \( k \) best successors from the complete list.</li>
+                <li><strong>Stochastic beam search:</strong> Chooses \( k \) successors at random, with probability proportional to their value. Resembles natural selection.</li>
+            </ul>
+
+            <h3>4. Genetic Algorithms (GA)</h3>
+            <p>A variant of stochastic beam search in which successor states are generated by combining two parent states (crossover) rather than modifying a single state.</p>
+            <ul>
+                <li>Begins with a set of \( k \) randomly generated states called the <strong>population</strong>.</li>
+                <li>Each state (individual) is represented as a string over a finite alphabet.</li>
+                <li>Each state is rated by the objective function called the <strong>fitness function</strong>.</li>
+                <li>Pairs are selected randomly for <strong>reproduction</strong> based on probabilities proportional to fitness.</li>
+                <li>A <strong>crossover point</strong> is chosen, and offspring are created by crossing over parent strings.</li>
+                <li>Each location is subject to random <strong>mutation</strong> with a small independent probability.</li>
+            </ul>
+            <p>Genetic algorithms work best when schemata (substrings with unspecified positions) correspond to meaningful components of a solution.</p>
+        </section>
+    </div>
+</body>
+</html>

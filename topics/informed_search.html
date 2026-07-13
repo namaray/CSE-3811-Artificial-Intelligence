@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informed Search Strategies & Heuristic Functions - AI Notes</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    
+    <div class="container">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link">
+                <span>←</span> Back to Table of Contents
+            </a>
+        </nav>
+
+        <header>
+            <h1>Informed Search Strategies & Heuristic Functions</h1>
+            <p style="text-align: center; margin-top: -1.5rem; margin-bottom: 3rem;">Classes 4-6</p>
+        </header>
+
+        <section class="glass-panel">
+            <h2>Search Heuristics</h2>
+            <p>A <strong>heuristic</strong> is a function that <em>estimates</em> how close a state is to a goal. It is designed for a particular search problem.</p>
+            <p>Examples: Manhattan distance or Euclidean distance for pathing problems.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Greedy Search</h2>
+            <p><strong>Strategy:</strong> Expand the node that you think is closest to a goal state.</p>
+            <p>Heuristic is used to estimate the distance to the nearest goal for each state. A common case is that "best-first" takes you straight to the (wrong) goal. Worst-case: like a badly-guided DFS.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>A* Search</h2>
+            <p>A* Search combines the benefits of Uniform Cost Search (UCS) and Greedy Search.</p>
+            <ul>
+                <li>UCS orders by path cost, or backward cost \( g(n) \).</li>
+                <li>Greedy orders by goal proximity, or forward cost \( h(n) \).</li>
+                <li><strong>A* Search</strong> orders by the sum:</li>
+            </ul>
+            <div class="math-block">
+                \[ f(n) = g(n) + h(n) \]
+            </div>
+            
+            <h3>When should A* terminate?</h3>
+            <p>We should only stop when we <strong>dequeue</strong> a goal, not when we enqueue a goal.</p>
+
+            <h3>Is A* Optimal?</h3>
+            <p>A* is optimal if the heuristic used is <strong>admissible</strong> (for tree search) or <strong>consistent</strong> (for graph search).</p>
+            <ul>
+                <li>If the estimated good goal cost is greater than the actual bad goal cost, A* might find a suboptimal path.</li>
+                <li>We need estimates to be less than or equal to actual costs!</li>
+            </ul>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Admissibility and Consistency</h2>
+            
+            <h3>Admissible Heuristics</h3>
+            <p>A heuristic \( h \) is admissible (optimistic) if:</p>
+            <div class="math-block">
+                \[ 0 \leq h(n) \leq h^*(n) \]
+            </div>
+            <p>where \( h^*(n) \) is the true cost to a nearest goal. Inadmissible (pessimistic) heuristics break optimality by trapping good plans on the fringe. Admissible heuristics slow down bad plans but never outweigh true costs.</p>
+
+            <h3>Creating Admissible Heuristics</h3>
+            <p>Most of the work in solving hard search problems optimally is in coming up with admissible heuristics. Often, admissible heuristics are solutions to <strong>relaxed problems</strong>, where new actions are available.</p>
+            
+            <h3>Consistency of Heuristics</h3>
+            <p>Main idea: estimated heuristic costs \( \leq \) actual costs.</p>
+            <ul>
+                <li><strong>Admissibility:</strong> heuristic cost \( \leq \) actual cost to goal.</li>
+                <li><strong>Consistency:</strong> heuristic "arc" cost \( \leq \) actual cost for each arc.</li>
+            </ul>
+            <div class="math-block">
+                \[ h(A) - h(C) \leq \text{cost}(A \rightarrow C) \]
+            </div>
+            <p>Consequences of consistency:</p>
+            <ul>
+                <li>The \( f \) value along a path never decreases: \( h(A) \leq \text{cost}(A \rightarrow C) + h(C) \)</li>
+                <li>A* graph search is optimal.</li>
+                <li>Consistency implies admissibility.</li>
+            </ul>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Graph Search</h2>
+            <p><strong>Idea:</strong> Never expand a state twice.</p>
+            <p><strong>Implementation:</strong></p>
+            <ul>
+                <li>Tree search + set of expanded states ("closed set").</li>
+                <li>Expand the search tree node-by-node, but before expanding a node, check to make sure its state has never been expanded before.</li>
+                <li>If not new, skip it. If new, add to closed set.</li>
+                <li><strong>Important:</strong> store the closed set as a set, not a list.</li>
+            </ul>
+            <p>Failure to detect repeated states can cause exponentially more work.</p>
+        </section>
+    </div>
+</body>
+</html>

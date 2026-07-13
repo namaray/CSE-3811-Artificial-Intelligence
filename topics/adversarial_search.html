@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adversarial Search - AI Notes</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    
+    <div class="container">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link">
+                <span>←</span> Back to Table of Contents
+            </a>
+        </nav>
+
+        <header>
+            <h1>Adversarial Search</h1>
+            <p style="text-align: center; margin-top: -1.5rem; margin-bottom: 3rem;">Classes 9 & 10</p>
+        </header>
+
+        <section class="glass-panel">
+            <h2>Multiagent Environments & Game Theory</h2>
+            <p>In multiagent environments, each agent needs to consider the actions of other agents and how they affect its own welfare. The unpredictability of these other agents introduces contingencies.</p>
+            <ul>
+                <li><strong>Competitive environments:</strong> The agents' goals are in conflict, giving rise to adversarial search problems—often known as games.</li>
+                <li><strong>Co-operative environments:</strong> e.g., an automated taxi driver interacting with others safely.</li>
+            </ul>
+
+            <h3>Game Theory in AI</h3>
+            <p>In AI, the most common games are deterministic, turn-taking, two-player, zero-sum games of perfect information (e.g., chess).</p>
+            <ul>
+                <li><strong>Zero-sum:</strong> A situation in which one person's gain is equivalent to another's loss, so the net change in wealth or benefit is zero. It is this opposition between the agents' utility functions that makes the situation adversarial.</li>
+            </ul>
+
+            <h3>Games and Game Trees</h3>
+            <p>We consider games with two players: <strong>MAX</strong> and <strong>MIN</strong>. MAX moves first. A game can be formally defined with:</p>
+            <ul>
+                <li><strong>\(S_0\):</strong> Initial state.</li>
+                <li><strong>PLAYER(s):</strong> Defines which player has the move in a state.</li>
+                <li><strong>ACTIONS(s):</strong> Returns the set of legal moves.</li>
+                <li><strong>RESULT(s, a):</strong> The transition model.</li>
+                <li><strong>TERMINAL-TEST(s):</strong> True when the game is over.</li>
+                <li><strong>UTILITY(s, p):</strong> A utility function (or objective/payoff function) defining the final numeric value for a game ending in terminal state \(s\) for player \(p\).</li>
+            </ul>
+            <p>The initial state, ACTIONS function, and RESULT function define the <strong>game tree</strong>, where nodes are game states and edges are moves.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>The Minimax Algorithm</h2>
+            <p>Given a game tree, the optimal strategy can be determined from the minimax value of each node, \( \text{MINIMAX}(n) \).</p>
+            <ul>
+                <li>The minimax value of a node is the utility (for MAX) of being in the corresponding state, assuming both players play optimally from there to the end.</li>
+                <li>MAX prefers to move to a state of maximum value, whereas MIN prefers a state of minimum value.</li>
+            </ul>
+            <p>Minimax performs a complete depth-first exploration of the game tree.</p>
+            <ul>
+                <li><strong>Time complexity:</strong> \( O(b^m) \)</li>
+                <li><strong>Space complexity:</strong> \( O(bm) \) or \( O(m) \)</li>
+            </ul>
+            <p>For real games, this time cost is totally impractical. We need algorithms that can make good decisions within resource limits.</p>
+            
+            <h3>Resource Limits & Depth-Limited Search</h3>
+            <p>In realistic games, we cannot search to the leaves! <strong>Solution:</strong> Search only to a limited depth in the tree, and replace terminal utilities with an <strong>evaluation function</strong> for non-terminal positions.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Game Tree Pruning: Alpha-Beta Pruning</h2>
+            <p>The problem with minimax search is that the number of game states it examines is exponential in depth. We can't eliminate the exponent, but we can effectively cut it in half using pruning.</p>
+            <p><strong>Alpha-Beta Pruning</strong> returns the exact same move as minimax would, but it prunes away branches that cannot possibly influence the final decision.</p>
+            <ul>
+                <li>\( \alpha \) = the value of the best (i.e., highest-value) choice we have found so far at any choice point along the path for MAX.</li>
+                <li>\( \beta \) = the value of the best (i.e., lowest-value) choice we have found so far at any choice point along the path for MIN.</li>
+            </ul>
+            <p>If we find a node whose value is worse than \( \alpha \) (for MAX) or worse than \( \beta \) (for MIN), we can stop evaluating its children.</p>
+        </section>
+    </div>
+</body>
+</html>

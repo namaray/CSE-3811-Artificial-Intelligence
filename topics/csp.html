@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constraint Satisfaction Problems - AI Notes</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    
+    <div class="container">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link">
+                <span>←</span> Back to Table of Contents
+            </a>
+        </nav>
+
+        <header>
+            <h1>Constraint Satisfaction Problems (CSP)</h1>
+            <p style="text-align: center; margin-top: -1.5rem; margin-bottom: 3rem;">Classes 11 & 12</p>
+        </header>
+
+        <section class="glass-panel">
+            <h2>What is a CSP?</h2>
+            <p>In standard search problems, the state is a "black box" (an arbitrary data structure), and the goal test can be any function. <strong>CSPs</strong> are a specialized subset of search problems for <em>identification</em> problems:</p>
+            <ul>
+                <li>The state is defined by <strong>variables</strong> \( X_i \) with values from a <strong>domain</strong> \( D \).</li>
+                <li>The goal test is a <strong>set of constraints</strong> specifying allowable combinations of values for subsets of variables.</li>
+                <li>Solutions are complete assignments satisfying all constraints.</li>
+            </ul>
+
+            <h3>Varieties of Constraints</h3>
+            <ul>
+                <li><strong>Unary constraints:</strong> Involve a single variable (equivalent to reducing domains).</li>
+                <li><strong>Binary constraints:</strong> Involve pairs of variables.</li>
+                <li><strong>Higher-order constraints:</strong> Involve 3 or more variables (e.g., cryptarithmetic).</li>
+                <li><strong>Preferences (soft constraints):</strong> Often representable by a cost for each variable assignment, leading to constrained optimization problems.</li>
+            </ul>
+
+            <h3>Constraint Graphs</h3>
+            <p>A binary CSP can be represented as a <strong>Constraint Graph</strong>, where nodes are variables and arcs show constraints. General-purpose CSP algorithms use this graph structure to speed up search (e.g., identifying independent subproblems).</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Solving CSPs: Backtracking Search</h2>
+            <p>The standard search formulation of CSPs uses partial assignments:</p>
+            <ul>
+                <li><strong>Initial state:</strong> The empty assignment, \( \{\} \).</li>
+                <li><strong>Successor function:</strong> Assign a value to an unassigned variable.</li>
+                <li><strong>Goal test:</strong> The current assignment is complete and satisfies all constraints.</li>
+            </ul>
+            
+            <p><strong>Backtracking search</strong> is depth-first search with two improvements:</p>
+            <ol>
+                <li><strong>One variable at a time:</strong> Variable assignments are commutative, so we can fix the ordering. We only consider assignments to a single variable at each step.</li>
+                <li><strong>Check constraints as you go:</strong> Consider only values which do not conflict with previous assignments ("Incremental goal test" or fail-on-violation).</li>
+            </ol>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Improving Backtracking</h2>
+            <p>General-purpose ideas can give huge gains in speed for backtracking search.</p>
+
+            <h3>1. Filtering: Detecting inevitable failure early</h3>
+            <ul>
+                <li><strong>Forward checking:</strong> Keep track of domains for unassigned variables and cross off values that violate a constraint when added to the existing assignment.</li>
+                <li><strong>Constraint propagation:</strong> Forward checking doesn't provide early detection for all failures. Constraint propagation reasons from constraint to constraint to find tighter restrictions on variable domains.</li>
+            </ul>
+
+            <h3>2. Ordering: Which variable and which value?</h3>
+            <ul>
+                <li><strong>Variable Ordering - Minimum Remaining Values (MRV):</strong> Choose the variable with the fewest legal values left in its domain. Also called the "most constrained variable" or "fail-fast" ordering.</li>
+                <li><strong>Value Ordering - Least Constraining Value:</strong> Given a choice of variable, choose the value that rules out the fewest values in the remaining variables. This helps find a solution faster if one exists.</li>
+            </ul>
+            <p>Combining these filtering and ordering ideas makes solving extremely large CSPs (e.g., 1000-queens) feasible!</p>
+        </section>
+    </div>
+</body>
+</html>

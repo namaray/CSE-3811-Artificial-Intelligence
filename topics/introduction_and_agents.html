@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introduction & Agents and Environments - AI Notes</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    
+    <div class="container">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link">
+                <span>←</span> Back to Table of Contents
+            </a>
+        </nav>
+
+        <header>
+            <h1>Introduction & Agents and Environments</h1>
+            <p style="text-align: center; margin-top: -1.5rem; margin-bottom: 3rem;">Classes 1 & 2</p>
+        </header>
+
+        <section class="glass-panel">
+            <h2>1. Introduction to Artificial Intelligence</h2>
+            
+            <h3>What is AI?</h3>
+            <p>The term artificial intelligence was first used in 1956. Dartmouth College professor John McCarthy coined the term and organized an intensive summer workshop bringing together leading experts in the field. AI attempts to build intelligent entities.</p>
+            <p>Views of AI fall into four categories:</p>
+            <ul>
+                <li><strong>Thinking Humanly:</strong> The exciting new effort to make computers think... machines with minds, in the full and literal sense.</li>
+                <li><strong>Acting Humanly:</strong> The art of creating machines that perform functions that require intelligence when performed by people. (e.g. The Turing Test)</li>
+                <li><strong>Thinking Rationally:</strong> The study of mental faculties through the use of computational models.</li>
+                <li><strong>Acting Rationally:</strong> Computational Intelligence is the study of the design of intelligent agents.</li>
+            </ul>
+
+            <h3>Rationality</h3>
+            <p>A system is <strong>rational</strong> if it does the "right thing", given what it knows. We use the term rational in a very specific, technical way:</p>
+            <ul>
+                <li>Rational: maximally achieving pre-defined goals.</li>
+                <li>Rationality only concerns what decisions are made (not the thought process behind them).</li>
+                <li>Goals are expressed in terms of the utility of outcomes.</li>
+                <li>Being rational means <strong>maximizing your expected utility</strong>.</li>
+            </ul>
+            <p>Rationality maximizes <em>expected</em> performance, while perfection maximizes <em>actual</em> performance. An omniscient agent knows the actual outcome of its actions and can act accordingly. Our definition of rationality does not require omniscience.</p>
+
+            <h3>The Turing Test Approach (Acting Humanly)</h3>
+            <p>Proposed by Alan Turing (1950), a computer passes the test if a human interrogator cannot tell whether the written responses come from a person or a computer. To pass, a computer needs:</p>
+            <ul>
+                <li>Natural Language Processing</li>
+                <li>Knowledge Representation</li>
+                <li>Automated Reasoning</li>
+                <li>Machine Learning</li>
+            </ul>
+            <p>The <em>Total Turing Test</em> also includes a video signal, requiring <strong>Computer Vision</strong> and <strong>Robotics</strong> to pass physical objects.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>2. Agents and Environments</h2>
+            
+            <h3>Definitions</h3>
+            <p>An <strong>agent</strong> is anything that can be viewed as perceiving its environment through sensors and acting upon that environment through actuators.</p>
+            <ul>
+                <li><strong>Human agent:</strong> Sensors (eyes, ears), Actuators (hands, legs, vocal tract).</li>
+                <li><strong>Robotic agent:</strong> Sensors (cameras, infrared range finders), Actuators (various motors).</li>
+                <li><strong>Software agent:</strong> Sensors (keystrokes, file contents, network packets), Actuators (displaying on screen, writing files).</li>
+            </ul>
+
+            <h3>Percepts and Agent Functions</h3>
+            <ul>
+                <li><strong>Percept:</strong> refers to the agent's perceptual inputs at any given instant.</li>
+                <li><strong>Percept sequence:</strong> the complete history of everything the agent has ever perceived.</li>
+                <li>An agent's choice of action can depend on the entire percept sequence, but not on anything it hasn't perceived.</li>
+                <li><strong>Agent function:</strong> Maps any given percept sequence to an Action. \( f: \mathcal{P}^* \rightarrow \mathcal{A} \)</li>
+            </ul>
+            
+            <div class="math-block">
+                <p>Example: The Vacuum-Cleaner World</p>
+                <p>Agent function for a simple vacuum:</p>
+                <p>if the current square is dirty, then suck; else move to the other square.</p>
+            </div>
+
+            <h3>Specifying the Task Environment (PEAS)</h3>
+            <p>In designing an agent, the first step must always be to specify the task environment as fully as possible using the <strong>PEAS</strong> framework:</p>
+            <ul>
+                <li><strong>P</strong>erformance Measure: Defines the criterion of success.</li>
+                <li><strong>E</strong>nvironment: The world in which the agent operates.</li>
+                <li><strong>A</strong>ctuators: How the agent interacts with the environment.</li>
+                <li><strong>S</strong>ensors: How the agent perceives the environment.</li>
+            </ul>
+
+            <h3>Properties of Task Environments</h3>
+            <p>Task environments can be categorized along several dimensions:</p>
+            <ul>
+                <li><strong>Fully observable vs. Partially observable:</strong> Fully observable means the agent's sensors give it access to the complete state of the environment at each point in time.</li>
+                <li><strong>Single agent vs. Multi-agents:</strong> Multiagent behavior is best described as maximizing a performance measure whose value depends on agent A's behavior and another agent B's behavior (e.g., Chess).</li>
+                <li><strong>Deterministic vs. Stochastic:</strong> Deterministic means the next state of the environment is completely determined by the current state and the action executed. If there is uncertainty (e.g. taxi driving), it is stochastic.</li>
+                <li><strong>Episodic vs. Sequential:</strong> In an episodic environment, the current action does not affect future actions. In sequential environments (like chess), current decisions affect all future decisions.</li>
+                <li><strong>Static vs. Dynamic:</strong> Dynamic environments can change while the agent is deciding. If only the performance score changes over time, it is semi-dynamic.</li>
+                <li><strong>Discrete vs. Continuous:</strong> Refers to a finite number of distinct states, percepts, and actions (e.g., Chess) versus continuous values (e.g., Taxi driving speed/steering).</li>
+                <li><strong>Known vs. Unknown:</strong> Refers to the agent's state of knowledge about the rules of the environment.</li>
+            </ul>
+        </section>
+    </div>
+</body>
+</html>
