@@ -144,27 +144,42 @@ a:hover {
     color: #fff;
 }
 
+.topic-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
 .topic-link {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
-    align-items: center;
     padding: 1.5rem;
     background: var(--glass-bg);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
-    margin-bottom: 1rem;
     text-decoration: none;
     color: var(--text-main);
     transition: all 0.3s ease;
     font-weight: 600;
+    height: 100%;
 }
 
 .topic-link:hover {
     background: rgba(108, 92, 231, 0.2);
     border-color: var(--accent-primary);
-    transform: scale(1.02);
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.topic-icon {
+    align-self: flex-end;
+    margin-top: 1rem;
+    font-size: 1.2rem;
+    color: var(--accent-secondary);
 }
 
 .topic-meta {
