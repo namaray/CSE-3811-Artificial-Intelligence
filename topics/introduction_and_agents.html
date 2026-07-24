@@ -92,14 +92,46 @@
             </ul>
 
             <h3>Properties of Task Environments</h3>
-            <p>Task environments can be categorized along several dimensions:</p>
+            <p>Task environments can be categorized along several dimensions. The hardest case is partially observable, multiagent, stochastic, sequential, dynamic, continuous, and unknown (e.g., taxi driving is hard in all these senses, except the environment is mostly known).</p>
             <ul>
-                <li><strong>Fully observable vs. Partially observable:</strong> Fully observable means the agent's sensors give it access to the complete state of the environment at each point in time.</li>
-                <li><strong>Single agent vs. Multi-agents:</strong> Multiagent behavior is best described as maximizing a performance measure whose value depends on agent A's behavior and another agent B's behavior (e.g., Chess).</li>
-                <li><strong>Deterministic vs. Stochastic:</strong> Deterministic means the next state of the environment is completely determined by the current state and the action executed. If there is uncertainty (e.g. taxi driving), it is stochastic.</li>
-                <li><strong>Episodic vs. Sequential:</strong> In an episodic environment, the current action does not affect future actions. In sequential environments (like chess), current decisions affect all future decisions.</li>
-                <li><strong>Static vs. Dynamic:</strong> Dynamic environments can change while the agent is deciding. If only the performance score changes over time, it is semi-dynamic.</li>
-                <li><strong>Discrete vs. Continuous:</strong> Refers to a finite number of distinct states, percepts, and actions (e.g., Chess) versus continuous values (e.g., Taxi driving speed/steering).</li>
+                <li><strong>Fully observable vs. Partially observable:</strong> 
+                    <ul>
+                        <li><em>Fully observable:</em> An agent's sensors give it access to the complete state of the environment at each point in time. It is convenient because the agent need not maintain any internal state to keep track of the world.</li>
+                        <li><em>Partially observable:</em> Caused by noisy and inaccurate sensors or missing state data from sensors (e.g., a vacuum agent with only a local dirt sensor, or an automated taxi that cannot see what other drivers are thinking).</li>
+                        <li><em>Unobservable:</em> If the agent has no sensors at all.</li>
+                    </ul>
+                </li>
+                <li><strong>Single agent vs. Multi-agents:</strong> 
+                    <ul>
+                        <li><em>Single agent:</em> E.g., Crossword puzzle.</li>
+                        <li><em>Multiagent:</em> Agent B's behavior is best described as maximizing a performance measure whose value depends on agent A's behavior. Can be competitive (e.g., Chess) or cooperative / partially competitive (e.g., Automated car).</li>
+                    </ul>
+                </li>
+                <li><strong>Deterministic vs. Stochastic:</strong> 
+                    <ul>
+                        <li><em>Deterministic:</em> The next state of the environment is completely determined by the current state and the action executed by the agent. The agent need not worry about uncertainty in a fully observable, deterministic environment.</li>
+                        <li><em>Stochastic:</em> Contains uncertainty. E.g., Taxi driving, or a vacuum world where dirt appears randomly.</li>
+                    </ul>
+                </li>
+                <li><strong>Episodic vs. Sequential:</strong> 
+                    <ul>
+                        <li><em>Episodic:</em> Current action does not affect future actions. Much simpler because the agent does not need to think ahead. E.g., An agent spotting defective parts on an assembly line based only on the current part.</li>
+                        <li><em>Sequential:</em> Current decisions affect all future decisions. E.g., Chess, Automated taxi driving.</li>
+                    </ul>
+                </li>
+                <li><strong>Static vs. Dynamic:</strong> 
+                    <ul>
+                        <li><em>Dynamic:</em> The environment can change while an agent is deciding which action to perform. If it hasn't decided yet, that counts as deciding to do nothing.</li>
+                        <li><em>Static:</em> Environment does not change (e.g., Crossword puzzle).</li>
+                        <li><em>Semi-dynamic:</em> The environment itself does not change with the passage of time but the agent's performance score does (e.g., Chess with a clock).</li>
+                    </ul>
+                </li>
+                <li><strong>Discrete vs. Continuous:</strong> 
+                    <ul>
+                        <li><em>Discrete:</em> An agent has a finite number of distinct states, a discrete set of percepts and actions (e.g., Chess).</li>
+                        <li><em>Continuous:</em> Continuous state/action space (e.g., Taxi driving speed and steering).</li>
+                    </ul>
+                </li>
                 <li><strong>Known vs. Unknown:</strong> Refers to the agent's state of knowledge about the rules of the environment.</li>
             </ul>
         </section>
