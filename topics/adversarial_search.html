@@ -57,15 +57,56 @@
                 <li>The minimax value of a node is the utility (for MAX) of being in the corresponding state, assuming both players play optimally from there to the end.</li>
                 <li>MAX prefers to move to a state of maximum value, whereas MIN prefers a state of minimum value.</li>
             </ul>
+            <p>Obviously, the minimax value of a terminal state is just its utility.</p>
+            <div class="math-block">
+                \[
+                \text{MINIMAX}(s) =
+                \begin{cases}
+                \text{UTILITY}(s) & \text{if TERMINAL-TEST}(s) \\
+                \max_{a \in \text{ACTIONS}(s)} \text{MINIMAX}(\text{RESULT}(s,a)) & \text{if PLAYER}(s) = \text{MAX} \\
+                \min_{a \in \text{ACTIONS}(s)} \text{MINIMAX}(\text{RESULT}(s,a)) & \text{if PLAYER}(s) = \text{MIN}
+                \end{cases}
+                \]
+            </div>
+            <div class="pseudocode">function MINIMAX-DECISION(state) returns an action
+    return argmax over a in ACTIONS(state) of MIN-VALUE(RESULT(state, a))
+
+function MAX-VALUE(state) returns a utility value
+    if TERMINAL-TEST(state) then return UTILITY(state)
+    v &lt;- -∞
+    for each a in ACTIONS(state) do
+        v &lt;- MAX(v, MIN-VALUE(RESULT(state, a)))
+    return v
+
+function MIN-VALUE(state) returns a utility value
+    if TERMINAL-TEST(state) then return UTILITY(state)
+    v &lt;- +∞
+    for each a in ACTIONS(state) do
+        v &lt;- MIN(v, MAX-VALUE(RESULT(state, a)))
+    return v</div>
             <p>Minimax performs a complete depth-first exploration of the game tree.</p>
             <ul>
+                <li><strong>Complete?</strong> Yes, if the tree is finite.</li>
+                <li><strong>Optimal?</strong> Yes, against an optimal opponent.</li>
                 <li><strong>Time complexity:</strong> \( O(b^m) \)</li>
                 <li><strong>Space complexity:</strong> \( O(bm) \) or \( O(m) \)</li>
             </ul>
             <p>For real games, this time cost is totally impractical. We need algorithms that can make good decisions within resource limits.</p>
-            
-            <h3>Resource Limits & Depth-Limited Search</h3>
-            <p>In realistic games, we cannot search to the leaves! <strong>Solution:</strong> Search only to a limited depth in the tree, and replace terminal utilities with an <strong>evaluation function</strong> for non-terminal positions.</p>
+
+            <h3>Resource Limits &amp; Depth-Limited Search</h3>
+            <p><strong>Problem:</strong> in realistic games, we cannot search to the leaves.</p>
+            <p><strong>Solution:</strong> depth-limited search — search only to a limited depth in the tree, and replace terminal utilities with an <strong>evaluation function</strong> for non-terminal positions.</p>
+            <div class="callout">
+                <p><strong>Example:</strong> suppose we have 100 seconds and can explore 10K nodes/sec, so we can check 1M nodes per move. With α-β pruning that reaches about depth 8 — a decent chess program.</p>
+            </div>
+            <p>Consequences of using an evaluation function:</p>
+            <ul>
+                <li>The guarantee of optimal play is gone.</li>
+                <li>Evaluation functions are always imperfect.</li>
+                <li>The deeper in the tree the evaluation function is buried, the less the quality of the evaluation function matters.</li>
+                <li>It is an important example of the trade-off between complexity of features and complexity of computation.</li>
+            </ul>
+            <p>But do we always need to iterate the whole tree? Two ideas let us work within limited resources: <strong>pruning</strong> allows us to ignore portions of the search tree that make no difference to the final choice, and <strong>heuristic evaluation functions</strong> let us approximate the true utility of a state without doing a complete search.</p>
         </section>
 
         <section class="glass-panel">
@@ -76,7 +117,55 @@
                 <li>\( \alpha \) = the value of the best (i.e., highest-value) choice we have found so far at any choice point along the path for MAX.</li>
                 <li>\( \beta \) = the value of the best (i.e., lowest-value) choice we have found so far at any choice point along the path for MIN.</li>
             </ul>
-            <p>If we find a node whose value is worse than \( \alpha \) (for MAX) or worse than \( \beta \) (for MIN), we can stop evaluating its children.</p>
+            <p>The trick is that it is possible to compute the correct minimax decision without looking at every node in the game tree. If we find a node whose value is worse than \( \alpha \) (for MAX) or worse than \( \beta \) (for MIN), we can stop evaluating its children.</p>
+            <p>Alpha-beta search updates the values of \( \alpha \) and \( \beta \) as it goes, and prunes the remaining branches at a node as soon as the value of the current node is known to be worse than the current \( \alpha \) or \( \beta \) value for MAX or MIN respectively.</p>
+            <div class="pseudocode">function ALPHA-BETA-SEARCH(state) returns an action
+    v &lt;- MAX-VALUE(state, -∞, +∞)
+    return the action in ACTIONS(state) with value v
+
+function MAX-VALUE(state, α, β) returns a utility value
+    if TERMINAL-TEST(state) then return UTILITY(state)
+    v &lt;- -∞
+    for each a in ACTIONS(state) do
+        v &lt;- MAX(v, MIN-VALUE(RESULT(state, a), α, β))
+        if v &gt;= β then return v          // prune the remaining successors
+        α &lt;- MAX(α, v)
+    return v
+
+function MIN-VALUE(state, α, β) returns a utility value
+    if TERMINAL-TEST(state) then return UTILITY(state)
+    v &lt;- +∞
+    for each a in ACTIONS(state) do
+        v &lt;- MIN(v, MAX-VALUE(RESULT(state, a), α, β))
+        if v &lt;= α then return v          // prune the remaining successors
+        β &lt;- MIN(β, v)
+    return v</div>
+
+            <h3>Worked Example</h3>
+            <p>Take the leaf values <code>4 6 7 9 1 2 0 1</code> under a three-ply tree (MAX at the root, then MIN, then MAX at the leaves' parents), with \( \alpha = -\infty \) and \( \beta = +\infty \) at the start:</p>
+            <ul>
+                <li>The leftmost MAX node sees 4, then 6 → value 6, so its MIN parent sets \( \beta = 6 \).</li>
+                <li>The next MAX node sees 7. Since \( 7 \geq \beta = 6 \), the MIN node can never choose this branch — the remaining leaf (9) is <strong>pruned</strong>.</li>
+                <li>That MIN subtree returns 6, so the root sets \( \alpha = 6 \).</li>
+                <li>On the right, the MAX node sees 1, then 2 → value 2, so its MIN parent sets \( \beta = 2 \). Since \( 2 \leq \alpha = 6 \), the whole remaining right subtree (0 and 1) is <strong>pruned</strong>.</li>
+                <li>The root's answer is 6 — identical to what plain minimax would return, with fewer nodes examined.</li>
+            </ul>
+
+            <h3>Why it matters: move ordering</h3>
+            <p>The effectiveness of alpha-beta pruning is highly dependent on the order in which states are examined.</p>
+            <ul>
+                <li><strong>Worst ordering:</strong> no pruning happens at all, and the time complexity stays at \( O(b^m) \) — the same as minimax.</li>
+                <li><strong>Perfect ordering:</strong> time complexity drops to \( O(b^{m/2}) \), i.e. the effective branching factor becomes \( \sqrt{b} \). This is what "cutting the exponent in half" means, and it lets you search roughly twice as deep in the same time.</li>
+            </ul>
+            <p><strong>Note:</strong> pruning has no effect on the final result at the root, but the values assigned to intermediate nodes may be wrong (they are bounds, not exact minimax values). So alpha-beta gives you the right <em>move</em>, not necessarily the right <em>value</em> everywhere.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>References</h2>
+            <ul>
+                <li>AIMA Chapter 5.1, 5.2, 5.3</li>
+                <li>Previous year questions</li>
+            </ul>
         </section>
     </div>
 </body>

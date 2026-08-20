@@ -26,15 +26,42 @@
         <section class="glass-panel">
             <h2>1. Introduction to Artificial Intelligence</h2>
             
+            <h3>Why Study AI?</h3>
+            <p>A student in physics might reasonably feel that all the good ideas have already been taken by Galileo, Newton, Einstein, and the rest. AI, on the other hand, still has openings for several full-time Einsteins and Edisons.</p>
+
             <h3>What is AI?</h3>
             <p>The term artificial intelligence was first used in 1956. Dartmouth College professor John McCarthy coined the term and organized an intensive summer workshop bringing together leading experts in the field. AI attempts to build intelligent entities.</p>
-            <p>Views of AI fall into four categories:</p>
+            <p>Views of AI fall into four categories, split along two axes: <em>thought processes and reasoning</em> vs. <em>behavior</em>, and <em>fidelity to human performance</em> vs. <em>rationality</em> (an ideal performance measure).</p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Humanly (measured against human performance)</th>
+                            <th>Rationally (measured against an ideal)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th>Thought processes and reasoning</th>
+                            <td>Thinking Humanly</td>
+                            <td>Thinking Rationally</td>
+                        </tr>
+                        <tr>
+                            <th>Behavior</th>
+                            <td>Acting Humanly</td>
+                            <td>Acting Rationally</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             <ul>
                 <li><strong>Thinking Humanly:</strong> The exciting new effort to make computers think... machines with minds, in the full and literal sense.</li>
                 <li><strong>Acting Humanly:</strong> The art of creating machines that perform functions that require intelligence when performed by people. (e.g. The Turing Test)</li>
                 <li><strong>Thinking Rationally:</strong> The study of mental faculties through the use of computational models.</li>
                 <li><strong>Acting Rationally:</strong> Computational Intelligence is the study of the design of intelligent agents.</li>
             </ul>
+            <p>This course concentrates on the general principles of <strong>rational agents</strong> and the components for constructing them. A better title for the course would be <em>Computational Rationality</em>.</p>
 
             <h3>Rationality</h3>
             <p>A system is <strong>rational</strong> if it does the "right thing", given what it knows. We use the term rational in a very specific, technical way:</p>
@@ -54,7 +81,71 @@
                 <li>Automated Reasoning</li>
                 <li>Machine Learning</li>
             </ul>
-            <p>The <em>Total Turing Test</em> also includes a video signal, requiring <strong>Computer Vision</strong> and <strong>Robotics</strong> to pass physical objects.</p>
+            <p>The <em>Total Turing Test</em> also includes a video signal so the interrogator can test the subject's perceptual abilities, plus a hatch for passing physical objects through — requiring <strong>Computer Vision</strong> and <strong>Robotics</strong>.</p>
+            <p><strong>Problem with the Turing Test:</strong> it is not reproducible, constructive, or amenable to mathematical analysis. AI researchers have devoted little effort to passing it, believing it is more important to study the underlying principles of intelligence than to duplicate an exemplar.</p>
+
+            <h3>What can AI do today?</h3>
+            <ul>
+                <li><strong>Robotic vehicles:</strong> the driverless car STANLEY sped through the rough terrain of the Mojave desert to win the 2005 DARPA Grand Challenge. In October 2020, Waymo launched a geo-fenced driverless ride-hailing service in Phoenix, Arizona — monitored in real time by remote engineers who occasionally need to intervene.</li>
+                <li><strong>Robotics:</strong> Roomba robotic vacuum cleaners for home use; PackBot to handle hazardous materials, clear explosives, and identify the location of snipers.</li>
+                <li><strong>Game playing:</strong> Deep Blue defeated world chess champion Garry Kasparov in 1997; AlphaGo beat a human at Go in 2017; AlphaZero learned through self-play alone to defeat all opponents — human and machine — at Go, chess, and shogi in 2018. Human champions have also been beaten at Jeopardy, poker, and more.</li>
+                <li><strong>Natural Language Processing:</strong> machine translation, speech recognition, spam filtering.</li>
+                <li><strong>Machine translation:</strong> reading of documents in over 100 languages, covering the native languages of over 99% of humans, rendering hundreds of billions of words per day. Not perfect, but generally adequate for understanding.</li>
+                <li><strong>Speech recognition:</strong> about a third of computer interaction worldwide is now done by voice. Skype provides real-time speech-to-speech translation in ten languages; Alexa, Siri, Cortana and Google offer assistants; Google Duplex makes restaurant reservations using speech recognition and synthesis.</li>
+                <li><strong>Code automation:</strong> comment-to-code, text-to-app.</li>
+                <li><strong>Image understanding:</strong> image captioning, facial recognition, optical character recognition (OCR), image segmentation, and more.</li>
+                <li><strong>Autonomous planning and scheduling:</strong> the EUROPA planning toolkit used for daily operations of NASA's Mars rovers; SEXTANT for autonomous navigation in deep space beyond GPS; Uber and Google Maps providing driving directions from current and predicted traffic.</li>
+                <li><strong>Recommendations:</strong> used by Amazon, Facebook, Netflix, Spotify, YouTube, Walmart and many more.</li>
+                <li><strong>Medicine:</strong> equalling or exceeding expert doctors at diagnosing many conditions — Alzheimer's disease, metastatic cancer, skin diseases.</li>
+                <li><strong>Generative media:</strong> deep fakes, image colourization, voice cloning from a few seconds of audio.</li>
+            </ul>
+
+            <h3>AI vs. ML vs. DL</h3>
+            <ul>
+                <li><strong>Artificial Intelligence:</strong> build intelligent programs and machines that can creatively solve problems.</li>
+                <li><strong>Machine Learning:</strong> provides systems the ability to automatically learn and improve from experience without being explicitly programmed.</li>
+                <li><strong>Deep Learning:</strong> uses neural networks.</li>
+            </ul>
+            <p>These are nested: deep learning is a subset of machine learning, which is a subset of AI.</p>
+
+            <h3>A Brief Timeline of AI</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Year</th><th>Milestone</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><th>1956</th><td>The Dartmouth Conference — John McCarthy coins the term "artificial intelligence".</td></tr>
+                        <tr><th>1991</th><td>The birth of the Internet.</td></tr>
+                        <tr><th>1997</th><td>Deep Blue defeats world chess champion Garry Kasparov.</td></tr>
+                        <tr><th>2002</th><td>AI enters the home in the form of Roomba, a vacuum cleaner.</td></tr>
+                        <tr><th>2005</th><td>The DARPA Grand Challenge — STANLEY wins.</td></tr>
+                        <tr><th>2011</th><td>IBM Watson wins the TV game show Jeopardy!</td></tr>
+                        <tr><th>2016</th><td>AlphaGo goes where no machine has gone before.</td></tr>
+                        <tr><th>2018</th><td>Self-driving cars hit the roads.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>The History of Artificial Intelligence (AIMA 1.3)</h3>
+            <ul>
+                <li>1.3.1 The inception of artificial intelligence (1943–1956)</li>
+                <li>1.3.2 Early enthusiasm, great expectations (1952–1969)</li>
+                <li>1.3.3 A dose of reality (1966–1973)</li>
+                <li>1.3.4 Expert systems (1969–1986)</li>
+                <li>1.3.5 The return of neural networks (1986–present)</li>
+                <li>1.3.6 Probabilistic reasoning and machine learning (1987–present)</li>
+                <li>1.3.7 Big data (2001–present)</li>
+                <li>1.3.8 Deep learning (2011–present)</li>
+            </ul>
+
+            <h3>Risks and Benefits of AI (AIMA 1.5)</h3>
+            <ul>
+                <li><strong>Lethal autonomous weapons.</strong></li>
+                <li><strong>Surveillance and persuasion:</strong> e.g. the 2016 US presidential election; models trained on biased data.</li>
+                <li><strong>Impact on employment.</strong></li>
+                <li><strong>Safety-critical applications.</strong></li>
+            </ul>
         </section>
 
         <section class="glass-panel">
@@ -76,10 +167,29 @@
                 <li><strong>Agent function:</strong> Maps any given percept sequence to an Action. \( f: \mathcal{P}^* \rightarrow \mathcal{A} \)</li>
             </ul>
             
+            <h3>Example: The Vacuum-Cleaner World</h3>
+            <ul>
+                <li><strong>Two locations only</strong> (square A and square B).</li>
+                <li><strong>Perception:</strong> which square it is in, and whether there is dirt in the square.</li>
+                <li><strong>Possible actions:</strong> move left, move right, suck up the dirt, do nothing.</li>
+            </ul>
             <div class="math-block">
-                <p>Example: The Vacuum-Cleaner World</p>
                 <p>Agent function for a simple vacuum:</p>
                 <p>if the current square is dirty, then suck; else move to the other square.</p>
+            </div>
+            <p>In a sense, all areas of engineering can be seen as designing artifacts that interact with the world; AI operates at the most interesting end of the spectrum, where the artifacts have significant computational resources and the task environment requires nontrivial decision making.</p>
+
+            <h3>Good Behavior: The Concept of Rationality</h3>
+            <p>A rational agent is one that does the right thing — but what does "the right thing" mean? Suppose we measure the vacuum agent by the amount of dirt cleaned up in a single eight-hour shift. Or instead, one point is awarded for each clean square at each time step (perhaps with a penalty for electricity consumed and noise generated). Even then, the same average cleanliness can be achieved by two very different agents: one doing a mediocre job all the time, another cleaning energetically but taking long breaks. Which is preferable?</p>
+            <p><strong>What is rational at any given time depends on four things:</strong></p>
+            <ol>
+                <li>The <strong>performance measure</strong> that defines the criterion of success.</li>
+                <li>The agent's <strong>prior knowledge</strong> of the environment.</li>
+                <li>The <strong>actions</strong> that the agent can perform.</li>
+                <li>The agent's <strong>percept sequence</strong> to date.</li>
+            </ol>
+            <div class="callout">
+                <p><strong>Definition of a rational agent:</strong> For each possible percept sequence, a rational agent should select an action that is expected to maximize its performance measure, given the evidence provided by the percept sequence and whatever built-in knowledge the agent has.</p>
             </div>
 
             <h3>Specifying the Task Environment (PEAS)</h3>
@@ -90,6 +200,23 @@
                 <li><strong>A</strong>ctuators: How the agent interacts with the environment.</li>
                 <li><strong>S</strong>ensors: How the agent perceives the environment.</li>
             </ul>
+            <div class="table-wrap">
+                <table>
+                    <caption>Example: PEAS description for an automated taxi driver.</caption>
+                    <thead>
+                        <tr><th>Component</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><th>Performance measure</th><td>Safe, fast, legal, comfortable trip; maximize profits.</td></tr>
+                        <tr><th>Environment</th><td>Roads, other traffic, pedestrians, customers.</td></tr>
+                        <tr><th>Actuators</th><td>Steering, accelerator, brake, signal, horn, display.</td></tr>
+                        <tr><th>Sensors</th><td>Cameras, sonar, speedometer, GPS, odometer, accelerometer, engine sensors, keyboard.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="callout">
+                <p><strong>PEAS quiz:</strong> What is the PEAS specification for a Robot Soccer Player, and what are the environmental characteristics of this agent? What about an Online Shopping Agent?</p>
+            </div>
 
             <h3>Properties of Task Environments</h3>
             <p>Task environments can be categorized along several dimensions. The hardest case is partially observable, multiagent, stochastic, sequential, dynamic, continuous, and unknown (e.g., taxi driving is hard in all these senses, except the environment is mostly known).</p>
@@ -132,7 +259,53 @@
                         <li><em>Continuous:</em> Continuous state/action space (e.g., Taxi driving speed and steering).</li>
                     </ul>
                 </li>
-                <li><strong>Known vs. Unknown:</strong> Refers to the agent's state of knowledge about the rules of the environment.</li>
+                <li><strong>Known vs. Unknown:</strong> Refers to the agent's state of knowledge about the rules of the environment. Note this is not the same as observability — a known environment can be partially observable (e.g. solitaire, where the rules are known but face-down cards are not visible), and an unknown environment can be fully observable.</li>
+            </ul>
+
+            <h3>Examples of Task Environments</h3>
+            <div class="table-wrap">
+                <table>
+                    <caption>Answers in this table depend on how the task environment is defined.</caption>
+                    <thead>
+                        <tr>
+                            <th>Task environment</th>
+                            <th>Observable</th>
+                            <th>Agents</th>
+                            <th>Deterministic</th>
+                            <th>Episodic</th>
+                            <th>Static</th>
+                            <th>Discrete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><th>Crossword puzzle</th><td>Fully</td><td>Single</td><td>Deterministic</td><td>Sequential</td><td>Static</td><td>Discrete</td></tr>
+                        <tr><th>Chess with a clock</th><td>Fully</td><td>Multi</td><td>Deterministic</td><td>Sequential</td><td>Semi</td><td>Discrete</td></tr>
+                        <tr><th>Poker</th><td>Partially</td><td>Multi</td><td>Stochastic</td><td>Sequential</td><td>Static</td><td>Discrete</td></tr>
+                        <tr><th>Backgammon</th><td>Fully</td><td>Multi</td><td>Stochastic</td><td>Sequential</td><td>Static</td><td>Discrete</td></tr>
+                        <tr><th>Taxi driving</th><td>Partially</td><td>Multi</td><td>Stochastic</td><td>Sequential</td><td>Dynamic</td><td>Continuous</td></tr>
+                        <tr><th>Medical diagnosis</th><td>Partially</td><td>Single</td><td>Stochastic</td><td>Sequential</td><td>Dynamic</td><td>Continuous</td></tr>
+                        <tr><th>Image analysis</th><td>Fully</td><td>Single</td><td>Deterministic</td><td>Episodic</td><td>Semi</td><td>Continuous</td></tr>
+                        <tr><th>Part-picking robot</th><td>Partially</td><td>Single</td><td>Stochastic</td><td>Episodic</td><td>Dynamic</td><td>Continuous</td></tr>
+                        <tr><th>Interactive English tutor</th><td>Partially</td><td>Multi</td><td>Stochastic</td><td>Sequential</td><td>Dynamic</td><td>Discrete</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Why the answers depend on the definition:</p>
+            <ul>
+                <li><strong>Medical diagnosis</strong> is <em>single-agent</em> because the disease process in a patient is not profitably modelled as an agent — but a diagnosis system might also have to deal with recalcitrant patients and skeptical staff, giving the environment a multiagent aspect. It is <em>episodic</em> if the task is selecting a diagnosis given a list of symptoms, but <em>sequential</em> if the task includes proposing a series of tests and evaluating progress over the course of treatment.</li>
+                <li>A <strong>chess tournament</strong> consists of a sequence of games; each game is an episode, because the contribution of the moves in one game is largely unaffected by the moves in previous games. Decision making <em>within</em> a single game, however, is certainly sequential.</li>
+            </ul>
+            <div class="callout">
+                <p><strong>Exam-style questions from the slides:</strong> Explain why an automated car is a <em>partially competitive</em> multi-agent environment. If dirt appears randomly in our vacuum world, is it deterministic? (No — why?) Explain why chess with a clock is <em>semi-dynamic</em>.</p>
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>References</h2>
+            <ul>
+                <li>AIMA Chapter 1 and 2 — sections 1.1, 1.4, 2.1, 2.2, 2.3</li>
+                <li>AIMA slides: Lecture 1, 2 — <a href="http://aima.eecs.berkeley.edu/slides-pdf/">aima.eecs.berkeley.edu/slides-pdf</a></li>
+                <li>Previous year questions</li>
             </ul>
         </section>
     </div>

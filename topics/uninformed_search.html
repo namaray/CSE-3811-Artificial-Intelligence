@@ -10,7 +10,7 @@
 <body>
     <div class="glow-orb orb-1"></div>
     <div class="glow-orb orb-2"></div>
-    
+
     <div class="container">
         <nav class="nav">
             <a href="../index.html" class="nav-link">
@@ -20,7 +20,7 @@
 
         <header>
             <h1>Uninformed Search Strategies</h1>
-            <p style="text-align: center; margin-top: -1.5rem; margin-bottom: 3rem;">Class 3</p>
+            <p style="text-align: center; margin-top: -1.5rem; margin-bottom: 3rem;">Class 3 &nbsp;•&nbsp; AIMA 3.4</p>
         </header>
 
         <section class="glass-panel">
@@ -32,13 +32,79 @@
                 <li><strong>A start state and a goal test.</strong></li>
             </ul>
             <p>A <strong>solution</strong> is a sequence of actions (a plan) which transforms the start state to a goal state.</p>
-            <p><em>Note:</em> The <strong>world state</strong> includes every last detail of the environment. A <strong>search state</strong> keeps only the details needed for planning (abstraction).</p>
+
+            <h3>Example: Traveling in Romania</h3>
+            <ul>
+                <li><strong>State space:</strong> Cities.</li>
+                <li><strong>Successor function:</strong> Roads — go to an adjacent city with cost = distance.</li>
+                <li><strong>Start state:</strong> Arad.</li>
+                <li><strong>Goal test:</strong> Is state == Bucharest?</li>
+            </ul>
+
+            <h3>What's in a State Space?</h3>
+            <p>The <strong>world state</strong> includes every last detail of the environment. A <strong>search state</strong> keeps only the details needed for planning — this is <em>abstraction</em>. The same world can give very different search states depending on the problem:</p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Problem: Pathing</th>
+                            <th>Problem: Eat-All-Dots</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th>States</th>
+                            <td>\((x, y)\) location</td>
+                            <td>\(\{(x,y),\ \text{dot booleans}\}\)</td>
+                        </tr>
+                        <tr>
+                            <th>Actions</th>
+                            <td>NSEW</td>
+                            <td>NSEW</td>
+                        </tr>
+                        <tr>
+                            <th>Successor</th>
+                            <td>Update location only</td>
+                            <td>Update location and possibly a dot boolean</td>
+                        </tr>
+                        <tr>
+                            <th>Goal test</th>
+                            <td>Is \((x,y) = \text{END}\)?</td>
+                            <td>Dots all false</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <h3>State Space Graphs vs. Search Trees</h3>
             <ul>
-                <li><strong>State Space Graph:</strong> A mathematical representation of a search problem. Nodes are abstracted world configurations. Arcs represent successors (action results). In a state space graph, each state occurs only once!</li>
-                <li><strong>Search Tree:</strong> A "what if" tree of plans and their outcomes. The start state is the root node. Children correspond to successors. Each node in the search tree is an <em>entire path</em> in the state space graph.</li>
+                <li><strong>State Space Graph:</strong> A mathematical representation of a search problem. Nodes are abstracted world configurations. Arcs represent successors (action results). The goal test is a set of goal nodes (maybe only one). In a state space graph, each state occurs only once! We can rarely build this full graph in memory (it's too big), but it's a useful idea.</li>
+                <li><strong>Search Tree:</strong> A "what if" tree of plans and their outcomes. The start state is the root node. Children correspond to successors. Nodes show states, but correspond to <em>PLANS</em> that achieve those states. For most problems we can never actually build the whole tree.</li>
             </ul>
+            <div class="callout">
+                <p>Each <strong>node</strong> in the search tree is an entire <strong>path</strong> in the state space graph. We construct both on demand — and we construct as little as possible.</p>
+            </div>
+            <p><strong>Quiz:</strong> for a small 4-state graph (S, a, b, G) with cycles, the search tree is <em>infinite</em>. Important: there is lots of repeated structure in the search tree!</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>General Tree Search</h2>
+            <p>Search means: expand out potential plans (tree nodes), maintain a <strong>fringe</strong> of partial plans under consideration, and try to expand as few tree nodes as possible.</p>
+            <div class="pseudocode">function TREE-SEARCH(problem, strategy) returns a solution, or failure
+    initialize the search tree using the initial state of problem
+    loop do
+        if there are no candidates for expansion then return failure
+        choose a leaf node for expansion according to strategy
+        if the node contains a goal state then return the corresponding solution
+        else expand the node and add the resulting nodes to the search tree</div>
+            <p>The important ideas are:</p>
+            <ul>
+                <li><strong>Fringe:</strong> the set of nodes generated but not yet expanded.</li>
+                <li><strong>Expansion:</strong> generating the successors of a node.</li>
+                <li><strong>Exploration strategy:</strong> the rule that picks which fringe node to expand next.</li>
+            </ul>
+            <p><strong>The main question: which fringe node do we explore next?</strong> Every uninformed algorithm below is just a different answer to that one question — implemented by changing the data structure used for the fringe.</p>
         </section>
 
         <section class="glass-panel">
@@ -51,9 +117,10 @@
                 <li><strong>Space complexity:</strong> How much memory is needed?</li>
             </ul>
             <div class="math-block">
-                <p>Let \( b \) be the branching factor and \( m \) be the maximum depth.</p>
+                <p>Cartoon of the search tree: \( b \) is the branching factor, \( m \) is the maximum depth, and solutions may sit at various depths.</p>
                 <p>Number of nodes in entire tree = \( 1 + b + b^2 + \dots + b^m = O(b^m) \)</p>
             </div>
+            <p>Two more symbols used throughout: \( s \) (sometimes written \( d \)) is the depth of the <em>shallowest</em> solution, and \( \ell \) is a depth limit imposed by the algorithm.</p>
         </section>
 
         <section class="glass-panel">
@@ -61,46 +128,172 @@
 
             <h3>1. Depth-First Search (DFS)</h3>
             <p><strong>Strategy:</strong> expand a deepest node first. Implementation: Fringe is a LIFO stack.</p>
+            <p>DFS expands some left prefix of the tree, and could process the whole tree.</p>
             <ul>
-                <li><strong>Time Complexity:</strong> \( O(b^m) \) (Could process the whole tree).</li>
-                <li><strong>Space Complexity:</strong> \( O(bm) \) (Only has siblings on path to root).</li>
-                <li><strong>Complete?</strong> Only if we prevent cycles ( \( m \) must be finite).</li>
+                <li><strong>Time Complexity:</strong> \( O(b^m) \) if \( m \) is finite.</li>
+                <li><strong>Space Complexity:</strong> \( O(bm) \) — only has siblings on the path to root.</li>
+                <li><strong>Complete?</strong> \( m \) could be infinite, so only if we prevent cycles.</li>
                 <li><strong>Optimal?</strong> No, it finds the "leftmost" solution, regardless of depth or cost.</li>
             </ul>
 
             <h3>2. Breadth-First Search (BFS)</h3>
             <p><strong>Strategy:</strong> expand the shallowest node first. Implementation: Fringe is a FIFO queue.</p>
-            <div class="math-block">
-                <p>Let \( s \) be the depth of the shallowest solution.</p>
-            </div>
+            <p>BFS processes all nodes above the shallowest solution. Let the depth of the shallowest solution be \( s \).</p>
             <ul>
                 <li><strong>Time Complexity:</strong> \( O(b^s) \)</li>
-                <li><strong>Space Complexity:</strong> \( O(b^s) \) (Has roughly the last tier in the fringe).</li>
-                <li><strong>Complete?</strong> Yes, if \( s \) is finite.</li>
+                <li><strong>Space Complexity:</strong> \( O(b^s) \) — has roughly the last tier in the fringe.</li>
+                <li><strong>Complete?</strong> Yes — \( s \) must be finite if a solution exists.</li>
                 <li><strong>Optimal?</strong> Only if costs are all 1.</li>
             </ul>
 
+            <h3>Quiz: DFS vs. BFS</h3>
+            <p>When will BFS outperform DFS, and when will DFS outperform BFS?</p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Scenario</th>
+                            <th>BFS better?</th>
+                            <th>DFS better?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><th>Finding shortest path</th><td>✅ Yes</td><td>❌ No</td></tr>
+                        <tr><th>Shallow &amp; wide search space</th><td>✅ Yes</td><td>❌ No</td></tr>
+                        <tr><th>Deep &amp; narrow search space</th><td>❌ No</td><td>✅ Yes</td></tr>
+                        <tr><th>Memory-constrained environments</th><td>❌ No</td><td>✅ Yes</td></tr>
+                        <tr><th>Finding any solution (not optimal)</th><td>❌ No</td><td>✅ Yes</td></tr>
+                        <tr><th>Solution is close to root</th><td>✅ Yes</td><td>❌ No</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
             <h3>3. Depth Limited Search (DLS)</h3>
-            <p><strong>Strategy:</strong> Use DFS with a depth limit.</p>
+            <p><strong>Strategy:</strong> Use DFS with a depth limit \( \ell \). Nodes at depth \( \ell \) are treated as if they had no successors, so the search cannot run off down an infinite branch.</p>
+            <div class="pseudocode">function DEPTH-LIMITED-SEARCH(problem, limit) returns a solution, or failure/cutoff
+    return RECURSIVE-DLS(MAKE-NODE(problem.INITIAL-STATE), problem, limit)
 
-            <h3>4. Iterative Deepening</h3>
-            <p><strong>Idea:</strong> Get DFS's space advantage with BFS's time/shallow-solution advantages.</p>
+function RECURSIVE-DLS(node, problem, limit) returns a solution, or failure/cutoff
+    if problem.GOAL-TEST(node.STATE) then return SOLUTION(node)
+    else if limit = 0 then return cutoff
+    else
+        cutoff_occurred? &lt;- false
+        for each action in problem.ACTIONS(node.STATE) do
+            child &lt;- CHILD-NODE(problem, node, action)
+            result &lt;- RECURSIVE-DLS(child, problem, limit - 1)
+            if result = cutoff then cutoff_occurred? &lt;- true
+            else if result != failure then return result
+        if cutoff_occurred? then return cutoff else return failure</div>
+            <p><strong>Properties of DLS:</strong></p>
             <ul>
-                <li>Run a DFS with depth limit 1. If no solution...</li>
-                <li>Run a DFS with depth limit 2. If no solution...</li>
-                <li>Run a DFS with depth limit 3... and so on.</li>
+                <li><strong>Time Complexity:</strong> \( O(b^{\ell}) \)</li>
+                <li><strong>Space Complexity:</strong> \( O(b\ell) \)</li>
+                <li><strong>Complete?</strong> No — incomplete if the shallowest goal is deeper than the limit ( \( \ell &lt; s \) ). It returns <em>cutoff</em> rather than a solution.</li>
+                <li><strong>Optimal?</strong> No, for the same reason DFS isn't: it returns the leftmost solution within the limit.</li>
             </ul>
-            <p><em>Isn't that wastefully redundant?</em> Generally, most work happens in the lowest level searched, so it's not so bad!</p>
+            <p>The obvious difficulty is choosing \( \ell \). Pick it too small and you miss the goal; pick it too large and you pay DFS's worst-case cost.</p>
 
-            <h3>5. Uniform Cost Search (UCS)</h3>
-            <p>BFS finds the shortest path in terms of number of actions, but not the least-cost path. UCS finds the least-cost path.</p>
-            <p><strong>Strategy:</strong> Expand the cheapest node first. Implementation: Fringe is a priority queue (priority = cumulative cost).</p>
+            <h3>4. Iterative Deepening Search (IDS / IDDFS)</h3>
+            <p><strong>Idea:</strong> get DFS's space advantage with BFS's time / shallow-solution advantages, without having to guess a good depth limit. Iterative deepening simply calls depth-limited search with a limit that grows by one each round:</p>
             <ul>
-                <li><strong>Time/Space Complexity:</strong> \( O(b^{C^*/\epsilon}) \) where \( C^* \) is the cost of the optimal solution and \( \epsilon \) is the minimum arc cost.</li>
-                <li><strong>Complete?</strong> Yes, assuming best solution has a finite cost and minimum arc cost is positive.</li>
+                <li>Run a DFS with depth limit 1. If no solution…</li>
+                <li>Run a DFS with depth limit 2. If no solution…</li>
+                <li>Run a DFS with depth limit 3… and so on until a solution is found.</li>
+            </ul>
+            <div class="pseudocode">function ITERATIVE-DEEPENING-SEARCH(problem) returns a solution, or failure
+    for depth = 0 to ∞ do
+        result &lt;- DEPTH-LIMITED-SEARCH(problem, depth)
+        if result != cutoff then return result</div>
+
+            <p><strong>Isn't that wastefully redundant?</strong> Generally most work happens in the lowest level searched, so it's not so bad. Nodes on the bottom level are generated once, those on the next level up twice, and so on up to the root which is generated \( s+1 \) times:</p>
+            <div class="math-block">
+                \[ N(\text{IDS}) = (s+1)b^0 + (s)b^1 + (s-1)b^2 + \dots + (1)b^{s} \]
+                <p>For \( b = 10, s = 5 \): IDS generates 123,456 nodes versus 111,111 for BFS — about 11% overhead. The larger \( b \) gets, the smaller the overhead becomes.</p>
+            </div>
+
+            <p><strong>Properties of Iterative Deepening:</strong></p>
+            <ul>
+                <li><strong>Time Complexity:</strong> \( O(b^s) \) — the same order as BFS, because the last iteration dominates.</li>
+                <li><strong>Space Complexity:</strong> \( O(bs) \) — the same as DFS, since only one path is ever in memory. This is the whole point of the algorithm.</li>
+                <li><strong>Complete?</strong> Yes, when \( b \) is finite — the limit eventually reaches \( s \).</li>
+                <li><strong>Optimal?</strong> Yes, if all step costs are identical (like BFS). Not optimal for general costs — use UCS for that.</li>
+            </ul>
+            <div class="callout">
+                <p>Iterative deepening is the preferred uninformed method when the state space is large and the depth of the solution is not known: it combines the low memory of DFS with the completeness and shallow-solution guarantee of BFS.</p>
+            </div>
+
+            <h3>5. Cost-Sensitive Search &amp; Uniform Cost Search (UCS)</h3>
+            <p>BFS finds the shortest path in terms of <em>number of actions</em>. It does <em>not</em> find the least-cost path when arcs have different costs. UCS is the algorithm that does.</p>
+            <p><strong>Strategy:</strong> Expand the cheapest node first. Implementation: Fringe is a priority queue (priority = cumulative cost \( g(n) \)).</p>
+            <p>UCS processes all nodes with cost less than the cheapest solution. If that solution costs \( C^* \) and arcs cost at least \( \epsilon \), then the "effective depth" is roughly \( C^*/\epsilon \).</p>
+            <ul>
+                <li><strong>Time Complexity:</strong> \( O(b^{C^*/\epsilon}) \) — exponential in the effective depth.</li>
+                <li><strong>Space Complexity:</strong> \( O(b^{C^*/\epsilon}) \) — has roughly the last tier.</li>
+                <li><strong>Complete?</strong> Yes, assuming the best solution has a finite cost and the minimum arc cost is positive.</li>
                 <li><strong>Optimal?</strong> Yes!</li>
-                <li><strong>Issues:</strong> UCS explores options in every "direction" and has no information about goal location.</li>
             </ul>
+            <p><strong>Uniform Cost Issues:</strong> UCS explores increasing cost contours in every "direction", because it has no information about where the goal is. The good: it is complete and optimal. The bad: it wastes effort exploring away from the goal — which is exactly what heuristics fix in <a href="informed_search.html">Informed Search</a>.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Summary: Comparing the Strategies</h2>
+            <div class="table-wrap">
+                <table>
+                    <caption>\( b \) = branching factor, \( m \) = max depth, \( s \) = depth of shallowest solution, \( \ell \) = depth limit, \( C^* \) = optimal cost, \( \epsilon \) = minimum arc cost.</caption>
+                    <thead>
+                        <tr>
+                            <th>Algorithm</th>
+                            <th>Fringe</th>
+                            <th>Complete?</th>
+                            <th>Optimal?</th>
+                            <th>Time</th>
+                            <th>Space</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th>DFS</th>
+                            <td>LIFO stack</td>
+                            <td>Only if cycles prevented</td>
+                            <td>No</td>
+                            <td>\( O(b^m) \)</td>
+                            <td>\( O(bm) \)</td>
+                        </tr>
+                        <tr>
+                            <th>BFS</th>
+                            <td>FIFO queue</td>
+                            <td>Yes</td>
+                            <td>Only if costs all 1</td>
+                            <td>\( O(b^s) \)</td>
+                            <td>\( O(b^s) \)</td>
+                        </tr>
+                        <tr>
+                            <th>DLS</th>
+                            <td>LIFO stack</td>
+                            <td>No (if \( \ell &lt; s \))</td>
+                            <td>No</td>
+                            <td>\( O(b^{\ell}) \)</td>
+                            <td>\( O(b\ell) \)</td>
+                        </tr>
+                        <tr>
+                            <th>Iterative Deepening</th>
+                            <td>LIFO stack</td>
+                            <td>Yes</td>
+                            <td>Only if costs all 1</td>
+                            <td>\( O(b^s) \)</td>
+                            <td>\( O(bs) \)</td>
+                        </tr>
+                        <tr>
+                            <th>UCS</th>
+                            <td>Priority queue by \( g(n) \)</td>
+                            <td>Yes</td>
+                            <td>Yes</td>
+                            <td>\( O(b^{C^*/\epsilon}) \)</td>
+                            <td>\( O(b^{C^*/\epsilon}) \)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
     </div>
 </body>

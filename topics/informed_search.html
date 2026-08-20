@@ -10,7 +10,7 @@
 <body>
     <div class="glow-orb orb-1"></div>
     <div class="glow-orb orb-2"></div>
-    
+
     <div class="container">
         <nav class="nav">
             <a href="../index.html" class="nav-link">
@@ -19,20 +19,33 @@
         </nav>
 
         <header>
-            <h1>Informed Search Strategies & Heuristic Functions</h1>
-            <p style="text-align: center; margin-top: -1.5rem; margin-bottom: 3rem;">Classes 4-6</p>
+            <h1>Informed Search Strategies &amp; Heuristic Functions</h1>
+            <p style="text-align: center; margin-top: -1.5rem; margin-bottom: 3rem;">Classes 4–6 &nbsp;•&nbsp; AIMA 3.4, 3.5, 3.6</p>
         </header>
+
+        <section class="glass-panel">
+            <h2>Recap: Search</h2>
+            <ul>
+                <li><strong>Search problem:</strong> states (configurations of the world), actions and costs, a successor function (world dynamics), a start state and goal test.</li>
+                <li><strong>Search tree:</strong> nodes represent plans for reaching states; plans have costs (sum of action costs).</li>
+                <li><strong>Search algorithm:</strong> systematically builds a search tree, chooses an ordering of the fringe (unexplored nodes). It is <em>optimal</em> if it finds least-cost plans.</li>
+            </ul>
+            <p>Uniform Cost Search is complete and optimal, but it explores options in every "direction" because it has no information about the goal location. Informed search fixes that by adding a heuristic.</p>
+        </section>
 
         <section class="glass-panel">
             <h2>Search Heuristics</h2>
             <p>A <strong>heuristic</strong> is a function that <em>estimates</em> how close a state is to a goal. It is designed for a particular search problem.</p>
-            <p>Examples: Manhattan distance or Euclidean distance for pathing problems.</p>
+            <p>Examples: Manhattan distance or Euclidean distance for pathing problems; straight-line distance to Bucharest for the Romania problem.</p>
         </section>
 
         <section class="glass-panel">
             <h2>Greedy Search</h2>
-            <p><strong>Strategy:</strong> Expand the node that you think is closest to a goal state.</p>
-            <p>Heuristic is used to estimate the distance to the nearest goal for each state. A common case is that "best-first" takes you straight to the (wrong) goal. Worst-case: like a badly-guided DFS.</p>
+            <p><strong>Strategy:</strong> Expand the node that you think is closest to a goal state — order the fringe by \( h(n) \) alone.</p>
+            <ul>
+                <li>A common case: "best-first" takes you straight to the (wrong) goal.</li>
+                <li>Worst case: like a badly-guided DFS.</li>
+            </ul>
         </section>
 
         <section class="glass-panel">
@@ -46,35 +59,36 @@
             <div class="math-block">
                 \[ f(n) = g(n) + h(n) \]
             </div>
-            
+
             <h3>When should A* terminate?</h3>
-            <p>We should only stop when we <strong>dequeue</strong> a goal, not when we enqueue a goal.</p>
+            <p>We should only stop when we <strong>dequeue</strong> a goal, not when we enqueue a goal. Enqueueing a goal proves only that <em>some</em> path to the goal exists — a cheaper one may still be sitting in the fringe.</p>
 
             <h3>Is A* Optimal?</h3>
-            <p>A* is optimal if the heuristic used is <strong>admissible</strong> (for tree search) or <strong>consistent</strong> (for graph search).</p>
+            <p>Not automatically. If the estimated cost of a good goal exceeds the actual cost of a bad goal, A* can return a suboptimal path. We need estimates to be less than or equal to actual costs — which is exactly the <strong>admissibility</strong> condition below.</p>
             <ul>
-                <li>If the estimated good goal cost is greater than the actual bad goal cost, A* might find a suboptimal path.</li>
-                <li>We need estimates to be less than or equal to actual costs!</li>
+                <li>A* is optimal for <strong>tree search</strong> if the heuristic is <strong>admissible</strong>.</li>
+                <li>A* is optimal for <strong>graph search</strong> if the heuristic is <strong>consistent</strong>.</li>
             </ul>
         </section>
 
         <section class="glass-panel">
             <h2>Admissibility and Consistency</h2>
-            
+
             <h3>Admissible Heuristics</h3>
             <p>A heuristic \( h \) is admissible (optimistic) if:</p>
             <div class="math-block">
                 \[ 0 \leq h(n) \leq h^*(n) \]
             </div>
             <p>where \( h^*(n) \) is the true cost to a nearest goal. Inadmissible (pessimistic) heuristics break optimality by trapping good plans on the fringe. Admissible heuristics slow down bad plans but never outweigh true costs.</p>
+            <p>Coming up with admissible heuristics is most of what's involved in using A* in practice.</p>
 
             <h3>Creating Admissible Heuristics</h3>
-            <p>Most of the work in solving hard search problems optimally is in coming up with admissible heuristics. Often, admissible heuristics are solutions to <strong>relaxed problems</strong>, where new actions are available.</p>
-            
+            <p>Most of the work in solving hard search problems optimally is in coming up with admissible heuristics. Often, admissible heuristics are solutions to <strong>relaxed problems</strong>, where new actions are available. Inadmissible heuristics are often useful too.</p>
+
             <h3>Consistency of Heuristics</h3>
             <p>Main idea: estimated heuristic costs \( \leq \) actual costs.</p>
             <ul>
-                <li><strong>Admissibility:</strong> heuristic cost \( \leq \) actual cost to goal.</li>
+                <li><strong>Admissibility:</strong> heuristic cost \( \leq \) actual cost to goal — \( h(A) \leq \) actual cost from A to G.</li>
                 <li><strong>Consistency:</strong> heuristic "arc" cost \( \leq \) actual cost for each arc.</li>
             </ul>
             <div class="math-block">
@@ -89,7 +103,64 @@
         </section>
 
         <section class="glass-panel">
+            <h2>Example: The 8 Puzzle</h2>
+            <p>The 8 puzzle is the standard worked example for heuristic design. Ask first: what are the states, how many states are there, what are the actions, how many successors from the start state, and what should the costs be?</p>
+
+            <h3>8 Puzzle I — Number of tiles misplaced</h3>
+            <ul>
+                <li><strong>Heuristic:</strong> the number of tiles that are not in their goal position.</li>
+                <li><strong>Why is it admissible?</strong> Every misplaced tile needs at least one move, so the count can never exceed the true cost.</li>
+                <li>\( h(\text{start}) = 8 \)</li>
+                <li>This is a relaxed-problem heuristic: it solves the puzzle where a tile may be teleported to its goal square in one move.</li>
+            </ul>
+
+            <h3>8 Puzzle II — Total Manhattan distance</h3>
+            <p>What if we had an easier 8-puzzle where any tile could slide any direction at any time, ignoring other tiles? The solution cost of that relaxed problem is the total Manhattan distance.</p>
+            <ul>
+                <li><strong>Why is it admissible?</strong> Each tile must travel at least its Manhattan distance, and moves shift one tile at a time.</li>
+                <li>\( h(\text{start}) = 3 + 1 + 2 + \dots = 18 \)</li>
+            </ul>
+
+            <div class="table-wrap">
+                <table>
+                    <caption>Average nodes expanded when the optimal path has… (statistics from Andrew Moore)</caption>
+                    <thead>
+                        <tr>
+                            <th>Heuristic</th>
+                            <th>…4 steps</th>
+                            <th>…8 steps</th>
+                            <th>…12 steps</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><th>UCS ( \( h = 0 \) )</th><td>112</td><td>6,300</td><td>3.6 × 10<sup>6</sup></td></tr>
+                        <tr><th>TILES (misplaced)</th><td>13</td><td>39</td><td>227</td></tr>
+                        <tr><th>MANHATTAN</th><td>12</td><td>25</td><td>73</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>8 Puzzle III — Why not use the actual cost?</h3>
+            <p>The exact cost \( h^* \) would be admissible and would expand almost no nodes — but computing it is as hard as solving the puzzle itself.</p>
+            <div class="callout">
+                <p>With A* there is a trade-off between <strong>quality of the estimate</strong> and <strong>work per node</strong>. As heuristics get closer to the true cost you expand fewer nodes, but usually do more work per node to compute the heuristic itself.</p>
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Trivial Heuristics &amp; Dominance</h2>
+            <p><strong>Dominance:</strong> \( h_a \geq h_c \) if \( \forall n:\ h_a(n) \geq h_c(n) \). A dominant admissible heuristic is always at least as good — it never expands more nodes.</p>
+            <p>Heuristics form a <strong>semi-lattice</strong>:</p>
+            <ul>
+                <li>The max of admissible heuristics is admissible: \( h(n) = \max(h_a(n), h_b(n)) \).</li>
+                <li>The <strong>bottom</strong> of the lattice is the zero heuristic \( h = 0 \) — which reduces A* to UCS.</li>
+                <li>The <strong>top</strong> of the lattice is the exact heuristic \( h^* \).</li>
+            </ul>
+        </section>
+
+        <section class="glass-panel">
             <h2>Graph Search</h2>
+            <p><strong>Tree search does extra work:</strong> failure to detect repeated states can cause exponentially more work. In BFS, for example, we shouldn't bother expanding a node whose state we have already expanded.</p>
             <p><strong>Idea:</strong> Never expand a state twice.</p>
             <p><strong>Implementation:</strong></p>
             <ul>
@@ -98,7 +169,58 @@
                 <li>If not new, skip it. If new, add to closed set.</li>
                 <li><strong>Important:</strong> store the closed set as a set, not a list.</li>
             </ul>
-            <p>Failure to detect repeated states can cause exponentially more work.</p>
+            <p>Graph search does not wreck completeness — but it <em>can</em> wreck optimality if the heuristic is merely admissible rather than consistent.</p>
+
+            <h3>A* Graph Search Gone Wrong</h3>
+            <p>Consider a graph with \( S(h{=}2) \rightarrow A(h{=}4) \) and \( S \rightarrow B(h{=}1) \), both cost 1, with \( A \rightarrow C \) cost 1, \( B \rightarrow C \) cost 2, and \( C(h{=}1) \rightarrow G(h{=}0) \) cost 3.</p>
+            <ul>
+                <li>Through B: \( C \) is reached with \( f = 3 + 1 = 4 \), and B looks cheaper first because \( h(B) \) is small.</li>
+                <li>Through A: \( C \) is reached with \( f = 2 + 1 = 3 \) — the genuinely cheaper path, cost 5 to the goal versus 6.</li>
+                <li>Because graph search closes \( C \) the first time it is expanded, the better path through A is discarded and A* returns the cost-6 plan.</li>
+            </ul>
+            <p>The heuristic here is admissible but <strong>not consistent</strong> ( \( h(A) - h(C) = 3 > \text{cost}(A \rightarrow C) = 1 \) ), which is exactly what breaks it.</p>
+
+            <h3>Optimality of A* Graph Search</h3>
+            <p>Sketch — consider what A* does with a consistent heuristic:</p>
+            <ul>
+                <li><strong>Fact 1:</strong> In tree search, A* expands nodes in increasing total \( f \) value (f-contours).</li>
+                <li><strong>Fact 2:</strong> For every state \( s \), nodes that reach \( s \) optimally are expanded before nodes that reach \( s \) suboptimally.</li>
+                <li><strong>Result:</strong> A* graph search is optimal.</li>
+            </ul>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Summary</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>A* is optimal if…</th>
+                            <th>UCS is the special case…</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th>Tree search</th>
+                            <td>the heuristic is <strong>admissible</strong></td>
+                            <td>\( h = 0 \) is admissible</td>
+                        </tr>
+                        <tr>
+                            <th>Graph search</th>
+                            <td>the heuristic is <strong>consistent</strong></td>
+                            <td>\( h = 0 \) is consistent</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <ul>
+                <li>Consistency implies admissibility (but not the other way round).</li>
+                <li>In general, most natural admissible heuristics tend to be consistent, especially if derived from relaxed problems.</li>
+                <li>A* uses both backward costs and (estimates of) forward costs.</li>
+                <li>A* is optimal with admissible / consistent heuristics.</li>
+                <li>Heuristic design is key: often use relaxed problems.</li>
+            </ul>
         </section>
     </div>
 </body>

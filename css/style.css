@@ -70,7 +70,7 @@ body {
 }
 
 /* Typography */
-h1, h2, h3 {
+h1, h2, h3, h4 {
     font-weight: 800;
     margin-bottom: 1rem;
     line-height: 1.2;
@@ -97,6 +97,13 @@ h3 {
     font-size: 1.5rem;
     color: var(--accent-secondary);
     margin-top: 2rem;
+}
+
+h4 {
+    font-size: 1.15rem;
+    color: var(--text-main);
+    margin-top: 1.75rem;
+    margin-bottom: 0.75rem;
 }
 
 p {
@@ -225,4 +232,88 @@ a:hover {
 /* MathJax specific overrides to ensure crispness */
 .MathJax {
     color: var(--text-main) !important;
+}
+
+/* Pseudocode blocks */
+.pseudocode {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--text-main);
+    white-space: pre;
+}
+
+/* Callout for key takeaways / exam pointers */
+.callout {
+    background: rgba(108, 92, 231, 0.12);
+    border-left: 4px solid var(--accent-primary);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.callout p:last-child,
+.callout ul:last-child,
+.callout ol:last-child {
+    margin-bottom: 0;
+}
+
+/* Tables */
+.table-wrap {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}
+
+table caption {
+    caption-side: top;
+    text-align: left;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    padding-bottom: 0.75rem;
+}
+
+th, td {
+    text-align: left;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--glass-border);
+    vertical-align: top;
+}
+
+thead th {
+    color: var(--accent-secondary);
+    font-weight: 600;
+    white-space: nowrap;
+    border-bottom: 1px solid rgba(0, 206, 201, 0.4);
+}
+
+tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+tbody th {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+@media (max-width: 640px) {
+    .container {
+        padding: 2rem 1rem;
+    }
+
+    h1 {
+        font-size: 2.25rem;
+    }
 }

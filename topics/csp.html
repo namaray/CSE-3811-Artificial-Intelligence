@@ -24,12 +24,85 @@
         </header>
 
         <section class="glass-panel">
+            <h2>What is Search For?</h2>
+            <p>Assumptions about the world: a single agent, deterministic actions, fully observed state, discrete state space. Under those assumptions there are two very different jobs search can do:</p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Planning</th><th>Identification</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Sequences of actions.</td>
+                            <td>Assignments to variables.</td>
+                        </tr>
+                        <tr>
+                            <td>The path to the goal is the important thing.</td>
+                            <td>The goal itself is important, not the path.</td>
+                        </tr>
+                        <tr>
+                            <td>Paths have various costs and depths.</td>
+                            <td>All paths at the same depth (for some formulations).</td>
+                        </tr>
+                        <tr>
+                            <td>Heuristics give problem-specific guidance.</td>
+                            <td>CSPs are specialized for identification problems.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="glass-panel">
             <h2>What is a CSP?</h2>
-            <p>In standard search problems, the state is a "black box" (an arbitrary data structure), and the goal test can be any function. <strong>CSPs</strong> are a specialized subset of search problems for <em>identification</em> problems:</p>
+            <p>In standard search problems, the state is a "black box" (an arbitrary data structure), the goal test can be any function, and so can the successor function. <strong>CSPs</strong> are a specialized subset of search problems for <em>identification</em> problems:</p>
             <ul>
-                <li>The state is defined by <strong>variables</strong> \( X_i \) with values from a <strong>domain</strong> \( D \).</li>
+                <li>The state is defined by <strong>variables</strong> \( X_i \) with values from a <strong>domain</strong> \( D \) (sometimes \( D \) depends on \( i \)).</li>
                 <li>The goal test is a <strong>set of constraints</strong> specifying allowable combinations of values for subsets of variables.</li>
                 <li>Solutions are complete assignments satisfying all constraints.</li>
+            </ul>
+            <p>A CSP is a simple example of a formal representation language, and it allows useful general-purpose algorithms with more power than standard search algorithms.</p>
+
+            <h3>Example: Map Coloring</h3>
+            <ul>
+                <li><strong>Variables:</strong> WA, NT, Q, NSW, V, SA, T (the regions of Australia).</li>
+                <li><strong>Domains:</strong> \( D = \{ \text{red}, \text{green}, \text{blue} \} \)</li>
+                <li><strong>Constraints:</strong> adjacent regions must have different colors.
+                    <ul>
+                        <li><em>Implicit:</em> \( \text{WA} \neq \text{NT} \)</li>
+                        <li><em>Explicit:</em> \( (\text{WA}, \text{NT}) \in \{(\text{red},\text{green}), (\text{red},\text{blue}), \dots\} \)</li>
+                    </ul>
+                </li>
+                <li><strong>Solutions</strong> are assignments satisfying all constraints, e.g. {WA = red, NT = green, Q = red, NSW = green, V = red, SA = blue, T = green}.</li>
+            </ul>
+
+            <h3>Example: N-Queens</h3>
+            <p><strong>Formulation 1 (Boolean):</strong> variables \( X_{ij} \) for each square, domains \( \{0, 1\} \), with constraints forbidding two queens in the same row, column or diagonal and requiring \( \sum_{i,j} X_{ij} = N \).</p>
+            <p><strong>Formulation 2 (one variable per column):</strong></p>
+            <ul>
+                <li><strong>Variables:</strong> \( Q_k \) — the row of the queen in column \( k \).</li>
+                <li><strong>Domains:</strong> \( \{1, 2, \dots, N\} \)</li>
+                <li><strong>Constraints:</strong>
+                    <ul>
+                        <li><em>Implicit:</em> \( \forall i,j \) non-threatening \( (Q_i, Q_j) \) — i.e. \( Q_i \neq Q_j \) and \( |Q_i - Q_j| \neq |i - j| \).</li>
+                        <li><em>Explicit:</em> \( (Q_1, Q_2) \in \{(1,3), (1,4), \dots\} \)</li>
+                    </ul>
+                </li>
+            </ul>
+            <p>Formulation 2 is far smaller — it builds the "one queen per column" constraint into the representation itself.</p>
+
+            <h3>Example: Sudoku</h3>
+            <ul>
+                <li><strong>Variables:</strong> each (open) square.</li>
+                <li><strong>Domains:</strong> \( \{1, 2, \dots, 9\} \)</li>
+                <li><strong>Constraints:</strong> 9-way <code>alldiff</code> for each column, each row, and each region (or a bunch of pairwise inequality constraints instead).</li>
+            </ul>
+
+            <h3>Varieties of CSPs</h3>
+            <ul>
+                <li><strong>Discrete variables with finite domains:</strong> domain size \( d \) means \( O(d^n) \) complete assignments. E.g. Boolean CSPs, including Boolean satisfiability (NP-complete).</li>
+                <li><strong>Discrete variables with infinite domains</strong> (integers, strings, etc.): e.g. job scheduling, where variables are start/end times for each job. Linear constraints are solvable; nonlinear constraints are undecidable.</li>
+                <li><strong>Continuous variables:</strong> e.g. start/end times for Hubble Telescope observations. Linear constraints are solvable in polynomial time by linear programming methods.</li>
             </ul>
 
             <h3>Varieties of Constraints</h3>
@@ -41,7 +114,20 @@
             </ul>
 
             <h3>Constraint Graphs</h3>
-            <p>A binary CSP can be represented as a <strong>Constraint Graph</strong>, where nodes are variables and arcs show constraints. General-purpose CSP algorithms use this graph structure to speed up search (e.g., identifying independent subproblems).</p>
+            <p>A <strong>binary CSP</strong> is one in which each constraint relates at most two variables. It can be represented as a <strong>binary constraint graph</strong>, where nodes are variables and arcs show constraints.</p>
+            <p>General-purpose CSP algorithms use this graph structure to speed up search. In the Australia map-coloring problem, for example, <em>Tasmania is an independent subproblem</em> — it shares no constraint with any other region, so it can be solved separately.</p>
+
+            <h3>Real-World CSPs</h3>
+            <ul>
+                <li>Assignment problems: e.g. who teaches what class.</li>
+                <li>Timetabling problems: e.g. which class is offered when and where?</li>
+                <li>Hardware configuration.</li>
+                <li>Transportation scheduling.</li>
+                <li>Factory scheduling.</li>
+                <li>Circuit layout.</li>
+                <li>Fault diagnosis.</li>
+                <li>… lots more! Note that many real-world problems involve real-valued variables.</li>
+            </ul>
         </section>
 
         <section class="glass-panel">
@@ -53,29 +139,68 @@
                 <li><strong>Goal test:</strong> The current assignment is complete and satisfies all constraints.</li>
             </ul>
             
-            <p><strong>Backtracking search</strong> is depth-first search with two improvements:</p>
+            <p>We start with this straightforward, naïve approach, then improve it. What would BFS do here? What would DFS do? The problem with naïve search is that it explores an enormous number of assignments that differ only in the <em>order</em> the variables were assigned.</p>
+
+            <p><strong>Backtracking search</strong> is the basic uninformed algorithm for solving CSPs. It is depth-first search with two improvements:</p>
             <ol>
-                <li><strong>One variable at a time:</strong> Variable assignments are commutative, so we can fix the ordering. We only consider assignments to a single variable at each step.</li>
-                <li><strong>Check constraints as you go:</strong> Consider only values which do not conflict with previous assignments ("Incremental goal test" or fail-on-violation).</li>
+                <li><strong>One variable at a time:</strong> Variable assignments are commutative, so we can fix the ordering — [WA = red then NT = green] is the same as [NT = green then WA = red]. We only need to consider assignments to a single variable at each step.</li>
+                <li><strong>Check constraints as you go:</strong> Consider only values which do not conflict with previous assignments ("incremental goal test", or fail-on-violation). Note it might take some computation to check the constraints.</li>
             </ol>
+            <div class="callout">
+                <p><strong>Backtracking = DFS + variable-ordering + fail-on-violation.</strong> Plain backtracking can solve n-queens for \( n \approx 25 \).</p>
+            </div>
+            <div class="pseudocode">function BACKTRACKING-SEARCH(csp) returns a solution, or failure
+    return RECURSIVE-BACKTRACKING({}, csp)
+
+function RECURSIVE-BACKTRACKING(assignment, csp) returns a solution, or failure
+    if assignment is complete then return assignment
+    var &lt;- SELECT-UNASSIGNED-VARIABLE(VARIABLES[csp], assignment, csp)
+    for each value in ORDER-DOMAIN-VALUES(var, assignment, csp) do
+        if value is consistent with assignment given CONSTRAINTS[csp] then
+            add {var = value} to assignment
+            result &lt;- RECURSIVE-BACKTRACKING(assignment, csp)
+            if result != failure then return result
+            remove {var = value} from assignment
+    return failure</div>
+            <p>The two calls <code>SELECT-UNASSIGNED-VARIABLE</code> and <code>ORDER-DOMAIN-VALUES</code> are the <em>choice points</em>, and they are exactly what the improvements in the next section exploit.</p>
         </section>
 
         <section class="glass-panel">
             <h2>Improving Backtracking</h2>
-            <p>General-purpose ideas can give huge gains in speed for backtracking search.</p>
+            <p>General-purpose ideas can give huge gains in speed for backtracking search. They answer three questions:</p>
+            <ul>
+                <li><strong>Ordering:</strong> Which variable should be assigned next? In what order should its values be tried?</li>
+                <li><strong>Filtering:</strong> Can we detect inevitable failure early?</li>
+                <li><strong>Structure:</strong> Can we exploit the problem structure?</li>
+            </ul>
 
             <h3>1. Filtering: Detecting inevitable failure early</h3>
+            <p>Filtering means keeping track of domains for unassigned variables and crossing off bad options as we go.</p>
             <ul>
-                <li><strong>Forward checking:</strong> Keep track of domains for unassigned variables and cross off values that violate a constraint when added to the existing assignment.</li>
-                <li><strong>Constraint propagation:</strong> Forward checking doesn't provide early detection for all failures. Constraint propagation reasons from constraint to constraint to find tighter restrictions on variable domains.</li>
+                <li><strong>Forward checking:</strong> Cross off values that violate a constraint when added to the existing assignment. It propagates information from assigned to unassigned variables.</li>
+                <li><strong>Constraint propagation:</strong> Forward checking doesn't provide early detection for all failures. For example, after assigning WA = red and Q = green, forward checking leaves NT and SA each with only {blue} — but NT and SA are adjacent, so they cannot <em>both</em> be blue. Forward checking never notices, because it only looks from assigned to unassigned variables. Constraint propagation reasons from constraint to constraint to find these tighter restrictions on variable domains.</li>
             </ul>
 
             <h3>2. Ordering: Which variable and which value?</h3>
             <ul>
-                <li><strong>Variable Ordering - Minimum Remaining Values (MRV):</strong> Choose the variable with the fewest legal values left in its domain. Also called the "most constrained variable" or "fail-fast" ordering.</li>
-                <li><strong>Value Ordering - Least Constraining Value:</strong> Given a choice of variable, choose the value that rules out the fewest values in the remaining variables. This helps find a solution faster if one exists.</li>
+                <li><strong>Variable Ordering — Minimum Remaining Values (MRV):</strong> Choose the variable with the fewest legal values left in its domain. Also called the "most constrained variable" or "fail-fast" ordering. <em>Why min rather than max?</em> Because if a variable is going to fail, we want to discover it now rather than after assigning half the problem.</li>
+                <li><strong>Value Ordering — Least Constraining Value:</strong> Given a choice of variable, choose the value that rules out the fewest values in the remaining variables. Note that it may take some computation to determine this (e.g. rerunning filtering). <em>Why least rather than most?</em> Because we only need <em>one</em> value to work for this variable, so we should keep as many options open downstream as possible.</li>
             </ul>
-            <p>Combining these filtering and ordering ideas makes solving extremely large CSPs (e.g., 1000-queens) feasible!</p>
+            <div class="callout">
+                <p>Combining these ordering ideas makes 1000-queens feasible — up from \( n \approx 25 \) for plain backtracking.</p>
+            </div>
+
+            <h3>3. Structure: Exploiting the constraint graph</h3>
+            <p>The structure of the constraint graph itself can be exploited. Independent subproblems — connected components of the constraint graph, such as Tasmania in the map-coloring example — can be solved separately and their solutions combined, which turns one exponential problem into several much smaller ones.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>References</h2>
+            <ul>
+                <li>AIMA Chapter 6.1, 6.2, 6.3, 6.4</li>
+                <li>CS 188 (UC Berkeley) CSP slides — <a href="http://ai.berkeley.edu">ai.berkeley.edu</a></li>
+                <li>Previous year questions</li>
+            </ul>
         </section>
     </div>
 </body>
