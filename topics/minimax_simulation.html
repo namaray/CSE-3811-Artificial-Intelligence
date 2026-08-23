@@ -61,6 +61,24 @@
 
         input[type=range] { accent-color: var(--accent-primary); width: 110px; }
 
+        input.leaf-input {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.88rem;
+            color: var(--text-main);
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.55rem 0.75rem;
+            min-width: 260px;
+            flex: 1 1 260px;
+        }
+
+        input.leaf-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: rgba(0, 0, 0, 0.4);
+        }
+
         /* Tree canvas */
         .tree-wrap {
             overflow-x: auto;
@@ -291,13 +309,22 @@
                 <button id="rand" class="ctrl">🎲 Randomize leaves</button>
             </div>
 
+            <div class="sim-controls">
+                <div class="group" style="flex: 1 1 320px;">
+                    <span class="ctrl-label">Leaves</span>
+                    <input type="text" id="leaves" class="leaf-input" spellcheck="false"
+                           aria-label="Comma-separated leaf utilities">
+                </div>
+                <button id="applyLeaves" class="ctrl">Apply</button>
+            </div>
+
             <p class="mode-note" id="mode-note"></p>
 
             <div class="tree-wrap">
                 <svg id="tree" class="tree"></svg>
             </div>
 
-            <p class="hint">Click any leaf (the squares along the bottom) to change its value and re-run the simulation.</p>
+            <p class="hint">Type the leaf utilities above (any separator — <code>4, 6, 7</code> or <code>4 6 7</code>) and press Enter; values from −99 to 99 are allowed. A short list is repeated to fill the tree. You can also click a leaf square to nudge it up by one, or shift-click to nudge it down.</p>
 
             <div class="stat-row">
                 <div class="stat"><span class="k">Root value</span><span class="v accent" id="s-root">—</span></div>
@@ -419,10 +446,41 @@
             return Math.pow(branching, depth);
         }
 
+        var LEAF_MIN = -99, LEAF_MAX = 99;
+
         function randomLeaves() {
             var out = [];
-            for (var i = 0; i < leafCount(); i++) out.push(Math.floor(Math.random() * 10));
+            for (var i = 0; i < leafCount(); i++) out.push(Math.floor(Math.random() * 100));
             return out;
+        }
+
+        function clampLeaf(v) {
+            return Math.max(LEAF_MIN, Math.min(LEAF_MAX, Math.round(v)));
+        }
+
+        function syncLeafInput() {
+            document.getElementById('leaves').value = allNodes
+                .filter(function (n) { return !n.children.length; })
+                .map(function (n) { return n.value; })
+                .join(', ');
+        }
+
+        // Accepts any separator: "4, 6, 7" / "4 6 7" / "4;6;7". A short list is
+        // cycled to fill the tree, a long one is truncated, so switching tree
+        // shape never leaves the field in an unusable state.
+        function applyLeafInput() {
+            var tokens = document.getElementById('leaves').value.match(/-?\d+/g) || [];
+            var nums = tokens.map(Number).filter(isFinite).map(clampLeaf);
+
+            if (!nums.length) { syncLeafInput(); return; }
+
+            var need = leafCount(), out = [];
+            for (var i = 0; i < need; i++) out.push(nums[i % nums.length]);
+
+            if (out.join(',') === leafValues.join(',')) { syncLeafInput(); return; }
+
+            leafValues = out;
+            rebuild();
         }
 
         /* ---------- trace generation ---------- */
@@ -600,9 +658,13 @@
                 g.appendChild(cut);
 
                 if (!n.children.length) {
-                    g.addEventListener('click', function () {
+                    g.addEventListener('click', function (ev) {
+                        var delta = ev.shiftKey ? -1 : 1;
                         leafValues = allNodes.filter(function (m) { return !m.children.length; })
-                                             .map(function (m) { return m.id === n.id ? (m.value + 1) % 10 : m.value; });
+                                             .map(function (m) {
+                                                 if (m.id !== n.id) return m.value;
+                                                 return ((m.value + delta) % 100 + 100) % 100;
+                                             });
                         rebuild();
                     });
                 }
@@ -809,6 +871,7 @@
         function rebuild() {
             pause();
             buildTree();
+            syncLeafInput();
             events = generateEvents(usingAB());
             drawStatic();
             applyUpTo(0);
@@ -836,6 +899,11 @@
         document.getElementById('rand').addEventListener('click', function () {
             leafValues = randomLeaves();
             rebuild();
+        });
+        document.getElementById('applyLeaves').addEventListener('click', applyLeafInput);
+        document.getElementById('leaves').addEventListener('change', applyLeafInput);
+        document.getElementById('leaves').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); applyLeafInput(); }
         });
         document.getElementById('algo').addEventListener('change', rebuild);
         document.getElementById('shape').addEventListener('change', function () {
