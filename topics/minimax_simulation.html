@@ -117,12 +117,15 @@
         }
 
         .node .ab {
-            fill: var(--accent-secondary);
-            font-family: 'Courier New', monospace;
-            font-size: 10.5px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
             text-anchor: middle;
             pointer-events: none;
         }
+
+        .node .ab .ab-a { fill: #a99cff; }   /* α — MAX's bound */
+        .node .ab .ab-b { fill: #5ee7e4; }   /* β — MIN's bound */
 
         .node.leaf { cursor: pointer; }
 
@@ -262,6 +265,7 @@
                 <span><i class="swatch min"></i> MIN node (▼)</span>
                 <span><i class="swatch leaf"></i> Terminal / leaf</span>
                 <span><i class="swatch pruned"></i> Pruned</span>
+                <span id="lg-ab" style="display:none;"><b style="color:#a99cff;">α</b> = MAX's bound &nbsp;·&nbsp; <b style="color:#5ee7e4;">β</b> = MIN's bound</span>
             </div>
         </section>
 
@@ -518,10 +522,19 @@
                 tag.textContent = n.label;
                 g.appendChild(tag);
 
+                // α and β live in one centred <text> as two coloured tspans, so the
+                // pair reads as a unit while each bound keeps its own colour.
                 var ab = document.createElementNS(SVG_NS, 'text');
                 ab.setAttribute('x', n.x);
-                ab.setAttribute('y', n.y - HH - 8);
+                ab.setAttribute('y', n.y - HH - 11);
                 ab.setAttribute('class', 'ab');
+                var abA = document.createElementNS(SVG_NS, 'tspan');
+                abA.setAttribute('class', 'ab-a');
+                var abB = document.createElementNS(SVG_NS, 'tspan');
+                abB.setAttribute('class', 'ab-b');
+                abB.setAttribute('dx', '12');
+                ab.appendChild(abA);
+                ab.appendChild(abB);
                 g.appendChild(ab);
 
                 if (!n.children.length) {
@@ -533,7 +546,7 @@
                 }
 
                 nodeLayer.appendChild(g);
-                n.el = { g: g, val: val, ab: ab };
+                n.el = { g: g, val: val, abA: abA, abB: abB };
             });
         }
 
@@ -552,9 +565,9 @@
                     n.el.val.setAttribute('class', 'val');
                 }
 
-                n.el.ab.textContent = (usingAB() && n.children.length && n.alpha !== null && n.state !== 'idle')
-                    ? 'α' + fmt(n.alpha) + ' β' + fmt(n.beta)
-                    : '';
+                var showAB = usingAB() && n.children.length && n.alpha !== null && n.state !== 'idle';
+                n.el.abA.textContent = showAB ? 'α = ' + fmt(n.alpha) : '';
+                n.el.abB.textContent = showAB ? 'β = ' + fmt(n.beta) : '';
 
                 if (n.edgeEl) {
                     var ec = 'edge';
@@ -564,6 +577,8 @@
                     n.edgeEl.setAttribute('class', ec);
                 }
             });
+
+            document.getElementById('lg-ab').style.display = usingAB() ? '' : 'none';
 
             document.getElementById('s-visited').textContent = countVisited();
             document.getElementById('s-pruned').textContent = countPruned();
