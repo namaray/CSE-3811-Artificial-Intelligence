@@ -93,7 +93,7 @@
 
         .node.active .shape { stroke: #fff; stroke-width: 3.5; }
         .node.done .shape { fill-opacity: 1; }
-        .node.pruned { opacity: 0.28; }
+        .node.pruned { opacity: 0.45; }
         .node.pruned .shape { stroke-dasharray: 4 4; stroke: #e8556d; fill: rgba(232, 85, 109, 0.12); }
 
         .node .val {
@@ -126,6 +126,36 @@
 
         .node .ab .ab-a { fill: #a99cff; }   /* α — MAX's bound */
         .node .ab .ab-b { fill: #5ee7e4; }   /* β — MIN's bound */
+
+        /* The bound that actually triggered the cut, at the moment it triggers. */
+        .node .ab .hot {
+            fill: #fff;
+            paint-order: stroke;
+            stroke: #e8556d;
+            stroke-width: 5px;
+            stroke-linejoin: round;
+        }
+
+        /* The node doing the cutting. */
+        .node.cutting .shape { stroke: #ff8fa3; stroke-width: 4; }
+
+        /* "v = 7 ≥ β = 6 ✂" badge under a node that pruned. */
+        .cut {
+            font-family: 'Outfit', sans-serif;
+            font-size: 12.5px;
+            font-weight: 800;
+            text-anchor: middle;
+            pointer-events: none;
+            fill: #ef8b9c;
+            fill-opacity: 0.55;
+            paint-order: stroke;
+            stroke: #14141b;
+            stroke-width: 5px;
+            stroke-linejoin: round;
+            transition: fill-opacity 0.25s ease;
+        }
+
+        .cut.now { fill: #ff9dae; fill-opacity: 1; font-size: 13.5px; }
 
         .node.leaf { cursor: pointer; }
 
@@ -193,6 +223,22 @@
         .swatch.pruned { background: rgba(232, 85, 109, 0.12); border-color: #e8556d; }
 
         .hint { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.75rem; }
+
+        /* Says what the current mode will and won't show, so an empty tree of
+           cuts never reads as a broken simulation. */
+        .mode-note {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.04);
+            border-left: 3px solid var(--glass-border);
+            border-radius: 6px;
+            padding: 0.7rem 1rem;
+            margin: 0 0 1.25rem;
+        }
+
+        .mode-note strong { color: var(--text-main); }
+        .mode-note.cutting { border-left-color: #e8556d; color: #e8b4bd; }
+        .mode-note.cutting strong { color: #ff9dae; }
     </style>
 </head>
 <body>
@@ -245,6 +291,8 @@
                 <button id="rand" class="ctrl">🎲 Randomize leaves</button>
             </div>
 
+            <p class="mode-note" id="mode-note"></p>
+
             <div class="tree-wrap">
                 <svg id="tree" class="tree"></svg>
             </div>
@@ -285,6 +333,8 @@
                 <li>At a MAX node, as soon as \( v \geq \beta \), the remaining children are <strong>pruned</strong> — MIN would never let the game reach here, so their values cannot change the root's decision.</li>
                 <li>At a MIN node, the mirror condition is \( v \leq \alpha \).</li>
             </ul>
+            <p>When a cut fires, the simulation spells out <em>why</em>: the node outlines in pink, the bound that was tested lights up, and a badge appears underneath stating the comparison — for example <strong>v = 7 ≥ β = 6 ✂</strong>. Read it as "this MAX node can already reach 7, but MIN upstream can hold the score to 6, so MIN will never come this way — the rest of these children cannot matter."</p>
+            <p>The badge stays on the tree in dimmed form for the rest of the run, so when the search finishes you can see every cut and the reason for each one at a glance.</p>
             <p>Run both algorithms on the same tree and compare "Nodes visited". The <strong>root value is always identical</strong> — pruning never changes the answer, only the amount of work. That is the whole point of the algorithm.</p>
             <p>Note also that pruning depends on <strong>move ordering</strong>: randomize the leaves a few times in alpha-beta mode and watch the visited-node count swing between the worst case \( O(b^m) \) and the best case \( O(b^{m/2}) \).</p>
         </section>
@@ -411,6 +461,10 @@
                                     t: 'prune',
                                     id: n.id,
                                     ids: doomed,
+                                    v: v,
+                                    op: n.isMax ? '≥' : '≤',
+                                    boundName: n.isMax ? 'β' : 'α',
+                                    bound: n.isMax ? beta : alpha,
                                     reason: n.isMax
                                         ? 'v (' + fmt(v) + ') ≥ β (' + fmt(beta) + ')'
                                         : 'v (' + fmt(v) + ') ≤ α (' + fmt(alpha) + ')'
@@ -537,6 +591,14 @@
                 ab.appendChild(abB);
                 g.appendChild(ab);
 
+                // Sits in the gap between this node and its children, where the
+                // pruned edges are, so the cut and its reason read together.
+                var cut = document.createElementNS(SVG_NS, 'text');
+                cut.setAttribute('x', n.x);
+                cut.setAttribute('y', n.y + HH + 33);
+                cut.setAttribute('class', 'cut');
+                g.appendChild(cut);
+
                 if (!n.children.length) {
                     g.addEventListener('click', function () {
                         leafValues = allNodes.filter(function (m) { return !m.children.length; })
@@ -546,13 +608,14 @@
                 }
 
                 nodeLayer.appendChild(g);
-                n.el = { g: g, val: val, abA: abA, abB: abB };
+                n.el = { g: g, val: val, abA: abA, abB: abB, cut: cut };
             });
         }
 
         function render() {
             allNodes.forEach(function (n) {
-                var cls = 'node ' + (!n.children.length ? 'leaf' : (n.isMax ? 'max' : 'min')) + ' ' + n.state;
+                var cls = 'node ' + (!n.children.length ? 'leaf' : (n.isMax ? 'max' : 'min')) + ' ' + n.state
+                        + (n.cutting ? ' cutting' : '');
                 n.el.g.setAttribute('class', cls);
 
                 if (!n.children.length) {
@@ -569,6 +632,19 @@
                 n.el.abA.textContent = showAB ? 'α = ' + fmt(n.alpha) : '';
                 n.el.abB.textContent = showAB ? 'β = ' + fmt(n.beta) : '';
 
+                // Light up whichever bound the cut was tested against.
+                var hot = n.cutting && n.cutInfo ? n.cutInfo.boundName : null;
+                n.el.abA.setAttribute('class', 'ab-a' + (hot === 'α' ? ' hot' : ''));
+                n.el.abB.setAttribute('class', 'ab-b' + (hot === 'β' ? ' hot' : ''));
+
+                if (usingAB() && n.cutInfo) {
+                    n.el.cut.textContent = 'v = ' + fmt(n.cutInfo.v) + ' ' + n.cutInfo.op + ' ' +
+                                           n.cutInfo.boundName + ' = ' + fmt(n.cutInfo.bound) + '  ✂';
+                    n.el.cut.setAttribute('class', 'cut' + (n.cutting ? ' now' : ''));
+                } else {
+                    n.el.cut.textContent = '';
+                }
+
                 if (n.edgeEl) {
                     var ec = 'edge';
                     if (n.state === 'pruned') ec += ' pruned';
@@ -579,6 +655,7 @@
             });
 
             document.getElementById('lg-ab').style.display = usingAB() ? '' : 'none';
+            updateModeNote();
 
             document.getElementById('s-visited').textContent = countVisited();
             document.getElementById('s-pruned').textContent = countPruned();
@@ -589,6 +666,31 @@
             document.getElementById('back').disabled = cursor === 0;
             document.getElementById('step').disabled = cursor >= events.length;
             document.getElementById('end').disabled = cursor >= events.length;
+        }
+
+        function updateModeNote() {
+            var note = document.getElementById('mode-note');
+            var pruned = countPruned();
+            var finished = cursor >= events.length;
+
+            if (!usingAB()) {
+                note.className = 'mode-note';
+                note.innerHTML = 'Plain <strong>minimax examines every node</strong> — it never prunes, so nothing will be cut here. ' +
+                                 'Set the Algorithm dropdown to <strong>Alpha-Beta Pruning</strong> to watch branches get cut.';
+            } else if (pruned > 0) {
+                note.className = 'mode-note cutting';
+                note.innerHTML = '<strong>' + pruned + '</strong> node' + (pruned === 1 ? '' : 's') +
+                                 ' pruned so far — cut branches turn <strong>red and dashed</strong>, and the node that cut them ' +
+                                 'shows the reason underneath.';
+            } else if (finished) {
+                note.className = 'mode-note';
+                note.innerHTML = 'Alpha-Beta finished with <strong>no cuts on this tree</strong> — this leaf ordering never gave it ' +
+                                 'the chance. That is the worst case. Hit <strong>🎲 Randomize leaves</strong> and run it again.';
+            } else {
+                note.className = 'mode-note';
+                note.innerHTML = 'Alpha-Beta — <strong>no cuts yet</strong>. Bounds appear above each node as the search descends; ' +
+                                 'keep stepping.';
+            }
         }
 
         function countVisited() {
@@ -622,6 +724,8 @@
                 n.shownFinal = null;
                 n.alpha = null;
                 n.beta = null;
+                n.cutting = false;
+                n.cutInfo = null;
             });
             cursor = 0;
         }
@@ -634,6 +738,11 @@
 
         function apply(e) {
             var n = allNodes[e.id];
+
+            // "cutting" marks only the step where the cut fires; cutInfo persists
+            // so every cut and its reason stay readable at the end of the run.
+            allNodes.forEach(function (m) { m.cutting = false; });
+
             switch (e.t) {
                 case 'enter':
                     n.state = 'active';
@@ -652,6 +761,8 @@
                     break;
                 case 'prune':
                     e.ids.forEach(function (id) { allNodes[id].state = 'pruned'; });
+                    n.cutting = true;
+                    n.cutInfo = { v: e.v, op: e.op, boundName: e.boundName, bound: e.bound };
                     break;
                 case 'return':
                     n.state = 'done';
