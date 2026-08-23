@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimax Simulation - AI Notes</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .sim-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .sim-controls .group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button.ctrl, select.ctrl {
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.55rem 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+        }
+
+        button.ctrl:hover:not(:disabled), select.ctrl:hover {
+            background: rgba(108, 92, 231, 0.25);
+            border-color: var(--accent-primary);
+        }
+
+        button.ctrl:active:not(:disabled) { transform: translateY(1px); }
+
+        button.ctrl:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        button.ctrl.primary {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        button.ctrl.primary:hover:not(:disabled) { background: #8377ec; }
+
+        select.ctrl { padding-right: 0.6rem; }
+        select.ctrl option { background: #16161d; color: var(--text-main); }
+
+        .ctrl-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        input[type=range] { accent-color: var(--accent-primary); width: 110px; }
+
+        /* Tree canvas */
+        .tree-wrap {
+            overflow-x: auto;
+            background: rgba(0, 0, 0, 0.22);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.5rem;
+        }
+
+        svg.tree { display: block; }
+
+        .edge {
+            stroke: rgba(255, 255, 255, 0.16);
+            stroke-width: 2;
+            transition: stroke 0.25s ease, opacity 0.25s ease;
+        }
+
+        .edge.walked { stroke: rgba(255, 255, 255, 0.4); }
+        .edge.active { stroke: var(--accent-secondary); stroke-width: 3; }
+        .edge.pruned { stroke: #e8556d; stroke-dasharray: 5 5; opacity: 0.4; }
+
+        .node .shape {
+            stroke-width: 2;
+            transition: fill 0.25s ease, stroke 0.25s ease, opacity 0.25s ease;
+        }
+
+        .node.max .shape { fill: rgba(108, 92, 231, 0.28); stroke: var(--accent-primary); }
+        .node.min .shape { fill: rgba(0, 206, 201, 0.22); stroke: var(--accent-secondary); }
+        .node.leaf .shape { fill: rgba(255, 255, 255, 0.08); stroke: rgba(255, 255, 255, 0.35); }
+
+        .node.active .shape { stroke: #fff; stroke-width: 3.5; }
+        .node.done .shape { fill-opacity: 1; }
+        .node.pruned { opacity: 0.28; }
+        .node.pruned .shape { stroke-dasharray: 4 4; stroke: #e8556d; fill: rgba(232, 85, 109, 0.12); }
+
+        .node .val {
+            fill: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            text-anchor: middle;
+            pointer-events: none;
+            transition: fill-opacity 0.25s ease;
+        }
+
+        .node .val.unseen { fill-opacity: 0.32; }
+
+        .node .tag {
+            fill: var(--text-muted);
+            font-size: 9px;
+            letter-spacing: 0.5px;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        .node .ab {
+            fill: var(--accent-secondary);
+            font-family: 'Courier New', monospace;
+            font-size: 10.5px;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        .node.leaf { cursor: pointer; }
+
+        /* Stats + log */
+        .stat-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1.25rem 0;
+        }
+
+        .stat {
+            flex: 1 1 130px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+        }
+
+        .stat .k {
+            display: block;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+
+        .stat .v { font-size: 1.5rem; font-weight: 800; color: var(--text-main); }
+        .stat .v.accent { color: var(--accent-secondary); }
+        .stat .v.danger { color: #e8556d; }
+
+        .log {
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 1rem 1.2rem;
+            height: 230px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.84rem;
+            line-height: 1.65;
+        }
+
+        .log div { color: var(--text-muted); white-space: pre-wrap; }
+        .log div.cur { color: var(--text-main); background: rgba(108, 92, 231, 0.18); border-radius: 4px; }
+        .log div.prune { color: #ef8b9c; }
+        .log div.ret { color: var(--accent-secondary); }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+        }
+
+        .legend span { display: inline-flex; align-items: center; gap: 0.45rem; }
+
+        .swatch { width: 14px; height: 14px; border-radius: 3px; border: 2px solid; display: inline-block; }
+        .swatch.max { background: rgba(108, 92, 231, 0.28); border-color: #6c5ce7; }
+        .swatch.min { background: rgba(0, 206, 201, 0.22); border-color: #00cec9; }
+        .swatch.leaf { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.35); }
+        .swatch.pruned { background: rgba(232, 85, 109, 0.12); border-color: #e8556d; }
+
+        .hint { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.75rem; }
+    </style>
+</head>
+<body>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
+    <div class="container">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link"><span>←</span> Back to Table of Contents</a>
+            <a href="adversarial_search.html" class="nav-link">Adversarial Search Notes <span>→</span></a>
+        </nav>
+
+        <header>
+            <h1>Minimax Simulation</h1>
+            <p style="text-align: center; margin-top: -1.5rem; margin-bottom: 3rem;">Watch minimax — and alpha-beta pruning — explore a game tree step by step</p>
+        </header>
+
+        <section class="glass-panel">
+            <h2>The Simulation</h2>
+
+            <div class="sim-controls">
+                <div class="group">
+                    <span class="ctrl-label">Algorithm</span>
+                    <select id="algo" class="ctrl">
+                        <option value="minimax">Minimax</option>
+                        <option value="alphabeta">Alpha-Beta Pruning</option>
+                    </select>
+                </div>
+                <div class="group">
+                    <span class="ctrl-label">Tree</span>
+                    <select id="shape" class="ctrl">
+                        <option value="2,3">b=2, depth 3 (slides example)</option>
+                        <option value="2,4">b=2, depth 4</option>
+                        <option value="3,2">b=3, depth 2</option>
+                        <option value="3,3">b=3, depth 3</option>
+                    </select>
+                </div>
+                <div class="group">
+                    <span class="ctrl-label">Speed</span>
+                    <input type="range" id="speed" min="120" max="1600" step="20" value="650">
+                </div>
+            </div>
+
+            <div class="sim-controls">
+                <button id="play" class="ctrl primary">▶ Play</button>
+                <button id="step" class="ctrl">Step ›</button>
+                <button id="back" class="ctrl">‹ Back</button>
+                <button id="end" class="ctrl">Skip to end ⏭</button>
+                <button id="reset" class="ctrl">↺ Reset</button>
+                <button id="rand" class="ctrl">🎲 Randomize leaves</button>
+            </div>
+
+            <div class="tree-wrap">
+                <svg id="tree" class="tree"></svg>
+            </div>
+
+            <p class="hint">Click any leaf (the squares along the bottom) to change its value and re-run the simulation.</p>
+
+            <div class="stat-row">
+                <div class="stat"><span class="k">Root value</span><span class="v accent" id="s-root">—</span></div>
+                <div class="stat"><span class="k">Nodes visited</span><span class="v" id="s-visited">0</span></div>
+                <div class="stat"><span class="k">Nodes pruned</span><span class="v danger" id="s-pruned">0</span></div>
+                <div class="stat"><span class="k">Tree size</span><span class="v" id="s-total">0</span></div>
+            </div>
+
+            <div class="log" id="log"></div>
+
+            <div class="legend">
+                <span><i class="swatch max"></i> MAX node (▲)</span>
+                <span><i class="swatch min"></i> MIN node (▼)</span>
+                <span><i class="swatch leaf"></i> Terminal / leaf</span>
+                <span><i class="swatch pruned"></i> Pruned</span>
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>How to Read It</h2>
+            <ul>
+                <li><strong>Triangles pointing up (▲) are MAX nodes</strong> — they take the largest value among their children. <strong>Triangles pointing down (▼) are MIN nodes</strong> — they take the smallest. Squares at the bottom are terminal states, labelled with their utility.</li>
+                <li>Minimax is a <strong>depth-first</strong> exploration: it dives all the way to the leftmost leaf before it can assign a value to anything. Watch the white outline travel down and to the left first.</li>
+                <li>A node's value only becomes final when the algorithm <em>returns</em> from it — the running value \( v \) you see updating is a partial best-so-far.</li>
+            </ul>
+
+            <h3>Switch to Alpha-Beta to see the difference</h3>
+            <p>In alpha-beta mode each node also displays its \( \alpha \) and \( \beta \) bounds:</p>
+            <ul>
+                <li>\( \alpha \) = the best value MAX can already guarantee along this path.</li>
+                <li>\( \beta \) = the best value MIN can already guarantee along this path.</li>
+                <li>At a MAX node, as soon as \( v \geq \beta \), the remaining children are <strong>pruned</strong> — MIN would never let the game reach here, so their values cannot change the root's decision.</li>
+                <li>At a MIN node, the mirror condition is \( v \leq \alpha \).</li>
+            </ul>
+            <p>Run both algorithms on the same tree and compare "Nodes visited". The <strong>root value is always identical</strong> — pruning never changes the answer, only the amount of work. That is the whole point of the algorithm.</p>
+            <p>Note also that pruning depends on <strong>move ordering</strong>: randomize the leaves a few times in alpha-beta mode and watch the visited-node count swing between the worst case \( O(b^m) \) and the best case \( O(b^{m/2}) \).</p>
+        </section>
+    </div>
+
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        var SVG_NS = 'http://www.w3.org/2000/svg';
+        var LEAF_GAP = 82, LEVEL_H = 104, MARGIN_X = 46, MARGIN_Y = 46;
+        var HW = 21, HH = 17; // node half-width / half-height
+
+        var svg = document.getElementById('tree');
+        var logEl = document.getElementById('log');
+
+        var root, allNodes, events, cursor, timer = null;
+        var branching = 2, depth = 3, leafValues = [4, 6, 7, 9, 1, 2, 0, 1];
+
+        function fmt(v) {
+            if (v === Infinity) return '∞';
+            if (v === -Infinity) return '-∞';
+            return String(v);
+        }
+
+        /* ---------- tree construction ---------- */
+
+        function buildTree() {
+            allNodes = [];
+            var leafCursor = 0;
+
+            function make(d, label) {
+                var n = {
+                    id: allNodes.length,
+                    depth: d,
+                    label: label,
+                    isMax: d % 2 === 0,
+                    children: [],
+                    value: null,      // leaf utility
+                    shown: null,      // currently displayed value
+                    alpha: null,
+                    beta: null,
+                    state: 'idle'
+                };
+                allNodes.push(n);
+                if (d === depth) {
+                    n.value = leafValues[leafCursor++];
+                } else {
+                    for (var i = 0; i < branching; i++) {
+                        var childLabel = label === 'R'
+                            ? String.fromCharCode(65 + i)
+                            : label + (i + 1);
+                        n.children.push(make(d + 1, childLabel));
+                    }
+                }
+                return n;
+            }
+
+            root = make(0, 'R');
+            layout();
+        }
+
+        function layout() {
+            var idx = 0;
+            (function assign(n) {
+                if (!n.children.length) {
+                    n.x = MARGIN_X + idx * LEAF_GAP;
+                    idx++;
+                } else {
+                    n.children.forEach(assign);
+                    n.x = (n.children[0].x + n.children[n.children.length - 1].x) / 2;
+                }
+                n.y = MARGIN_Y + n.depth * LEVEL_H;
+            })(root);
+
+            svg.setAttribute('width', MARGIN_X * 2 + (idx - 1) * LEAF_GAP);
+            svg.setAttribute('height', MARGIN_Y * 2 + depth * LEVEL_H);
+        }
+
+        function leafCount() {
+            return Math.pow(branching, depth);
+        }
+
+        function randomLeaves() {
+            var out = [];
+            for (var i = 0; i < leafCount(); i++) out.push(Math.floor(Math.random() * 10));
+            return out;
+        }
+
+        /* ---------- trace generation ---------- */
+
+        function generateEvents(useAB) {
+            var ev = [];
+
+            function walk(n, alpha, beta) {
+                ev.push({ t: 'enter', id: n.id, alpha: alpha, beta: beta });
+
+                if (!n.children.length) {
+                    ev.push({ t: 'leaf', id: n.id, v: n.value });
+                    ev.push({ t: 'return', id: n.id, v: n.value });
+                    return n.value;
+                }
+
+                var v = n.isMax ? -Infinity : Infinity;
+
+                for (var i = 0; i < n.children.length; i++) {
+                    var child = n.children[i];
+                    var cv = walk(child, alpha, beta);
+                    v = n.isMax ? Math.max(v, cv) : Math.min(v, cv);
+                    ev.push({ t: 'update', id: n.id, v: v, childId: child.id, alpha: alpha, beta: beta });
+
+                    if (useAB) {
+                        var cut = n.isMax ? (v >= beta) : (v <= alpha);
+                        if (cut) {
+                            var rest = n.children.slice(i + 1);
+                            if (rest.length) {
+                                var doomed = [];
+                                rest.forEach(function collect(c) {
+                                    doomed.push(c.id);
+                                    c.children.forEach(collect);
+                                });
+                                ev.push({
+                                    t: 'prune',
+                                    id: n.id,
+                                    ids: doomed,
+                                    reason: n.isMax
+                                        ? 'v (' + fmt(v) + ') ≥ β (' + fmt(beta) + ')'
+                                        : 'v (' + fmt(v) + ') ≤ α (' + fmt(alpha) + ')'
+                                });
+                            }
+                            ev.push({ t: 'return', id: n.id, v: v });
+                            return v;
+                        }
+                        if (n.isMax && v > alpha) {
+                            alpha = v;
+                            ev.push({ t: 'bound', id: n.id, alpha: alpha, beta: beta, which: 'α' });
+                        } else if (!n.isMax && v < beta) {
+                            beta = v;
+                            ev.push({ t: 'bound', id: n.id, alpha: alpha, beta: beta, which: 'β' });
+                        }
+                    }
+                }
+
+                ev.push({ t: 'return', id: n.id, v: v });
+                return v;
+            }
+
+            walk(root, -Infinity, Infinity);
+            return ev;
+        }
+
+        function describe(e) {
+            var n = allNodes[e.id];
+            var pad = '  '.repeat(n.depth);
+            var role = n.children.length ? (n.isMax ? 'MAX' : 'MIN') : 'LEAF';
+            var ab = usingAB() && n.children.length
+                ? '   [α=' + fmt(e.alpha) + ', β=' + fmt(e.beta) + ']'
+                : '';
+
+            switch (e.t) {
+                case 'enter':
+                    return { cls: '', text: pad + '→ enter ' + n.label + ' (' + role + ')' + ab };
+                case 'leaf':
+                    return { cls: '', text: pad + '  ' + n.label + ' is terminal, utility = ' + e.v };
+                case 'update':
+                    return {
+                        cls: '',
+                        text: pad + '  ' + n.label + ': v = ' + (n.isMax ? 'max' : 'min') +
+                              '(v, ' + fmt(allNodes[e.childId].shownFinal) + ') = ' + fmt(e.v)
+                    };
+                case 'bound':
+                    return { cls: '', text: pad + '  ' + n.label + ': ' + e.which + ' updated → α=' + fmt(e.alpha) + ', β=' + fmt(e.beta) };
+                case 'prune':
+                    return { cls: 'prune', text: pad + '  ✂ prune ' + e.ids.length + ' node(s) below ' + n.label + ' — ' + e.reason };
+                case 'return':
+                    return { cls: 'ret', text: pad + '← return ' + fmt(e.v) + ' from ' + n.label };
+            }
+            return { cls: '', text: '' };
+        }
+
+        /* ---------- rendering ---------- */
+
+        function drawStatic() {
+            while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+            var edgeLayer = document.createElementNS(SVG_NS, 'g');
+            var nodeLayer = document.createElementNS(SVG_NS, 'g');
+            svg.appendChild(edgeLayer);
+            svg.appendChild(nodeLayer);
+
+            allNodes.forEach(function (n) {
+                n.children.forEach(function (c) {
+                    var line = document.createElementNS(SVG_NS, 'line');
+                    line.setAttribute('x1', n.x);
+                    line.setAttribute('y1', n.y + HH);
+                    line.setAttribute('x2', c.x);
+                    line.setAttribute('y2', c.y - HH);
+                    line.setAttribute('class', 'edge');
+                    edgeLayer.appendChild(line);
+                    c.edgeEl = line;
+                });
+            });
+
+            allNodes.forEach(function (n) {
+                var g = document.createElementNS(SVG_NS, 'g');
+                var shape;
+
+                if (!n.children.length) {
+                    shape = document.createElementNS(SVG_NS, 'rect');
+                    shape.setAttribute('x', n.x - HW + 3);
+                    shape.setAttribute('y', n.y - HH + 2);
+                    shape.setAttribute('width', (HW - 3) * 2);
+                    shape.setAttribute('height', (HH - 2) * 2);
+                    shape.setAttribute('rx', 7);
+                } else {
+                    shape = document.createElementNS(SVG_NS, 'polygon');
+                    shape.setAttribute('points', n.isMax
+                        ? [n.x, n.y - HH, n.x - HW, n.y + HH, n.x + HW, n.y + HH].join(' ')
+                        : [n.x, n.y + HH, n.x - HW, n.y - HH, n.x + HW, n.y - HH].join(' '));
+                }
+                shape.setAttribute('class', 'shape');
+                g.appendChild(shape);
+
+                var val = document.createElementNS(SVG_NS, 'text');
+                val.setAttribute('x', n.x);
+                val.setAttribute('y', !n.children.length ? n.y + 5 : (n.isMax ? n.y + 12 : n.y - 3));
+                val.setAttribute('class', 'val');
+                g.appendChild(val);
+
+                var tag = document.createElementNS(SVG_NS, 'text');
+                tag.setAttribute('x', n.x);
+                tag.setAttribute('y', n.y + HH + 14);
+                tag.setAttribute('class', 'tag');
+                tag.textContent = n.label;
+                g.appendChild(tag);
+
+                var ab = document.createElementNS(SVG_NS, 'text');
+                ab.setAttribute('x', n.x);
+                ab.setAttribute('y', n.y - HH - 8);
+                ab.setAttribute('class', 'ab');
+                g.appendChild(ab);
+
+                if (!n.children.length) {
+                    g.addEventListener('click', function () {
+                        leafValues = allNodes.filter(function (m) { return !m.children.length; })
+                                             .map(function (m) { return m.id === n.id ? (m.value + 1) % 10 : m.value; });
+                        rebuild();
+                    });
+                }
+
+                nodeLayer.appendChild(g);
+                n.el = { g: g, val: val, ab: ab };
+            });
+        }
+
+        function render() {
+            allNodes.forEach(function (n) {
+                var cls = 'node ' + (!n.children.length ? 'leaf' : (n.isMax ? 'max' : 'min')) + ' ' + n.state;
+                n.el.g.setAttribute('class', cls);
+
+                if (!n.children.length) {
+                    // Leaf utilities are always legible so they can be clicked and edited,
+                    // but stay dimmed until the search actually looks at them.
+                    n.el.val.textContent = fmt(n.value);
+                    n.el.val.setAttribute('class', n.shown === null ? 'val unseen' : 'val');
+                } else {
+                    n.el.val.textContent = n.shown === null ? '' : fmt(n.shown);
+                    n.el.val.setAttribute('class', 'val');
+                }
+
+                n.el.ab.textContent = (usingAB() && n.children.length && n.alpha !== null && n.state !== 'idle')
+                    ? 'α' + fmt(n.alpha) + ' β' + fmt(n.beta)
+                    : '';
+
+                if (n.edgeEl) {
+                    var ec = 'edge';
+                    if (n.state === 'pruned') ec += ' pruned';
+                    else if (n.state === 'active') ec += ' active';
+                    else if (n.state !== 'idle') ec += ' walked';
+                    n.edgeEl.setAttribute('class', ec);
+                }
+            });
+
+            document.getElementById('s-visited').textContent = countVisited();
+            document.getElementById('s-pruned').textContent = countPruned();
+            document.getElementById('s-total').textContent = allNodes.length;
+            document.getElementById('s-root').textContent =
+                (root.state === 'done' && root.shown !== null) ? fmt(root.shown) : '—';
+
+            document.getElementById('back').disabled = cursor === 0;
+            document.getElementById('step').disabled = cursor >= events.length;
+            document.getElementById('end').disabled = cursor >= events.length;
+        }
+
+        function countVisited() {
+            var seen = {};
+            for (var i = 0; i < cursor; i++) if (events[i].t === 'enter') seen[events[i].id] = 1;
+            return Object.keys(seen).length;
+        }
+
+        function countPruned() {
+            return allNodes.filter(function (n) { return n.state === 'pruned'; }).length;
+        }
+
+        function renderLog() {
+            logEl.innerHTML = '';
+            for (var i = 0; i < cursor; i++) {
+                var d = describe(events[i]);
+                var row = document.createElement('div');
+                row.className = d.cls + (i === cursor - 1 ? ' cur' : '');
+                row.textContent = d.text;
+                logEl.appendChild(row);
+            }
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        /* ---------- playback ---------- */
+
+        function resetState() {
+            allNodes.forEach(function (n) {
+                n.state = 'idle';
+                n.shown = null;
+                n.shownFinal = null;
+                n.alpha = null;
+                n.beta = null;
+            });
+            cursor = 0;
+        }
+
+        function applyUpTo(target) {
+            resetState();
+            for (var i = 0; i < target; i++) apply(events[i]);
+            cursor = target;
+        }
+
+        function apply(e) {
+            var n = allNodes[e.id];
+            switch (e.t) {
+                case 'enter':
+                    n.state = 'active';
+                    n.alpha = e.alpha;
+                    n.beta = e.beta;
+                    break;
+                case 'leaf':
+                    n.shown = e.v;
+                    break;
+                case 'update':
+                    n.shown = e.v;
+                    break;
+                case 'bound':
+                    n.alpha = e.alpha;
+                    n.beta = e.beta;
+                    break;
+                case 'prune':
+                    e.ids.forEach(function (id) { allNodes[id].state = 'pruned'; });
+                    break;
+                case 'return':
+                    n.state = 'done';
+                    n.shown = e.v;
+                    n.shownFinal = e.v;
+                    break;
+            }
+        }
+
+        function stepForward() {
+            if (cursor >= events.length) { pause(); return; }
+            apply(events[cursor]);
+            cursor++;
+            render();
+            renderLog();
+            if (cursor >= events.length) pause();
+        }
+
+        function stepBack() {
+            if (cursor === 0) return;
+            pause();
+            applyUpTo(cursor - 1);
+            render();
+            renderLog();
+        }
+
+        function play() {
+            if (cursor >= events.length) applyUpTo(0);
+            timer = setInterval(stepForward, +document.getElementById('speed').value);
+            document.getElementById('play').textContent = '❚❚ Pause';
+        }
+
+        function pause() {
+            if (timer) { clearInterval(timer); timer = null; }
+            document.getElementById('play').textContent = '▶ Play';
+        }
+
+        function usingAB() {
+            return document.getElementById('algo').value === 'alphabeta';
+        }
+
+        /* ---------- wiring ---------- */
+
+        function rebuild() {
+            pause();
+            buildTree();
+            events = generateEvents(usingAB());
+            drawStatic();
+            applyUpTo(0);
+            render();
+            renderLog();
+        }
+
+        document.getElementById('play').addEventListener('click', function () {
+            timer ? pause() : play();
+        });
+        document.getElementById('step').addEventListener('click', function () { pause(); stepForward(); });
+        document.getElementById('back').addEventListener('click', stepBack);
+        document.getElementById('end').addEventListener('click', function () {
+            pause();
+            applyUpTo(events.length);
+            render();
+            renderLog();
+        });
+        document.getElementById('reset').addEventListener('click', function () {
+            pause();
+            applyUpTo(0);
+            render();
+            renderLog();
+        });
+        document.getElementById('rand').addEventListener('click', function () {
+            leafValues = randomLeaves();
+            rebuild();
+        });
+        document.getElementById('algo').addEventListener('change', rebuild);
+        document.getElementById('shape').addEventListener('change', function () {
+            var parts = this.value.split(',');
+            branching = +parts[0];
+            depth = +parts[1];
+            leafValues = (branching === 2 && depth === 3)
+                ? [4, 6, 7, 9, 1, 2, 0, 1]
+                : randomLeaves();
+            rebuild();
+        });
+        document.getElementById('speed').addEventListener('input', function () {
+            if (timer) { pause(); play(); }
+        });
+
+        rebuild();
+    })();
+    </script>
+</body>
+</html>
