@@ -40,7 +40,7 @@
 
         button.ctrl:active:not(:disabled) { transform: translateY(1px); }
 
-        button.ctrl:disabled { opacity: 0.35; cursor: not-allowed; }
+        button.ctrl:disabled, select.ctrl:disabled { opacity: 0.35; cursor: not-allowed; }
 
         button.ctrl.primary {
             background: var(--accent-primary);
@@ -254,6 +254,16 @@
             margin: 0 0 1.25rem;
         }
 
+        .tree-error {
+            font-size: 0.88rem;
+            color: #ef8b9c;
+            background: rgba(232, 85, 109, 0.1);
+            border-left: 3px solid #e8556d;
+            border-radius: 6px;
+            padding: 0.7rem 1rem;
+            margin: 0 0 1.25rem;
+        }
+
         .mode-note strong { color: var(--text-main); }
         .mode-note.cutting { border-left-color: #e8556d; color: #e8b4bd; }
         .mode-note.cutting strong { color: #ff9dae; }
@@ -286,12 +296,21 @@
                     </select>
                 </div>
                 <div class="group">
+                    <span class="ctrl-label">Cutoff test</span>
+                    <select id="cutstyle" class="ctrl">
+                        <option value="aima">AIMA — test v, then update</option>
+                        <option value="bound">Bound-first — update, then test β ≤ α</option>
+                    </select>
+                </div>
+                <div class="group">
                     <span class="ctrl-label">Tree</span>
                     <select id="shape" class="ctrl">
                         <option value="2,3">b=2, depth 3 (slides example)</option>
                         <option value="2,4">b=2, depth 4</option>
                         <option value="3,2">b=3, depth 2</option>
                         <option value="3,3">b=3, depth 3</option>
+                        <option value="uneven">Uneven tree (worksheet example)</option>
+                        <option value="custom">Custom — edit structure below</option>
                     </select>
                 </div>
                 <div class="group">
@@ -318,13 +337,24 @@
                 <button id="applyLeaves" class="ctrl">Apply</button>
             </div>
 
+            <div class="sim-controls">
+                <div class="group" style="flex: 1 1 320px;">
+                    <span class="ctrl-label">Structure</span>
+                    <input type="text" id="structure" class="leaf-input" spellcheck="false"
+                           aria-label="Tree structure in nested bracket notation">
+                </div>
+                <button id="applyStructure" class="ctrl">Build tree</button>
+            </div>
+
+            <p class="tree-error" id="tree-error" style="display:none;"></p>
+
             <p class="mode-note" id="mode-note"></p>
 
             <div class="tree-wrap">
                 <svg id="tree" class="tree"></svg>
             </div>
 
-            <p class="hint">Type the leaf utilities above (any separator — <code>4, 6, 7</code> or <code>4 6 7</code>) and press Enter; values from −99 to 99 are allowed. A short list is repeated to fill the tree. You can also click a leaf square to nudge it up by one, or shift-click to nudge it down.</p>
+            <p class="hint"><strong>Leaves</strong> sets the terminal utilities of the current tree (any separator, −99 to 99; a short list repeats to fill). <strong>Structure</strong> builds a whole tree from nested brackets — a number is a terminal, a bracketed group is a node, so branching and depth can vary anywhere. You can also click a leaf square to nudge it up by one, or shift-click to nudge it down.</p>
 
             <div class="stat-row">
                 <div class="stat"><span class="k">Root value</span><span class="v accent" id="s-root">—</span></div>
@@ -362,8 +392,54 @@
             </ul>
             <p>When a cut fires, the simulation spells out <em>why</em>: the node outlines in pink, the bound that was tested lights up, and a badge appears underneath stating the comparison — for example <strong>v = 7 ≥ β = 6 ✂</strong>. Read it as "this MAX node can already reach 7, but MIN upstream can hold the score to 6, so MIN will never come this way — the rest of these children cannot matter."</p>
             <p>The badge stays on the tree in dimmed form for the rest of the run, so when the search finishes you can see every cut and the reason for each one at a glance.</p>
+
+            <h3>Building your own tree</h3>
+            <p>Real exam and worksheet trees are rarely uniform — branching varies between nodes, and terminals turn up at different depths. The <strong>Structure</strong> field takes a nested bracket notation so you can enter any shape:</p>
+            <ul>
+                <li>A <strong>number</strong> is a terminal node.</li>
+                <li>A <strong>bracketed group</strong> is an internal node, with its children listed inside.</li>
+                <li>Levels alternate MAX, MIN, MAX, … from the root down, so a node's type follows from its depth — you never state it.</li>
+            </ul>
+            <p>The uneven example bundled in the Tree dropdown is written like this:</p>
+            <div class="pseudocode">(((5 9) (6 (14 10) 2) (12 (7 16))) ((2 6) (15 9 7)))</div>
+            <p>Reading it back: the root MAX has two MIN children. The left MIN has <em>three</em> MAX children, and two of those mix plain terminals with a nested MIN node — which is why <code>14</code>, <code>10</code>, <code>7</code> and <code>16</code> hang one level below every other terminal. The right MIN has only two MAX children, the second with three terminals.</p>
+            <p>Square brackets work too, and a bare top-level sequence is read as the root's children, so <code>(5 9) (2 6)</code> means the same as <code>((5 9) (2 6))</code>. Terminals are capped at 48 and nesting at 7 levels; anything unparseable leaves the current tree untouched and explains the problem.</p>
+
+            <h3>Two ways to write the cutoff test</h3>
+            <p>Textbooks order the bound update and the cutoff test differently, and the <strong>Cutoff test</strong> dropdown switches between them. Both prune exactly the same branches — only the trace you read differs.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>AIMA — test v, then update</th>
+                            <th>Bound-first — update, then test</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th>At a MIN node</th>
+                            <td><code>if v ≤ α then return v</code><br><code>β ← min(β, v)</code></td>
+                            <td><code>β ← min(β, v)</code><br><code>if β ≤ α then return v</code></td>
+                        </tr>
+                        <tr>
+                            <th>Cut shows as</th>
+                            <td>v = 2 ≤ α = 3 ✂</td>
+                            <td>β = 2 ≤ α = 3 ✂</td>
+                        </tr>
+                        <tr>
+                            <th>β at that moment</th>
+                            <td>still ∞ — the assignment is never reached</td>
+                            <td>already tightened to 2</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Why is it safe for AIMA to skip that assignment? Because \( \beta \) only constrains the node's <em>remaining</em> children, and the node returns immediately — so the value written would never be read. The two conditions are equivalent: since \( \beta \leftarrow \min(\beta, v) \), having \( v \leq \alpha \) forces \( \beta \leq \alpha \), and conversely a newly-tightened \( \beta \leq \alpha \) can only have come from \( v \).</p>
+            <p>This trips people up, so it is worth seeing directly: set up any tree, then flip the dropdown back and forth. The <strong>nodes visited and nodes pruned never change</strong> — only whether the badge reads <em>v</em> or <em>β</em> on the left.</p>
+            <p>The pseudocode in the <a href="adversarial_search.html">adversarial search notes</a> uses the AIMA ordering, matching the course textbook.</p>
             <p>Run both algorithms on the same tree and compare "Nodes visited". The <strong>root value is always identical</strong> — pruning never changes the answer, only the amount of work. That is the whole point of the algorithm.</p>
-            <p>Note also that pruning depends on <strong>move ordering</strong>: randomize the leaves a few times in alpha-beta mode and watch the visited-node count swing between the worst case \( O(b^m) \) and the best case \( O(b^{m/2}) \).</p>
+            <p>Note also that pruning depends on <strong>move ordering</strong>: randomize the leaves a few times in alpha-beta mode and watch the visited-node count swing between the worst case \( O(b^m) \) and the best case \( O(b^{m/2}) \). Randomizing changes only the utilities, never the shape, so you can keep a worksheet tree fixed and re-roll its numbers.</p>
         </section>
     </div>
 
@@ -374,13 +450,25 @@
 
         var SVG_NS = 'http://www.w3.org/2000/svg';
         var LEAF_GAP = 82, LEVEL_H = 104, MARGIN_X = 46, MARGIN_Y = 46;
+        // Widest label a node can carry (the cut badge), plus breathing room.
+        // Adjacent internal nodes must sit at least this far apart.
+        var LABEL_CLEARANCE = 122;
         var HW = 21, HH = 17; // node half-width / half-height
 
         var svg = document.getElementById('tree');
         var logEl = document.getElementById('log');
 
-        var root, allNodes, events, cursor, timer = null;
-        var branching = 2, depth = 3, leafValues = [4, 6, 7, 9, 1, 2, 0, 1];
+        var root, allNodes, events, cursor, maxDepth = 0, timer = null;
+
+        // MAX root; left MIN has three MAX children, two of which hide a MIN
+        // node among their terminals; right MIN has two MAX children.
+        var UNEVEN_EXAMPLE = '( ((5 9) (6 (14 10) 2) (12 (7 16))) ((2 6) (15 9 7)) )';
+
+        // The tree is a nested spec: a number is a terminal, an array is an
+        // internal node. This is the single source of truth, so branching and
+        // depth may vary freely across the tree. MAX/MIN still alternates by
+        // depth, which is what makes an uneven tree well defined.
+        var treeSpec = uniformSpec(2, 3, [4, 6, 7, 9, 1, 2, 0, 1]);
 
         function fmt(v) {
             if (v === Infinity) return '∞';
@@ -388,13 +476,48 @@
             return String(v);
         }
 
+        /* ---------- tree spec helpers ---------- */
+
+        function uniformSpec(b, d, values) {
+            var cursor = 0;
+            return (function rec(depthNow) {
+                if (depthNow === d) {
+                    return values ? values[cursor++ % values.length] : Math.floor(Math.random() * 100);
+                }
+                var kids = [];
+                for (var i = 0; i < b; i++) kids.push(rec(depthNow + 1));
+                return kids;
+            })(0);
+        }
+
+        function specLeaves(spec) {
+            var out = [];
+            (function rec(s) {
+                if (Array.isArray(s)) s.forEach(rec); else out.push(s);
+            })(spec);
+            return out;
+        }
+
+        function specWithLeaves(spec, values) {
+            var i = 0;
+            return (function rec(s) {
+                return Array.isArray(s) ? s.map(rec) : values[i++ % values.length];
+            })(spec);
+        }
+
+        function serializeSpec(spec) {
+            return Array.isArray(spec) ? '(' + spec.map(serializeSpec).join(' ') + ')' : String(spec);
+        }
+
+        function leafCount() { return specLeaves(treeSpec).length; }
+
         /* ---------- tree construction ---------- */
 
         function buildTree() {
             allNodes = [];
-            var leafCursor = 0;
+            maxDepth = 0;
 
-            function make(d, label) {
+            function make(spec, d, label) {
                 var n = {
                     id: allNodes.length,
                     depth: d,
@@ -408,42 +531,65 @@
                     state: 'idle'
                 };
                 allNodes.push(n);
-                if (d === depth) {
-                    n.value = leafValues[leafCursor++];
-                } else {
-                    for (var i = 0; i < branching; i++) {
+                if (d > maxDepth) maxDepth = d;
+
+                if (Array.isArray(spec)) {
+                    for (var i = 0; i < spec.length; i++) {
                         var childLabel = label === 'R'
                             ? String.fromCharCode(65 + i)
                             : label + (i + 1);
-                        n.children.push(make(d + 1, childLabel));
+                        n.children.push(make(spec[i], d + 1, childLabel));
                     }
+                } else {
+                    n.value = spec;
                 }
                 return n;
             }
 
-            root = make(0, 'R');
+            root = make(treeSpec, 0, 'R');
             layout();
         }
 
         function layout() {
+            // First place everything in leaf-index units, independent of scale.
             var idx = 0;
             (function assign(n) {
                 if (!n.children.length) {
-                    n.x = MARGIN_X + idx * LEAF_GAP;
-                    idx++;
+                    n.u = idx++;
                 } else {
                     n.children.forEach(assign);
-                    n.x = (n.children[0].x + n.children[n.children.length - 1].x) / 2;
+                    n.u = (n.children[0].u + n.children[n.children.length - 1].u) / 2;
                 }
-                n.y = MARGIN_Y + n.depth * LEVEL_H;
             })(root);
 
-            svg.setAttribute('width', MARGIN_X * 2 + (idx - 1) * LEAF_GAP);
-            svg.setAttribute('height', MARGIN_Y * 2 + depth * LEVEL_H);
-        }
+            // In an uneven tree two internal nodes can end up a single leaf-width
+            // apart — narrow enough for their α/β labels to collide. Only internal
+            // nodes carry labels, so the tightest such pair sets the scale.
+            var byDepth = {};
+            (function collect(n) {
+                if (!n.children.length) return;
+                (byDepth[n.depth] = byDepth[n.depth] || []).push(n.u);
+                n.children.forEach(collect);
+            })(root);
 
-        function leafCount() {
-            return Math.pow(branching, depth);
+            var minUnits = Infinity;
+            Object.keys(byDepth).forEach(function (d) {
+                var us = byDepth[d].sort(function (a, b) { return a - b; });
+                for (var i = 1; i < us.length; i++) minUnits = Math.min(minUnits, us[i] - us[i - 1]);
+            });
+
+            var gap = (isFinite(minUnits) && minUnits > 0)
+                ? Math.max(LEAF_GAP, Math.ceil(LABEL_CLEARANCE / minUnits))
+                : LEAF_GAP;
+
+            (function place(n) {
+                n.x = MARGIN_X + n.u * gap;
+                n.y = MARGIN_Y + n.depth * LEVEL_H;
+                n.children.forEach(place);
+            })(root);
+
+            svg.setAttribute('width', MARGIN_X * 2 + (idx - 1) * gap);
+            svg.setAttribute('height', MARGIN_Y * 2 + maxDepth * LEVEL_H);
         }
 
         var LEAF_MIN = -99, LEAF_MAX = 99;
@@ -458,28 +604,99 @@
             return Math.max(LEAF_MIN, Math.min(LEAF_MAX, Math.round(v)));
         }
 
-        function syncLeafInput() {
-            document.getElementById('leaves').value = allNodes
-                .filter(function (n) { return !n.children.length; })
-                .map(function (n) { return n.value; })
-                .join(', ');
+        function syncInputs() {
+            document.getElementById('leaves').value = specLeaves(treeSpec).join(', ');
+            document.getElementById('structure').value = serializeSpec(treeSpec);
+            showTreeError('');
+        }
+
+        function showTreeError(msg) {
+            var el = document.getElementById('tree-error');
+            el.textContent = msg;
+            el.style.display = msg ? '' : 'none';
         }
 
         // Accepts any separator: "4, 6, 7" / "4 6 7" / "4;6;7". A short list is
-        // cycled to fill the tree, a long one is truncated, so switching tree
-        // shape never leaves the field in an unusable state.
+        // cycled to fill the tree, a long one is truncated, so the field stays
+        // usable when the structure changes underneath it.
         function applyLeafInput() {
             var tokens = document.getElementById('leaves').value.match(/-?\d+/g) || [];
             var nums = tokens.map(Number).filter(isFinite).map(clampLeaf);
 
-            if (!nums.length) { syncLeafInput(); return; }
+            if (!nums.length) { syncInputs(); return; }
 
-            var need = leafCount(), out = [];
-            for (var i = 0; i < need; i++) out.push(nums[i % nums.length]);
+            var next = specWithLeaves(treeSpec, nums);
+            if (serializeSpec(next) === serializeSpec(treeSpec)) { syncInputs(); return; }
 
-            if (out.join(',') === leafValues.join(',')) { syncLeafInput(); return; }
+            treeSpec = next;
+            rebuild();
+        }
 
-            leafValues = out;
+        /* ---------- structure parsing ---------- */
+
+        var MAX_LEAVES = 48, MAX_DEPTH = 7;
+
+        // "( (5 9) (6 (14 10) 2) )" — parens or brackets, any separator.
+        function parseSpec(text) {
+            var i = 0;
+
+            function ws() { while (i < text.length && /[\s,;]/.test(text[i])) i++; }
+
+            function node(depthNow) {
+                ws();
+                if (i >= text.length) throw new Error('unexpected end of input — a bracket is unclosed');
+                if (depthNow > MAX_DEPTH) throw new Error('nested deeper than ' + MAX_DEPTH + ' levels');
+
+                var ch = text[i];
+                if (ch === '(' || ch === '[') {
+                    i++;
+                    var kids = [];
+                    for (;;) {
+                        ws();
+                        if (i >= text.length) throw new Error('unclosed bracket');
+                        if (text[i] === ')' || text[i] === ']') { i++; break; }
+                        kids.push(node(depthNow + 1));
+                    }
+                    if (!kids.length) throw new Error('empty "()" — every node needs at least one child');
+                    return kids;
+                }
+                if (ch === ')' || ch === ']') throw new Error('unexpected "' + ch + '"');
+
+                var m = /^-?\d+/.exec(text.slice(i));
+                if (!m) throw new Error('unexpected "' + ch + '" — expected a number or "("');
+                i += m[0].length;
+                return clampLeaf(Number(m[0]));
+            }
+
+            ws();
+            if (i >= text.length) throw new Error('nothing to build');
+
+            var first = node(0), all = [first];
+            ws();
+            while (i < text.length) { all.push(node(0)); ws(); }
+
+            // A bare top-level sequence is read as the root's children, so both
+            // "((5 9) (2 6))" and "(5 9) (2 6)" describe the same tree.
+            var spec = all.length === 1 ? first : all;
+
+            if (!Array.isArray(spec)) throw new Error('the tree cannot be a single terminal — wrap it, e.g. "(3 12)"');
+
+            var leaves = specLeaves(spec).length;
+            if (leaves > MAX_LEAVES) throw new Error(leaves + ' terminals is too many to draw (limit ' + MAX_LEAVES + ')');
+            return spec;
+        }
+
+        function applyStructureInput() {
+            var text = document.getElementById('structure').value;
+            var spec;
+            try {
+                spec = parseSpec(text);
+            } catch (err) {
+                showTreeError('Could not read that tree: ' + err.message);
+                return;
+            }
+            treeSpec = spec;
+            document.getElementById('shape').value = 'custom';
             rebuild();
         }
 
@@ -487,6 +704,7 @@
 
         function generateEvents(useAB) {
             var ev = [];
+            var boundFirst = usingBoundFirst();
 
             function walk(n, alpha, beta) {
                 ev.push({ t: 'enter', id: n.id, alpha: alpha, beta: beta });
@@ -506,7 +724,24 @@
                     ev.push({ t: 'update', id: n.id, v: v, childId: child.id, alpha: alpha, beta: beta });
 
                     if (useAB) {
-                        var cut = n.isMax ? (v >= beta) : (v <= alpha);
+                        // Bound-first raises its own bound before testing, so β is
+                        // already tightened when the cut fires. AIMA tests the
+                        // inherited bound first and never reaches the assignment.
+                        // The two prune identically; only the trace differs.
+                        if (boundFirst) {
+                            if (n.isMax && v > alpha) {
+                                alpha = v;
+                                ev.push({ t: 'bound', id: n.id, alpha: alpha, beta: beta, which: 'α' });
+                            } else if (!n.isMax && v < beta) {
+                                beta = v;
+                                ev.push({ t: 'bound', id: n.id, alpha: alpha, beta: beta, which: 'β' });
+                            }
+                        }
+
+                        var cut = boundFirst
+                            ? (beta <= alpha)
+                            : (n.isMax ? (v >= beta) : (v <= alpha));
+
                         if (cut) {
                             var rest = n.children.slice(i + 1);
                             if (rest.length) {
@@ -515,28 +750,34 @@
                                     doomed.push(c.id);
                                     c.children.forEach(collect);
                                 });
+
+                                var test = boundFirst
+                                    ? { lhsName: 'β', lhsVal: beta, op: '≤', rhsName: 'α', rhsVal: alpha, hot: ['α', 'β'] }
+                                    : (n.isMax
+                                        ? { lhsName: 'v', lhsVal: v, op: '≥', rhsName: 'β', rhsVal: beta, hot: ['β'] }
+                                        : { lhsName: 'v', lhsVal: v, op: '≤', rhsName: 'α', rhsVal: alpha, hot: ['α'] });
+
                                 ev.push({
                                     t: 'prune',
                                     id: n.id,
                                     ids: doomed,
-                                    v: v,
-                                    op: n.isMax ? '≥' : '≤',
-                                    boundName: n.isMax ? 'β' : 'α',
-                                    bound: n.isMax ? beta : alpha,
-                                    reason: n.isMax
-                                        ? 'v (' + fmt(v) + ') ≥ β (' + fmt(beta) + ')'
-                                        : 'v (' + fmt(v) + ') ≤ α (' + fmt(alpha) + ')'
+                                    test: test,
+                                    reason: test.lhsName + ' (' + fmt(test.lhsVal) + ') ' + test.op + ' ' +
+                                            test.rhsName + ' (' + fmt(test.rhsVal) + ')'
                                 });
                             }
                             ev.push({ t: 'return', id: n.id, v: v });
                             return v;
                         }
-                        if (n.isMax && v > alpha) {
-                            alpha = v;
-                            ev.push({ t: 'bound', id: n.id, alpha: alpha, beta: beta, which: 'α' });
-                        } else if (!n.isMax && v < beta) {
-                            beta = v;
-                            ev.push({ t: 'bound', id: n.id, alpha: alpha, beta: beta, which: 'β' });
+
+                        if (!boundFirst) {
+                            if (n.isMax && v > alpha) {
+                                alpha = v;
+                                ev.push({ t: 'bound', id: n.id, alpha: alpha, beta: beta, which: 'α' });
+                            } else if (!n.isMax && v < beta) {
+                                beta = v;
+                                ev.push({ t: 'bound', id: n.id, alpha: alpha, beta: beta, which: 'β' });
+                            }
                         }
                     }
                 }
@@ -660,11 +901,12 @@
                 if (!n.children.length) {
                     g.addEventListener('click', function (ev) {
                         var delta = ev.shiftKey ? -1 : 1;
-                        leafValues = allNodes.filter(function (m) { return !m.children.length; })
+                        var leaves = allNodes.filter(function (m) { return !m.children.length; })
                                              .map(function (m) {
                                                  if (m.id !== n.id) return m.value;
                                                  return ((m.value + delta) % 100 + 100) % 100;
                                              });
+                        treeSpec = specWithLeaves(treeSpec, leaves);
                         rebuild();
                     });
                 }
@@ -694,14 +936,15 @@
                 n.el.abA.textContent = showAB ? 'α = ' + fmt(n.alpha) : '';
                 n.el.abB.textContent = showAB ? 'β = ' + fmt(n.beta) : '';
 
-                // Light up whichever bound the cut was tested against.
-                var hot = n.cutting && n.cutInfo ? n.cutInfo.boundName : null;
-                n.el.abA.setAttribute('class', 'ab-a' + (hot === 'α' ? ' hot' : ''));
-                n.el.abB.setAttribute('class', 'ab-b' + (hot === 'β' ? ' hot' : ''));
+                // Light up whichever bound(s) the cut was tested against.
+                var hot = (n.cutting && n.cutInfo) ? n.cutInfo.hot : [];
+                n.el.abA.setAttribute('class', 'ab-a' + (hot.indexOf('α') >= 0 ? ' hot' : ''));
+                n.el.abB.setAttribute('class', 'ab-b' + (hot.indexOf('β') >= 0 ? ' hot' : ''));
 
                 if (usingAB() && n.cutInfo) {
-                    n.el.cut.textContent = 'v = ' + fmt(n.cutInfo.v) + ' ' + n.cutInfo.op + ' ' +
-                                           n.cutInfo.boundName + ' = ' + fmt(n.cutInfo.bound) + '  ✂';
+                    var c = n.cutInfo;
+                    n.el.cut.textContent = c.lhsName + ' = ' + fmt(c.lhsVal) + ' ' + c.op + ' ' +
+                                           c.rhsName + ' = ' + fmt(c.rhsVal) + '  ✂';
                     n.el.cut.setAttribute('class', 'cut' + (n.cutting ? ' now' : ''));
                 } else {
                     n.el.cut.textContent = '';
@@ -717,6 +960,7 @@
             });
 
             document.getElementById('lg-ab').style.display = usingAB() ? '' : 'none';
+            document.getElementById('cutstyle').disabled = !usingAB();
             updateModeNote();
 
             document.getElementById('s-visited').textContent = countVisited();
@@ -824,7 +1068,7 @@
                 case 'prune':
                     e.ids.forEach(function (id) { allNodes[id].state = 'pruned'; });
                     n.cutting = true;
-                    n.cutInfo = { v: e.v, op: e.op, boundName: e.boundName, bound: e.bound };
+                    n.cutInfo = e.test;
                     break;
                 case 'return':
                     n.state = 'done';
@@ -866,12 +1110,16 @@
             return document.getElementById('algo').value === 'alphabeta';
         }
 
+        function usingBoundFirst() {
+            return document.getElementById('cutstyle').value === 'bound';
+        }
+
         /* ---------- wiring ---------- */
 
         function rebuild() {
             pause();
             buildTree();
-            syncLeafInput();
+            syncInputs();
             events = generateEvents(usingAB());
             drawStatic();
             applyUpTo(0);
@@ -897,7 +1145,7 @@
             renderLog();
         });
         document.getElementById('rand').addEventListener('click', function () {
-            leafValues = randomLeaves();
+            treeSpec = specWithLeaves(treeSpec, randomLeaves());
             rebuild();
         });
         document.getElementById('applyLeaves').addEventListener('click', applyLeafInput);
@@ -905,14 +1153,21 @@
         document.getElementById('leaves').addEventListener('keydown', function (e) {
             if (e.key === 'Enter') { e.preventDefault(); applyLeafInput(); }
         });
+        document.getElementById('applyStructure').addEventListener('click', applyStructureInput);
+        document.getElementById('structure').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); applyStructureInput(); }
+        });
         document.getElementById('algo').addEventListener('change', rebuild);
+        document.getElementById('cutstyle').addEventListener('change', rebuild);
         document.getElementById('shape').addEventListener('change', function () {
-            var parts = this.value.split(',');
-            branching = +parts[0];
-            depth = +parts[1];
-            leafValues = (branching === 2 && depth === 3)
-                ? [4, 6, 7, 9, 1, 2, 0, 1]
-                : randomLeaves();
+            if (this.value === 'custom') { syncInputs(); return; }
+            if (this.value === 'uneven') {
+                treeSpec = parseSpec(UNEVEN_EXAMPLE);
+            } else {
+                var parts = this.value.split(',');
+                var b = +parts[0], d = +parts[1];
+                treeSpec = uniformSpec(b, d, (b === 2 && d === 3) ? [4, 6, 7, 9, 1, 2, 0, 1] : null);
+            }
             rebuild();
         });
         document.getElementById('speed').addEventListener('input', function () {
