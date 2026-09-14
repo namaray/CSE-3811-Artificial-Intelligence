@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probability &amp; Bayes' Nets — Practice Questions</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        details.ans {
+            background: rgba(0, 206, 201, 0.07);
+            border: 1px solid rgba(0, 206, 201, 0.28);
+            border-radius: 10px;
+            padding: 0.1rem 1.2rem;
+            margin: 1rem 0 1.75rem;
+        }
+
+        details.ans > summary {
+            cursor: pointer;
+            list-style: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--accent-secondary);
+            padding: 0.85rem 0;
+            user-select: none;
+        }
+
+        details.ans > summary::-webkit-details-marker { display: none; }
+        details.ans > summary::before { content: '▶ '; font-size: 0.75rem; }
+        details.ans[open] > summary::before { content: '▼ '; }
+        details.ans[open] > summary { border-bottom: 1px solid rgba(0, 206, 201, 0.2); margin-bottom: 0.9rem; }
+        details.ans > *:last-child { margin-bottom: 1rem; }
+
+        .qpart {
+            border-left: 3px solid var(--glass-border);
+            padding-left: 1.1rem;
+            margin: 1.25rem 0;
+        }
+
+        .qpart > p:first-child { margin-bottom: 0.5rem; }
+        .qpart b.tag { color: var(--accent-primary); }
+
+        .scope {
+            background: rgba(108, 92, 231, 0.12);
+            border-left: 4px solid var(--accent-primary);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .scope p:last-child { margin-bottom: 0; }
+    </style>
+</head>
+<body>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
+    <div class="container">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link"><span>←</span> Back to Table of Contents</a>
+            <a href="naive_bayes.html" class="nav-link">Full Notes <span>→</span></a>
+        </nav>
+
+        <header>
+            <h1>Probability &amp; Bayes' Nets</h1>
+            <p style="text-align: center; margin-top: -1.5rem; margin-bottom: 3rem;">Practice questions with full worked answers — Class 13+14 slides 1–48</p>
+        </header>
+
+        <div class="scope">
+            <p><strong>Scope.</strong> These questions cover the Class 13+14 deck <strong>up to slide 48</strong>: uncertainty and random variables, distributions, joint / marginal / conditional probability, the product and chain rules, Bayes' rule, independence, conditional independence, and Bayes' net notation, semantics and probabilities.</p>
+            <p><strong>Not covered</strong> (slide 49 onwards): machine learning, classification, the Naive Bayes model, inference for Naive Bayes, and Laplace smoothing. If you want those, they are in the <a href="naive_bayes.html">full notes</a>.</p>
+            <p>Answers are hidden — work each part first, then open it.</p>
+        </div>
+
+        <section class="glass-panel">
+            <h2>Question 1 — Rain, Traffic and Lateness</h2>
+            <p>You model your morning commute with three Boolean random variables:</p>
+            <ul>
+                <li>\(R\): it rains &nbsp;•&nbsp; \(T\): there is traffic &nbsp;•&nbsp; \(L\): you are late</li>
+            </ul>
+            <p>Rain causes traffic, and traffic causes lateness. Rain has no <em>other</em> route to making you late. Your model:</p>
+            <div class="math-block">
+                \[ P(+r) = 0.2 \]
+                \[ P(+t \mid +r) = 0.8 \qquad P(+t \mid -r) = 0.1 \]
+                \[ P(+l \mid +t) = 0.6 \qquad P(+l \mid -t) = 0.1 \]
+            </div>
+
+            <div class="qpart">
+                <p><b class="tag">(a)</b> State the domain of each variable. How many rows does the full joint \(P(R,T,L)\) have? In general, how many for \(n\) variables of domain size \(d\)?</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>Each variable is Boolean, with domain \(\{+x, -x\}\) (i.e. {true, false}), so \(d = 2\).</p>
+                <p>The full joint has \(2^3 = \mathbf{8}\) rows — one per complete assignment. In general a joint over \(n\) variables of domain size \(d\) has \(\mathbf{d^n}\) rows, which is why writing out a full joint is impractical for all but the smallest problems.</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(b)</b> Draw the Bayes' net implied by the description, and write the factorization it encodes.</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>A chain: \(R \rightarrow T \rightarrow L\). Three nodes, two arcs, no arc from \(R\) to \(L\) — because rain affects lateness only <em>through</em> traffic.</p>
+                <div class="math-block">
+                    \[ P(R, T, L) = P(R)\, P(T \mid R)\, P(L \mid T) \]
+                </div>
+                <p>Each node contributes one factor: its own distribution conditioned on its parents. \(R\) has no parents, \(T\) has parent \(R\), \(L\) has parent \(T\).</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(c)</b> Compute the full joint distribution. Check that it sums to 1.</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>Multiply the three local factors for each of the 8 assignments, e.g. \(P(+r,+t,+l) = 0.2 \times 0.8 \times 0.6 = 0.096\).</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>R</th><th>T</th><th>L</th><th>\(P(R)\)</th><th>\(P(T\mid R)\)</th><th>\(P(L\mid T)\)</th><th>Joint</th></tr></thead>
+                        <tbody>
+                            <tr><td>+r</td><td>+t</td><td>+l</td><td>0.2</td><td>0.8</td><td>0.6</td><td><strong>0.096</strong></td></tr>
+                            <tr><td>+r</td><td>+t</td><td>−l</td><td>0.2</td><td>0.8</td><td>0.4</td><td><strong>0.064</strong></td></tr>
+                            <tr><td>+r</td><td>−t</td><td>+l</td><td>0.2</td><td>0.2</td><td>0.1</td><td><strong>0.004</strong></td></tr>
+                            <tr><td>+r</td><td>−t</td><td>−l</td><td>0.2</td><td>0.2</td><td>0.9</td><td><strong>0.036</strong></td></tr>
+                            <tr><td>−r</td><td>+t</td><td>+l</td><td>0.8</td><td>0.1</td><td>0.6</td><td><strong>0.048</strong></td></tr>
+                            <tr><td>−r</td><td>+t</td><td>−l</td><td>0.8</td><td>0.1</td><td>0.4</td><td><strong>0.032</strong></td></tr>
+                            <tr><td>−r</td><td>−t</td><td>+l</td><td>0.8</td><td>0.9</td><td>0.1</td><td><strong>0.072</strong></td></tr>
+                            <tr><td>−r</td><td>−t</td><td>−l</td><td>0.8</td><td>0.9</td><td>0.9</td><td><strong>0.648</strong></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Sum: \(0.096 + 0.064 + 0.004 + 0.036 + 0.048 + 0.032 + 0.072 + 0.648 = 1.000\) ✓</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(d)</b> Marginalize to find \(P(+t)\) and \(P(+l)\).</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>Sum out the variables you don't care about.</p>
+                <div class="math-block">
+                    \[ P(+t) = 0.096 + 0.064 + 0.048 + 0.032 = \mathbf{0.24} \]
+                    \[ P(+l) = 0.096 + 0.004 + 0.048 + 0.072 = \mathbf{0.22} \]
+                </div>
+                <p>Faster check without the full joint, conditioning on the parent:</p>
+                <div class="math-block">
+                    \[ P(+t) = P(+t \mid +r)P(+r) + P(+t \mid -r)P(-r) = 0.8(0.2) + 0.1(0.8) = 0.24 \]
+                    \[ P(+l) = P(+l \mid +t)P(+t) + P(+l \mid -t)P(-t) = 0.6(0.24) + 0.1(0.76) = 0.22 \]
+                </div>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(e)</b> Compute \(P(+r \mid +t)\).</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>Definition of conditional probability — joint over marginal:</p>
+                <div class="math-block">
+                    \[ P(+r \mid +t) = \frac{P(+r, +t)}{P(+t)} = \frac{0.096 + 0.064}{0.24} = \frac{0.16}{0.24} = \frac{2}{3} \approx \mathbf{0.667} \]
+                </div>
+                <p>Traffic is evidence <em>for</em> rain: the prior \(P(+r) = 0.2\) rises to \(0.667\).</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(f)</b> You arrive late. Use Bayes' rule to find \(P(+r \mid +l)\).</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>This is the diagnostic direction — the model is stated causally, so Bayes' rule reverses it.</p>
+                <div class="math-block">
+                    \[ P(+r \mid +l) = \frac{P(+l \mid +r)P(+r)}{P(+l)} \]
+                </div>
+                <p>First \(P(+l \mid +r)\), by summing over traffic:</p>
+                <div class="math-block">
+                    \[ P(+l \mid +r) = P(+l \mid +t)P(+t \mid +r) + P(+l \mid -t)P(-t \mid +r) = 0.6(0.8) + 0.1(0.2) = 0.5 \]
+                    \[ P(+r \mid +l) = \frac{0.5 \times 0.2}{0.22} = \frac{0.10}{0.22} = \frac{5}{11} \approx \mathbf{0.455} \]
+                </div>
+                <p>Equivalently, straight off the joint: \(P(+r,+l) = 0.096 + 0.004 = 0.10\), divided by \(P(+l) = 0.22\).</p>
+                <p>Being late more than doubles your belief in rain (0.2 → 0.455) but leaves it below even, because most lateness comes from the much more likely no-rain world.</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(g)</b> Are \(R\) and \(L\) independent? Show the test.</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>Test whether \(P(+l \mid +r) = P(+l)\):</p>
+                <div class="math-block">
+                    \[ P(+l \mid +r) = 0.5 \qquad P(+l) = 0.22 \qquad 0.5 \neq 0.22 \]
+                </div>
+                <p><strong>Not independent.</strong> Equivalently \(P(+r,+l) = 0.10\) but \(P(+r)P(+l) = 0.2 \times 0.22 = 0.044\).</p>
+                <p>This is what we expect: rain makes traffic more likely, and traffic makes lateness more likely, so rain does carry information about lateness — just indirectly.</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(h)</b> Are \(L\) and \(R\) <em>conditionally</em> independent given \(T\)? Show the test, and say what it means.</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>Test whether \(P(L \mid T, R) = P(L \mid T)\) for every combination:</p>
+                <div class="math-block">
+                    \[ P(+l \mid +t, +r) = \frac{0.096}{0.096+0.064} = \frac{0.096}{0.16} = 0.6 \]
+                    \[ P(+l \mid +t, -r) = \frac{0.048}{0.048+0.032} = \frac{0.048}{0.08} = 0.6 \]
+                    \[ P(+l \mid +t) = \frac{0.096+0.048}{0.24} = \frac{0.144}{0.24} = 0.6 \]
+                </div>
+                <p>All equal, so <strong>\(L \perp\!\!\!\perp R \mid T\)</strong>. (The same holds for \(-t\): all three work out to 0.1.)</p>
+                <p><strong>Meaning:</strong> once you already know whether there is traffic, learning about rain tells you nothing more about being late. Rain's entire influence on \(L\) is routed through \(T\) — which is exactly what the missing \(R \rightarrow L\) arc asserts.</p>
+                <p>Note the contrast with (g): \(R\) and \(L\) are dependent, yet conditionally independent given \(T\). Independence and conditional independence are different properties; neither implies the other.</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(i)</b> How many free parameters does this Bayes' net need, compared with storing the full joint?</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Representation</th><th>Count</th><th>Working</th></tr></thead>
+                        <tbody>
+                            <tr><th>Full joint</th><td><strong>7</strong></td><td>\(2^3 = 8\) rows, minus 1 because they must sum to 1</td></tr>
+                            <tr><th>Bayes' net</th><td><strong>5</strong></td><td>\(P(R)\): 1, &nbsp; \(P(T \mid R)\): 2, &nbsp; \(P(L \mid T)\): 2</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>A small saving on three variables, but the pattern is the point: the joint grows exponentially in the number of variables, while a net with bounded parents grows linearly.</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(j)</b> Why is multiplying the local conditionals guaranteed to give a proper joint distribution?</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>Start from the chain rule, which is valid for <em>every</em> distribution — no assumptions:</p>
+                <div class="math-block">
+                    \[ P(R,T,L) = P(R)\,P(T \mid R)\,P(L \mid R, T) \]
+                </div>
+                <p>The net then asserts one conditional independence, \(L \perp\!\!\!\perp R \mid T\), which lets us shrink the last factor:</p>
+                <div class="math-block">
+                    \[ P(L \mid R, T) = P(L \mid T) \quad\Longrightarrow\quad P(R,T,L) = P(R)\,P(T \mid R)\,P(L \mid T) \]
+                </div>
+                <p>So the product form is the chain rule <em>plus</em> the independences the topology encodes. Note the consequence: <strong>not every joint can be represented by a given net</strong> — the topology enforces independences, and a distribution that violates them cannot be written in that factored form.</p>
+            </details>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Question 2 — Joint tables, events and independence</h2>
+            <p>Two joint distributions over Boolean \(A\) and \(B\):</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th></th><th>(+a, +b)</th><th>(+a, −b)</th><th>(−a, +b)</th><th>(−a, −b)</th></tr></thead>
+                    <tbody>
+                        <tr><th>Table 1</th><td>0.12</td><td>0.28</td><td>0.18</td><td>0.42</td></tr>
+                        <tr><th>Table 2</th><td>0.20</td><td>0.20</td><td>0.10</td><td>0.50</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="qpart">
+                <p><b class="tag">(a)</b> Verify each is a valid distribution, and compute the marginals \(P(A)\) and \(P(B)\) for both.</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>Both sum to 1.00, and every entry is \(\geq 0\) — valid.</p>
+                <div class="math-block">
+                    \[ \textbf{Table 1: } P(+a) = 0.12+0.28 = 0.40 \qquad P(+b) = 0.12+0.18 = 0.30 \]
+                    \[ \textbf{Table 2: } P(+a) = 0.20+0.20 = 0.40 \qquad P(+b) = 0.20+0.10 = 0.30 \]
+                </div>
+                <p>So \(P(-a) = 0.60\) and \(P(-b) = 0.70\) in both cases.</p>
+                <div class="callout">
+                    <p>Worth noticing: <strong>the two tables have identical marginals but different joints.</strong> Marginals do not determine the joint — you cannot reconstruct a joint from its marginals unless you additionally assume independence.</p>
+                </div>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(b)</b> Using <strong>Table 2</strong>, compute \(P(+a \text{ OR } +b)\).</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>Inclusion–exclusion — add the two events, then subtract the overlap you counted twice:</p>
+                <div class="math-block">
+                    \[ P(+a \cup +b) = P(+a) + P(+b) - P(+a, +b) = 0.40 + 0.30 - 0.20 = \mathbf{0.50} \]
+                </div>
+                <p>Or just sum the matching rows directly: \(0.20 + 0.20 + 0.10 = 0.50\) ✓</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(c)</b> Using <strong>Table 2</strong>, compute \(P(+a \mid +b)\).</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <div class="math-block">
+                    \[ P(+a \mid +b) = \frac{P(+a, +b)}{P(+b)} = \frac{0.20}{0.30} = \frac{2}{3} \approx \mathbf{0.667} \]
+                </div>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(d)</b> Which table has \(A\) and \(B\) independent? Show the test for both.</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>Independence requires \(P(a,b) = P(a)P(b)\) for <strong>every</strong> cell, not just one.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Cell</th><th>\(P(a)P(b)\)</th><th>Table 1</th><th>Table 2</th></tr></thead>
+                        <tbody>
+                            <tr><th>(+a, +b)</th><td>0.40 × 0.30 = 0.12</td><td>0.12 ✓</td><td>0.20 ✗</td></tr>
+                            <tr><th>(+a, −b)</th><td>0.40 × 0.70 = 0.28</td><td>0.28 ✓</td><td>0.20 ✗</td></tr>
+                            <tr><th>(−a, +b)</th><td>0.60 × 0.30 = 0.18</td><td>0.18 ✓</td><td>0.10 ✗</td></tr>
+                            <tr><th>(−a, −b)</th><td>0.60 × 0.70 = 0.42</td><td>0.42 ✓</td><td>0.50 ✗</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><strong>Table 1 is independent; Table 2 is not.</strong> One failing cell is enough to break independence, so for a "not independent" answer you only need to exhibit a single mismatch — but to claim independence you must check them all.</p>
+            </details>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Question 3 — Bayes' net structure and semantics</h2>
+            <p>The alarm network has five Boolean variables: \(B\) burglary, \(E\) earthquake, \(A\) alarm, \(J\) John calls, \(M\) Mary calls. A burglary or an earthquake can set off the alarm; John and Mary each call when they hear it.</p>
+
+            <div class="qpart">
+                <p><b class="tag">(a)</b> Give the network structure and the joint factorization it encodes.</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>Arcs: \(B \rightarrow A\), \(E \rightarrow A\), \(A \rightarrow J\), \(A \rightarrow M\).</p>
+                <div class="math-block">
+                    \[ P(B,E,A,J,M) = P(B)\,P(E)\,P(A \mid B, E)\,P(J \mid A)\,P(M \mid A) \]
+                </div>
+                <p>\(B\) and \(E\) have no parents, \(A\) has two, and \(J\) and \(M\) have one each. The structure asserts that John and Mary call based only on the alarm — neither hears the burglar directly, and given the alarm, their calls are independent of each other.</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(b)</b> How many free parameters does this net need, versus the full joint?</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>A node with \(k\) Boolean parents needs \(2^k\) free numbers.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Node</th><th>Parents</th><th>Parameters</th></tr></thead>
+                        <tbody>
+                            <tr><th>\(P(B)\)</th><td>0</td><td>1</td></tr>
+                            <tr><th>\(P(E)\)</th><td>0</td><td>1</td></tr>
+                            <tr><th>\(P(A \mid B,E)\)</th><td>2</td><td>4</td></tr>
+                            <tr><th>\(P(J \mid A)\)</th><td>1</td><td>2</td></tr>
+                            <tr><th>\(P(M \mid A)\)</th><td>1</td><td>2</td></tr>
+                            <tr><th>Total</th><td></td><td><strong>10</strong></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>The full joint would need \(2^5 - 1 = \mathbf{31}\). Ten numbers instead of thirty-one, and the gap widens sharply as variables are added.</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(c)</b> Using \(P(+b)=0.001\), \(P(+e)=0.002\), \(P(+a \mid +b,-e)=0.94\), \(P(+j \mid +a)=0.90\), \(P(+m \mid +a)=0.70\), compute \(P(+b, -e, +a, +j, -m)\).</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>Read one number out of each CPT and multiply — that is all "probabilities in BNs" means for a full assignment.</p>
+                <div class="math-block">
+                    \[ P(+b,-e,+a,+j,-m) = P(+b)\,P(-e)\,P(+a \mid +b,-e)\,P(+j \mid +a)\,P(-m \mid +a) \]
+                    \[ = 0.001 \times 0.998 \times 0.94 \times 0.90 \times 0.30 \approx \mathbf{0.000253} \]
+                </div>
+                <p>Watch the two complements: \(P(-e) = 1 - 0.002 = 0.998\) and \(P(-m \mid +a) = 1 - 0.70 = 0.30\). Forgetting to flip these is the most common error on this type of question.</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(d)</b> You model \(n\) independent coin flips as a Bayes' net. What does it look like, and how many parameters does it need?</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p><strong>No arcs at all</strong> — \(n\) isolated nodes \(X_1, \dots, X_n\), each with its own distribution.</p>
+                <div class="math-block">
+                    \[ P(X_1, \dots, X_n) = \prod_{i=1}^{n} P(X_i) \]
+                </div>
+                <p>That needs \(\mathbf{n}\) parameters (one per coin), against \(2^n - 1\) for the full joint. An arc-free net can represent only those distributions whose variables are <strong>absolutely independent</strong> — which is exactly the assumption being made here.</p>
+            </details>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Question 4 — Short answers</h2>
+
+            <div class="qpart">
+                <p><b class="tag">(a)</b> In probabilistic reasoning, what are the observed variables, the unobserved variables, and the model?</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <ul>
+                    <li><strong>Observed variables (evidence):</strong> what the agent knows about the state of the world — sensor readings, symptoms.</li>
+                    <li><strong>Unobserved variables:</strong> what it must reason about — where an object is, which disease is present.</li>
+                    <li><strong>Model:</strong> knowledge of how the known variables relate to the unknown ones.</li>
+                </ul>
+                <p>Probabilistic reasoning is then the framework for managing beliefs given that evidence.</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(b)</b> Give two differences between a probabilistic model and a constraint satisfaction problem.</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <ul>
+                    <li>A CSP's table says whether an assignment is <strong>possible</strong> (true/false); a probabilistic model's joint says how <strong>likely</strong> it is (a number in [0,1]).</li>
+                    <li>A probability distribution must be <strong>normalized</strong> — sum to 1.0. A constraint has no such requirement.</li>
+                </ul>
+                <p>The structures are otherwise deliberately parallel: variables with domains, assignments called outcomes, and the hope that only certain variables interact directly.</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(c)</b> Why is Bayes' rule useful? Answer in one sentence.</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>It lets you build one conditional from its reverse — which matters because one direction is often easy to obtain and the other is what you actually want, as with causal \(P(\text{effect} \mid \text{cause})\) versus diagnostic \(P(\text{cause} \mid \text{effect})\).</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(d)</b> What two things define a Bayes' net?</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p><strong>Topology plus local conditional probabilities.</strong> Precisely: a set of nodes (one per variable), a directed acyclic graph, and for each node a conditional distribution over that variable for every combination of its parents' values — its CPT.</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(e)</b> Can any joint distribution be represented by any Bayes' net? Explain.</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p><strong>No.</strong> The topology enforces conditional independences, so a given net can only represent distributions that actually satisfy them. A distribution in which \(L\) still depends on \(R\) after \(T\) is known cannot be written as \(P(R)P(T \mid R)P(L \mid T)\).</p>
+                <p>The fully-connected net is the exception — it asserts no independences and so can represent anything, but it also needs as many parameters as the full joint, which defeats the purpose.</p>
+            </details>
+
+            <div class="qpart">
+                <p><b class="tag">(f)</b> A friend claims their Bayes' net has no arcs but the variables are not independent. What is wrong?</p>
+            </div>
+            <details class="ans"><summary>Answer</summary>
+                <p>The claim is contradictory. An arc-free net factors as \(P(X_1)P(X_2)\cdots P(X_n)\), which is precisely the definition of absolute independence, so it can only represent distributions whose variables <em>are</em> independent. If the variables are genuinely dependent, the net is the wrong model for them.</p>
+            </details>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Formula Sheet</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Rule</th><th>Statement</th></tr></thead>
+                    <tbody>
+                        <tr><th>Conditional probability</th><td>\( P(a \mid b) = \dfrac{P(a,b)}{P(b)} \)</td></tr>
+                        <tr><th>Marginalization</th><td>\( P(x) = \sum_{y} P(x, y) \)</td></tr>
+                        <tr><th>Conditioning</th><td>\( P(x) = \sum_{y} P(x \mid y) P(y) \)</td></tr>
+                        <tr><th>Product rule</th><td>\( P(a,b) = P(a \mid b)P(b) \)</td></tr>
+                        <tr><th>Chain rule</th><td>\( P(x_1 \dots x_n) = \prod_i P(x_i \mid x_1 \dots x_{i-1}) \)</td></tr>
+                        <tr><th>Bayes' rule</th><td>\( P(a \mid b) = \dfrac{P(b \mid a)P(a)}{P(b)} \)</td></tr>
+                        <tr><th>Inclusion–exclusion</th><td>\( P(a \cup b) = P(a) + P(b) - P(a,b) \)</td></tr>
+                        <tr><th>Independence</th><td>\( P(x,y) = P(x)P(y) \) for all \(x,y\)</td></tr>
+                        <tr><th>Conditional independence</th><td>\( P(x,y \mid z) = P(x \mid z)P(y \mid z) \), equivalently \( P(x \mid z,y) = P(x \mid z) \)</td></tr>
+                        <tr><th>Bayes' net joint</th><td>\( P(x_1 \dots x_n) = \prod_i P(x_i \mid \text{parents}(X_i)) \)</td></tr>
+                        <tr><th>Parameter count</th><td>full joint \(d^n - 1\); &nbsp; a node with \(k\) Boolean parents needs \(2^k\)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
