@@ -261,6 +261,26 @@
             font-size: 11px;
             font-weight: 700;
         }
+        /* Domain tables in "Tracing the Improvements on Paper" */
+        .dm { display: inline-flex; gap: 2px; }
+
+        .dm b {
+            display: inline-block;
+            width: 15px;
+            line-height: 17px;
+            text-align: center;
+            font-size: 11.5px;
+            font-weight: 800;
+            border-radius: 3px;
+        }
+
+        .dm b.out { color: var(--text-muted); opacity: 0.4; text-decoration: line-through; }
+        .dm b.set { color: #0a0a0e; }
+
+        .dom-table th, .dom-table td { padding: 0.5rem 0.55rem; white-space: nowrap; }
+        .dom-table .tiny { font-size: 0.74rem; color: var(--text-muted); white-space: normal; }
+        .dom-table .tiny u { color: var(--accent-secondary); text-decoration: none; font-weight: 700; }
+
         .tt-dead {
             fill: #ff9dae;
             font-family: 'Outfit', sans-serif;
@@ -583,6 +603,241 @@
             <p><strong>WA, NT and SA form a triangle</strong> — WA–NT, NT–SA and SA–WA are all constraints — and a triangle needs three colours. So no 2-colouring exists, before you trace anything. Lead with that, then give the tree as the mechanical demonstration: it shows you understand <em>why</em> the search must fail, not merely that it did.</p>
             <p>Notice how late the contradiction surfaces. SA is assigned sixth under this ordering, so the search commits five variables before discovering the problem — and then does it all again on the other half. That waste is exactly what <strong>MRV</strong> removes, by picking SA early instead.</p>
         </section>
+
+        <section class="glass-panel">
+            <h2>Tracing the Improvements on Paper (3 colours)</h2>
+            <p><strong>Different technique, different diagram.</strong> The search tree above is the right answer for plain backtracking. For forward checking and MRV it is the wrong tool: what those techniques change is how the <em>domains</em> shrink, so the format an exam wants is a <strong>domain table</strong>.</p>
+            <p>There is a practical reason too. With three colours Australia never backtracks at all — plain backtracking solves it in 7 assignments with 0 backtracks — so a search tree here would be a single straight line down the page with nothing to show. All of the content lives in the domains.</p>
+            <div class="callout">
+                <p style="font-family:'Courier New',monospace; margin-bottom:0;">Variable order:&nbsp; WA, NT, Q, NSW, V, SA, T &nbsp;&nbsp;(unless MRV changes it)<br>Value order:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; R, G, B</p>
+            </div>
+
+            <h3>1. Forward checking</h3>
+            <p><strong>How to draw it.</strong> Rule up one column per variable and write <code>R G B</code> under each. Then after every assignment, cross that colour out of the column of each <em>unassigned neighbour</em>. Two rules keep you out of trouble:</p>
+            <ul>
+                <li>Only ever cross out of <strong>unassigned</strong> neighbours — never touch a variable that already has a value.</li>
+                <li>Cross out, do not erase. The marker needs to see <em>when</em> each value died, and you need it to undo cleanly if you have to backtrack.</li>
+            </ul>
+            <div class="table-wrap"><table class="dom-table">
+                <thead><tr><th>Step</th><th>Assign</th>
+                <th>WA</th>
+                <th>NT</th>
+                <th>Q</th>
+                <th>NSW</th>
+                <th>V</th>
+                <th>SA</th>
+                <th>T</th>
+                <th>Pruned</th></tr></thead><tbody>
+                <tr><td>0</td><th>—</th>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td class="tiny">—</td></tr>
+                <tr><td>1</td><th>WA = R</th>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td class="tiny">NT−R, SA−R</td></tr>
+                <tr><td>2</td><th>NT = G</th>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td class="tiny">SA−G, Q−G</td></tr>
+                <tr><td>3</td><th>Q = R</th>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td class="tiny">NSW−R</td></tr>
+                <tr><td>4</td><th>NSW = G</th>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td class="tiny">V−G</td></tr>
+                <tr><td>5</td><th>V = R</th>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td class="tiny">—</td></tr>
+                <tr><td>6</td><th>SA = B</th>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="set" style="background:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td class="tiny">—</td></tr>
+                <tr><td>7</td><th>T = R</th>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="set" style="background:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td class="tiny">—</td></tr>
+                </tbody></table></div>
+            <p>Two things to notice and say out loud in your answer:</p>
+            <ul>
+                <li><strong>SA is down to a single colour {B} by step 2</strong>, five steps before it is actually assigned. Forward checking knows the answer for SA long before the search gets there.</li>
+                <li><strong>Consistency checks drop from 11 to 7.</strong> Without filtering the search tests values that were already doomed; forward checking has removed them from the domain first, so every value it tries succeeds.</li>
+            </ul>
+
+            <h3>2. MRV — minimum remaining values</h3>
+            <p>MRV changes only <em>which variable you pick next</em>: the one with the smallest remaining domain. So the table gains one column, and you must justify each pick by quoting the sizes.</p>
+            <div class="table-wrap"><table class="dom-table">
+                <thead><tr><th>Step</th><th>Assign</th>
+                <th>Domain sizes → pick</th>
+                <th>WA</th>
+                <th>NT</th>
+                <th>Q</th>
+                <th>NSW</th>
+                <th>V</th>
+                <th>SA</th>
+                <th>T</th>
+                <th>Pruned</th></tr></thead><tbody>
+                <tr><td>0</td><th>—</th>
+                <td class="tiny">initial domains</td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td class="tiny">—</td></tr>
+                <tr><td>1</td><th>WA = R</th>
+                <td class="tiny"><u>WA:3</u> NT:3 Q:3 NSW:3 V:3 SA:3 T:3</td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td class="tiny">NT−R, SA−R</td></tr>
+                <tr><td>2</td><th>NT = G</th>
+                <td class="tiny"><u>NT:2</u> Q:3 NSW:3 V:3 SA:2 T:3</td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td class="tiny">SA−G, Q−G</td></tr>
+                <tr><td>3</td><th>SA = B</th>
+                <td class="tiny">Q:2 NSW:3 V:3 <u>SA:1</u> T:3</td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="set" style="background:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td class="tiny">Q−B, NSW−B, V−B</td></tr>
+                <tr><td>4</td><th>Q = R</th>
+                <td class="tiny"><u>Q:1</u> NSW:2 V:2 T:3</td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="live" style="color:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="set" style="background:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td class="tiny">NSW−R</td></tr>
+                <tr><td>5</td><th>NSW = G</th>
+                <td class="tiny"><u>NSW:1</u> V:2 T:3</td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="set" style="background:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td class="tiny">V−G</td></tr>
+                <tr><td>6</td><th>V = R</th>
+                <td class="tiny"><u>V:1</u> T:3</td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="set" style="background:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td class="tiny">—</td></tr>
+                <tr><td>7</td><th>T = R</th>
+                <td class="tiny"><u>T:3</u></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="set" style="background:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td class="tiny">—</td></tr>
+                </tbody></table></div>
+            <p><strong>The point of the whole exercise is in step 3.</strong> After NT is assigned, SA has exactly one colour left, so MRV grabs it immediately — SA is assigned <strong>3rd</strong> here instead of 6th. The assignment order becomes <code>WA, NT, SA, Q, NSW, V, T</code>. Once SA is fixed, Q, NSW and V each collapse to a single colour as well, so the rest of the run is forced: every remaining pick has a domain of size 1.</p>
+            <div class="callout">
+                <p><strong>State your tie-breaking rule.</strong> At step 1 every domain has size 3, and at step 2 both NT and SA have size 2. Any consistent rule is acceptable — these tables break ties by taking the first variable in the given order — but you must say which one you used, or the pick looks arbitrary.</p>
+            </div>
+
+            <h3>3. LCV — least constraining value</h3>
+            <p>LCV chooses <em>values</em>, not variables, so it never gets a table of its own. You show it as a short count at the point of decision: for each value still in the domain, how many values would it remove from the domains of unassigned neighbours? Fewest first.</p>
+            <p>Take step 3 of the forward-checking run above, where Q has <code>{R, B}</code> left, SA is down to <code>{B}</code> and NSW is still <code>{R, G, B}</code>:</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Value for Q</th><th>SA {B}</th><th>NSW {R,G,B}</th><th>Total ruled out</th></tr></thead>
+                    <tbody>
+                        <tr><th>Q = R</th><td>0 — R is not in SA's domain</td><td>1</td><td><strong>1</strong> ← least constraining</td></tr>
+                        <tr><th>Q = B</th><td>1</td><td>1</td><td><strong>2</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>So LCV orders <strong>R before B</strong>. The reason B scores badly is worth spelling out, because it is the whole idea in one line: <strong>B is the only colour SA has left</strong>, so choosing Q = B would empty SA's domain and force an immediate backtrack. LCV avoids the value that strangles a neighbour.</p>
+            <div class="callout">
+                <p><strong>Be honest about what LCV achieves here.</strong> On this map with three colours it <em>confirms</em> the choice the default value order would have made anyway — it does not rescue the search, because nothing goes wrong to rescue it from. The examinable skill is performing the count and explaining it; LCV earns its keep on instances that actually thrash.</p>
+            </div>
+
+            <h3>Checking your own answer</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Configuration</th><th>Assignments</th><th>Backtracks</th><th>Consistency checks</th><th>Values pruned</th></tr></thead>
+                    <tbody>
+                        <tr><th>Plain backtracking</th><td>7</td><td>0</td><td>11</td><td>—</td></tr>
+                        <tr><th>+ Forward checking</th><td>7</td><td>0</td><td>7</td><td>6</td></tr>
+                        <tr><th>+ Forward checking &amp; MRV</th><td>7</td><td>0</td><td>7</td><td>9</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>MRV prunes <em>more</em> (9 against 6) without reducing assignments or checks, which looks odd until you see why: by assigning SA early it creates more opportunities to filter, since SA is the highest-degree variable with five neighbours. On an instance that actually backtracks, that extra filtering is what pays — as the 2-colour case in the previous section shows.</p>
+            <p>All three configurations happen to land on the <strong>same colouring</strong> here — <code>WA=R, NT=G, Q=R, NSW=G, V=R, SA=B, T=R</code> — they simply reach it in different orders, MRV assigning SA third rather than sixth. That coincidence is a property of this small instance, not a rule: in general any complete assignment satisfying all nine constraints is correct, so do not assume the answer is unique or that a different-looking colouring is wrong.</p>
+        </section>
+
 
     </div>
 
