@@ -234,6 +234,40 @@
 
         .hint { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.75rem; }
 
+        /* Static worked search tree in "Tracing It on Paper" */
+        .trace-tree { display: block; }
+        .tt-edge { stroke: rgba(255, 255, 255, 0.3); stroke-width: 2; }
+        .tt-edge.fail { stroke: rgba(232, 85, 109, 0.4); stroke-dasharray: 4 3; }
+        .tt-box { stroke-width: 2; }
+        .tt-box.ok { fill: rgba(0, 206, 201, 0.14); stroke: var(--accent-secondary); }
+        .tt-box.fail { fill: rgba(232, 85, 109, 0.12); stroke: #e8556d; stroke-dasharray: 4 3; }
+        .tt-root { fill: rgba(255, 255, 255, 0.08); stroke: rgba(255, 255, 255, 0.4); }
+        .tt-lbl {
+            fill: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            font-size: 12.5px;
+            font-weight: 700;
+        }
+        .tt-lbl.dim { fill: var(--text-muted); }
+        .tt-num {
+            fill: var(--text-muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .tt-why {
+            fill: #ef8b9c;
+            font-family: 'Outfit', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .tt-dead {
+            fill: #ff9dae;
+            font-family: 'Outfit', sans-serif;
+            font-size: 11.5px;
+            font-weight: 800;
+        }
+
         @media (max-width: 640px) {
             .sim-controls { gap: 0.6rem; }
             .sim-controls .group { flex-wrap: wrap; min-width: 0; max-width: 100%; }
@@ -367,6 +401,189 @@
                 <li><strong>Watch Tasmania.</strong> It has no constraints at all, so whatever it is given first is never revisited — the independent-subproblem idea from the <a href="csp.html">CSP notes</a>, visible in the trace.</li>
             </ul>
         </section>
+
+        <section class="glass-panel">
+            <h2>Tracing It on Paper</h2>
+            <p>An exam will ask you to do this by hand rather than watch it run. Below is the <strong>complete</strong> search tree for the case the simulation runs — <strong>2 colours, plain backtracking</strong>, no improvements — so you can see exactly what a full answer looks like.</p>
+            <div class="callout">
+                <p>Write the two orderings at the top before drawing anything. Markers look for them, and the tree is unmarkable without them.</p>
+                <p style="font-family:'Courier New',monospace; margin-bottom:0;">Variable order:&nbsp; WA, NT, Q, NSW, V, SA, T<br>Value order:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; R, G</p>
+            </div>
+
+            <div class="table-wrap">
+                <div style="min-width:1000px;">
+                    <svg class="trace-tree" width="976" height="668" viewBox="0 0 976 668" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Complete search tree for two-colour plain backtracking on the Australia map">
+                    <line class="tt-edge" x1="488.0" y1="59.0" x2="190.5" y2="119.0"/>
+                    <line class="tt-edge" x1="488.0" y1="59.0" x2="785.5" y2="119.0"/>
+                    <line class="tt-edge fail" x1="190.5" y1="149.0" x2="48.0" y2="209.0"/>
+                    <line class="tt-edge" x1="190.5" y1="149.0" x2="333.0" y2="209.0"/>
+                    <line class="tt-edge" x1="333.0" y1="239.0" x2="218.0" y2="299.0"/>
+                    <line class="tt-edge fail" x1="333.0" y1="239.0" x2="448.0" y2="299.0"/>
+                    <line class="tt-edge fail" x1="218.0" y1="329.0" x2="128.0" y2="389.0"/>
+                    <line class="tt-edge" x1="218.0" y1="329.0" x2="308.0" y2="389.0"/>
+                    <line class="tt-edge" x1="308.0" y1="419.0" x2="248.0" y2="479.0"/>
+                    <line class="tt-edge fail" x1="308.0" y1="419.0" x2="368.0" y2="479.0"/>
+                    <line class="tt-edge fail" x1="248.0" y1="509.0" x2="208.0" y2="569.0"/>
+                    <line class="tt-edge fail" x1="248.0" y1="509.0" x2="288.0" y2="569.0"/>
+                    <line class="tt-edge" x1="785.5" y1="149.0" x2="643.0" y2="209.0"/>
+                    <line class="tt-edge fail" x1="785.5" y1="149.0" x2="928.0" y2="209.0"/>
+                    <line class="tt-edge fail" x1="643.0" y1="239.0" x2="528.0" y2="299.0"/>
+                    <line class="tt-edge" x1="643.0" y1="239.0" x2="758.0" y2="299.0"/>
+                    <line class="tt-edge" x1="758.0" y1="329.0" x2="668.0" y2="389.0"/>
+                    <line class="tt-edge fail" x1="758.0" y1="329.0" x2="848.0" y2="389.0"/>
+                    <line class="tt-edge fail" x1="668.0" y1="419.0" x2="608.0" y2="479.0"/>
+                    <line class="tt-edge" x1="668.0" y1="419.0" x2="728.0" y2="479.0"/>
+                    <line class="tt-edge fail" x1="728.0" y1="509.0" x2="688.0" y2="569.0"/>
+                    <line class="tt-edge fail" x1="728.0" y1="509.0" x2="768.0" y2="569.0"/>
+                    <rect class="tt-box tt-root" x="462.0" y="29.0" width="52" height="30" rx="8"/>
+                    <text class="tt-lbl" x="488.0" y="49.0" text-anchor="middle">{ }</text>
+                    <rect class="tt-box ok" x="156.5" y="119.0" width="68" height="30" rx="8"/>
+                    <circle cx="168.5" cy="134.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl" x="199.5" y="139.0" text-anchor="middle">WA=R</text>
+                    <text class="tt-num" x="152.5" y="121.0" text-anchor="end">1</text>
+                    <rect class="tt-box fail" x="14.0" y="209.0" width="68" height="30" rx="8"/>
+                    <circle cx="26.0" cy="224.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl dim" x="57.0" y="229.0" text-anchor="middle">NT=R</text>
+                    <text class="tt-num" x="10.0" y="211.0" text-anchor="end">2</text>
+                    <text class="tt-why" x="48.0" y="253.0" text-anchor="middle">&#10007; WA</text>
+                    <rect class="tt-box ok" x="299.0" y="209.0" width="68" height="30" rx="8"/>
+                    <circle cx="311.0" cy="224.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl" x="342.0" y="229.0" text-anchor="middle">NT=G</text>
+                    <text class="tt-num" x="295.0" y="211.0" text-anchor="end">3</text>
+                    <rect class="tt-box ok" x="184.0" y="299.0" width="68" height="30" rx="8"/>
+                    <circle cx="196.0" cy="314.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl" x="227.0" y="319.0" text-anchor="middle">Q=R</text>
+                    <text class="tt-num" x="180.0" y="301.0" text-anchor="end">4</text>
+                    <rect class="tt-box fail" x="94.0" y="389.0" width="68" height="30" rx="8"/>
+                    <circle cx="106.0" cy="404.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl dim" x="137.0" y="409.0" text-anchor="middle">NSW=R</text>
+                    <text class="tt-num" x="90.0" y="391.0" text-anchor="end">5</text>
+                    <text class="tt-why" x="128.0" y="433.0" text-anchor="middle">&#10007; Q</text>
+                    <rect class="tt-box ok" x="274.0" y="389.0" width="68" height="30" rx="8"/>
+                    <circle cx="286.0" cy="404.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl" x="317.0" y="409.0" text-anchor="middle">NSW=G</text>
+                    <text class="tt-num" x="270.0" y="391.0" text-anchor="end">6</text>
+                    <rect class="tt-box ok" x="214.0" y="479.0" width="68" height="30" rx="8"/>
+                    <circle cx="226.0" cy="494.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl" x="257.0" y="499.0" text-anchor="middle">V=R</text>
+                    <text class="tt-num" x="210.0" y="481.0" text-anchor="end">7</text>
+                    <rect class="tt-box fail" x="174.0" y="569.0" width="68" height="30" rx="8"/>
+                    <circle cx="186.0" cy="584.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl dim" x="217.0" y="589.0" text-anchor="middle">SA=R</text>
+                    <text class="tt-num" x="170.0" y="571.0" text-anchor="end">8</text>
+                    <text class="tt-why" x="208.0" y="613.0" text-anchor="middle">&#10007; WA</text>
+                    <rect class="tt-box fail" x="254.0" y="569.0" width="68" height="30" rx="8"/>
+                    <circle cx="266.0" cy="584.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl dim" x="297.0" y="589.0" text-anchor="middle">SA=G</text>
+                    <text class="tt-num" x="250.0" y="571.0" text-anchor="end">9</text>
+                    <text class="tt-why" x="288.0" y="613.0" text-anchor="middle">&#10007; NT</text>
+                    <rect class="tt-box fail" x="334.0" y="479.0" width="68" height="30" rx="8"/>
+                    <circle cx="346.0" cy="494.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl dim" x="377.0" y="499.0" text-anchor="middle">V=G</text>
+                    <text class="tt-num" x="330.0" y="481.0" text-anchor="end">10</text>
+                    <text class="tt-why" x="368.0" y="523.0" text-anchor="middle">&#10007; NSW</text>
+                    <rect class="tt-box fail" x="414.0" y="299.0" width="68" height="30" rx="8"/>
+                    <circle cx="426.0" cy="314.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl dim" x="457.0" y="319.0" text-anchor="middle">Q=G</text>
+                    <text class="tt-num" x="410.0" y="301.0" text-anchor="end">11</text>
+                    <text class="tt-why" x="448.0" y="343.0" text-anchor="middle">&#10007; NT</text>
+                    <rect class="tt-box ok" x="751.5" y="119.0" width="68" height="30" rx="8"/>
+                    <circle cx="763.5" cy="134.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl" x="794.5" y="139.0" text-anchor="middle">WA=G</text>
+                    <text class="tt-num" x="747.5" y="121.0" text-anchor="end">12</text>
+                    <rect class="tt-box ok" x="609.0" y="209.0" width="68" height="30" rx="8"/>
+                    <circle cx="621.0" cy="224.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl" x="652.0" y="229.0" text-anchor="middle">NT=R</text>
+                    <text class="tt-num" x="605.0" y="211.0" text-anchor="end">13</text>
+                    <rect class="tt-box fail" x="494.0" y="299.0" width="68" height="30" rx="8"/>
+                    <circle cx="506.0" cy="314.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl dim" x="537.0" y="319.0" text-anchor="middle">Q=R</text>
+                    <text class="tt-num" x="490.0" y="301.0" text-anchor="end">14</text>
+                    <text class="tt-why" x="528.0" y="343.0" text-anchor="middle">&#10007; NT</text>
+                    <rect class="tt-box ok" x="724.0" y="299.0" width="68" height="30" rx="8"/>
+                    <circle cx="736.0" cy="314.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl" x="767.0" y="319.0" text-anchor="middle">Q=G</text>
+                    <text class="tt-num" x="720.0" y="301.0" text-anchor="end">15</text>
+                    <rect class="tt-box ok" x="634.0" y="389.0" width="68" height="30" rx="8"/>
+                    <circle cx="646.0" cy="404.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl" x="677.0" y="409.0" text-anchor="middle">NSW=R</text>
+                    <text class="tt-num" x="630.0" y="391.0" text-anchor="end">16</text>
+                    <rect class="tt-box fail" x="574.0" y="479.0" width="68" height="30" rx="8"/>
+                    <circle cx="586.0" cy="494.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl dim" x="617.0" y="499.0" text-anchor="middle">V=R</text>
+                    <text class="tt-num" x="570.0" y="481.0" text-anchor="end">17</text>
+                    <text class="tt-why" x="608.0" y="523.0" text-anchor="middle">&#10007; NSW</text>
+                    <rect class="tt-box ok" x="694.0" y="479.0" width="68" height="30" rx="8"/>
+                    <circle cx="706.0" cy="494.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl" x="737.0" y="499.0" text-anchor="middle">V=G</text>
+                    <text class="tt-num" x="690.0" y="481.0" text-anchor="end">18</text>
+                    <rect class="tt-box fail" x="654.0" y="569.0" width="68" height="30" rx="8"/>
+                    <circle cx="666.0" cy="584.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl dim" x="697.0" y="589.0" text-anchor="middle">SA=R</text>
+                    <text class="tt-num" x="650.0" y="571.0" text-anchor="end">19</text>
+                    <text class="tt-why" x="688.0" y="613.0" text-anchor="middle">&#10007; NT</text>
+                    <rect class="tt-box fail" x="734.0" y="569.0" width="68" height="30" rx="8"/>
+                    <circle cx="746.0" cy="584.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl dim" x="777.0" y="589.0" text-anchor="middle">SA=G</text>
+                    <text class="tt-num" x="730.0" y="571.0" text-anchor="end">20</text>
+                    <text class="tt-why" x="768.0" y="613.0" text-anchor="middle">&#10007; WA</text>
+                    <rect class="tt-box fail" x="814.0" y="389.0" width="68" height="30" rx="8"/>
+                    <circle cx="826.0" cy="404.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl dim" x="857.0" y="409.0" text-anchor="middle">NSW=G</text>
+                    <text class="tt-num" x="810.0" y="391.0" text-anchor="end">21</text>
+                    <text class="tt-why" x="848.0" y="433.0" text-anchor="middle">&#10007; Q</text>
+                    <rect class="tt-box fail" x="894.0" y="209.0" width="68" height="30" rx="8"/>
+                    <circle cx="906.0" cy="224.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <text class="tt-lbl dim" x="937.0" y="229.0" text-anchor="middle">NT=G</text>
+                    <text class="tt-num" x="890.0" y="211.0" text-anchor="end">22</text>
+                    <text class="tt-why" x="928.0" y="253.0" text-anchor="middle">&#10007; WA</text>
+                    <text class="tt-dead" x="288.0" y="631.0" text-anchor="middle">dead end &#8212; backtrack</text>
+                    <text class="tt-dead" x="768.0" y="631.0" text-anchor="middle">dead end &#8212; backtrack</text>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="legend">
+                <span><i class="sw" style="background:rgba(0,206,201,.14); border-color:#00cec9;"></i> consistent — assign, go deeper</span>
+                <span><i class="sw" style="background:rgba(232,85,109,.12); border-color:#e8556d; border-style:dashed;"></i> clashes — reject, try next value</span>
+                <span><b style="color:var(--text-muted);">1…22</b> the order nodes are tried</span>
+            </div>
+
+            <h3>How to draw it quickly</h3>
+            <p>Two features of this tree make it far less work than it looks:</p>
+            <ol>
+                <li><strong>It is a spine, not a bush.</strong> With only two colours at most one value survives at each level, so the tree is essentially a vertical line with small rejected stubs hanging off it.</li>
+                <li><strong>The path from the root is the assignment.</strong> You never need to rewrite the partial assignment at each node — just read down the spine.</li>
+            </ol>
+            <p>Then three things earn the marks:</p>
+            <ul>
+                <li><strong>Label every rejection with the variable it clashed with</strong> — <code>SA=R ✗ WA</code>, not a bare cross. That is your evidence you actually performed the consistency check.</li>
+                <li><strong>Mark the dead end and say where you backtrack to.</strong> The dead end is the variable that ran out of values (SA here), not the one it clashed with.</li>
+                <li><strong>State the conclusion:</strong> the search space is exhausted, so no 2-colouring exists.</li>
+            </ul>
+
+            <h3>Checking your own answer</h3>
+            <p>Three numbers fall out of a correct tree, and they are worth quoting:</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Quantity</th><th>Value</th><th>How to read it off the tree</th></tr></thead>
+                    <tbody>
+                        <tr><th>Consistency checks</th><td>22</td><td>Total number of boxes — every box is one value tested.</td></tr>
+                        <tr><th>Assignments</th><td>10</td><td>Number of solid teal boxes.</td></tr>
+                        <tr><th>Backtracks</th><td>10</td><td>Equal to assignments here, because every assignment is eventually undone.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>There is a useful internal check too: the <strong>WA=R</strong> and <strong>WA=G</strong> halves cost exactly the same — 11 boxes, 5 assignments and 5 backtracks each. If your halves do not match, you have slipped somewhere.</p>
+            <div class="callout">
+                <p><strong>Careful with that symmetry.</strong> The two halves contain the same nodes with R and G swapped, but they are <em>not</em> left-to-right mirror images. The value order stays R-then-G in both halves, so the rejected sibling is tried <strong>first</strong> on the left (node 2) and <strong>second</strong> on the right (node 22). You can safely write "by symmetry the WA=G branch costs the same and also fails" — but do not copy the left drawing flipped.</p>
+            </div>
+
+            <h3>The one-line justification worth adding</h3>
+            <p><strong>WA, NT and SA form a triangle</strong> — WA–NT, NT–SA and SA–WA are all constraints — and a triangle needs three colours. So no 2-colouring exists, before you trace anything. Lead with that, then give the tree as the mechanical demonstration: it shows you understand <em>why</em> the search must fail, not merely that it did.</p>
+            <p>Notice how late the contradiction surfaces. SA is assigned sixth under this ordering, so the search commits five variables before discovering the problem — and then does it all again on the other half. That waste is exactly what <strong>MRV</strong> removes, by picking SA early instead.</p>
+        </section>
+
     </div>
 
     <script>
