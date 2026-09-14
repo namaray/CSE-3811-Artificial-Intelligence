@@ -234,6 +234,24 @@ a:hover {
     color: var(--text-main) !important;
 }
 
+/* Long display equations scroll inside their own box instead of stretching
+   the page. Needed for equations that sit outside a .math-block (e.g. inside
+   a list item), and on narrow viewports generally. */
+mjx-container[display="true"] {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 0.3rem;
+}
+
+/* Inline math is left at MathJax defaults: forcing overflow on it produced a
+   scrollbar on every expression whose italic correction exceeds its box.
+   Long equations are written as display math instead, which scrolls cleanly. */
+mjx-container:not([display="true"]) {
+    max-width: 100%;
+}
+
 /* Pseudocode blocks */
 .pseudocode {
     background: rgba(0, 0, 0, 0.25);

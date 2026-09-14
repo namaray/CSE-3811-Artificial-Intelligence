@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probability, Bayes' Rule & Naive Bayes - AI Notes</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
+    <div class="container">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link"><span>←</span> Back to Table of Contents</a>
+        </nav>
+
+        <header>
+            <h1>Probability, Bayes' Rule &amp; Naive Bayes</h1>
+            <p style="text-align: center; margin-top: -1.5rem; margin-bottom: 3rem;">Classes 13 &amp; 14 &nbsp;•&nbsp; AIMA 13.2–13.5, 20.2</p>
+        </header>
+
+        <div class="callout">
+            <p>You will need this material <strong>a lot</strong> for the rest of the course — Bayesian networks, Markov models and HMMs all build directly on it. Go over it now rather than later.</p>
+        </div>
+
+        <section class="glass-panel">
+            <h2>Uncertainty</h2>
+            <p>The general situation an agent finds itself in:</p>
+            <ul>
+                <li><strong>Observed variables (evidence):</strong> the agent knows certain things about the state of the world — sensor readings, symptoms.</li>
+                <li><strong>Unobserved variables:</strong> the agent needs to reason about other aspects — where an object is, which disease is present.</li>
+                <li><strong>Model:</strong> the agent knows something about how the known variables relate to the unknown ones.</li>
+            </ul>
+            <p>Probabilistic reasoning gives us a framework for managing our beliefs and knowledge.</p>
+
+            <h3>Random Variables</h3>
+            <p>A <strong>random variable</strong> is some aspect of the world about which we (may) have uncertainty. We denote them with capital letters, and — just like variables in a CSP — they have <strong>domains</strong>.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Variable</th><th>Meaning</th><th>Domain</th></tr></thead>
+                    <tbody>
+                        <tr><th>\(R\)</th><td>Is it raining?</td><td>{true, false} — often written {+r, −r}</td></tr>
+                        <tr><th>\(T\)</th><td>Is it hot or cold?</td><td>{hot, cold}</td></tr>
+                        <tr><th>\(D\)</th><td>How long will it take to drive to work?</td><td>\([0, \infty)\)</td></tr>
+                        <tr><th>\(L\)</th><td>Where is the ghost?</td><td>possible locations, e.g. {(0,0), (0,1), …}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Probability Distributions</h2>
+            <p>A <strong>distribution</strong> associates a probability with each value — it is a <em>TABLE</em> of probabilities of values. A <strong>probability</strong> is a single number.</p>
+            <div class="table-wrap" style="display:flex; gap:2rem; flex-wrap:wrap;">
+                <table style="max-width:220px;">
+                    <thead><tr><th>T</th><th>P</th></tr></thead>
+                    <tbody>
+                        <tr><td>hot</td><td>0.5</td></tr>
+                        <tr><td>cold</td><td>0.5</td></tr>
+                    </tbody>
+                </table>
+                <table style="max-width:220px;">
+                    <thead><tr><th>W</th><th>P</th></tr></thead>
+                    <tbody>
+                        <tr><td>sun</td><td>0.6</td></tr>
+                        <tr><td>rain</td><td>0.1</td></tr>
+                        <tr><td>fog</td><td>0.3</td></tr>
+                        <tr><td>meteor</td><td>0.0</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Every distribution must satisfy:</p>
+            <div class="math-block">
+                \[ P(X = x) \geq 0 \qquad \text{and} \qquad \sum_{x} P(X = x) = 1 \]
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Joint Distributions</h2>
+            <p>A <strong>joint distribution</strong> over a set of random variables \( X_1, X_2, \dots, X_n \) specifies a real number for each assignment (each <em>outcome</em>):</p>
+            <div class="math-block">
+                \[ P(X_1 = x_1,\ X_2 = x_2,\ \dots,\ X_n = x_n) \qquad \text{written } P(x_1, x_2, \dots, x_n) \]
+                \[ P(x_1, \dots, x_n) \geq 0 \qquad \sum_{(x_1 \dots x_n)} P(x_1, \dots, x_n) = 1 \]
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>T</th><th>W</th><th>P</th></tr></thead>
+                    <tbody>
+                        <tr><td>hot</td><td>sun</td><td>0.4</td></tr>
+                        <tr><td>hot</td><td>rain</td><td>0.1</td></tr>
+                        <tr><td>cold</td><td>sun</td><td>0.2</td></tr>
+                        <tr><td>cold</td><td>rain</td><td>0.3</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p><strong>Size of the distribution if there are \( n \) variables with domain size \( d \)?</strong> \( d^n \) rows. For all but the smallest distributions it is impractical to write out — which is the entire motivation for everything that follows.</p>
+
+            <h3>Probabilistic Models vs. CSPs</h3>
+            <p>A probabilistic model <em>is</em> a joint distribution over a set of random variables. It is worth lining it up against the <a href="csp.html">CSPs</a> you already know, because the structure is deliberately parallel:</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th></th><th>Probabilistic model</th><th>Constraint satisfaction problem</th></tr></thead>
+                    <tbody>
+                        <tr><th>Variables</th><td>(Random) variables with domains</td><td>Variables with domains</td></tr>
+                        <tr><th>Assignments</th><td>Assignments are called <em>outcomes</em></td><td>Assignments are possible or not</td></tr>
+                        <tr><th>The table says</th><td>Joint distribution: whether assignments are <em>likely</em> (a number in [0,1])</td><td>Constraints: whether assignments are <em>possible</em> (T / F)</td></tr>
+                        <tr><th>Normalization</th><td>Must sum to 1.0</td><td>—</td></tr>
+                        <tr><th>Ideally</th><td>Only certain variables directly interact</td><td>Only certain variables directly interact</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Example: Full Joint Distribution (juice bar survey)</h3>
+            <p>Three variables — Gender \(G\) ∈ {M, F}, Category \(C\) ∈ {S(tudent), T(eacher)}, Juice \(J\) ∈ {O(range), Mn = mango, L(emon)}. Out of 50 people:</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>G</th><th>C</th><th>J</th><th>P(G,C,J)</th><th>G</th><th>C</th><th>J</th><th>P(G,C,J)</th></tr></thead>
+                    <tbody>
+                        <tr><td>M</td><td>S</td><td>O</td><td>8/50</td><td>F</td><td>S</td><td>O</td><td>5/50</td></tr>
+                        <tr><td>M</td><td>S</td><td>Mn</td><td>6/50</td><td>F</td><td>S</td><td>Mn</td><td>7/50</td></tr>
+                        <tr><td>M</td><td>S</td><td>L</td><td>4/50</td><td>F</td><td>S</td><td>L</td><td>5/50</td></tr>
+                        <tr><td>M</td><td>T</td><td>O</td><td>3/50</td><td>F</td><td>T</td><td>O</td><td>2/50</td></tr>
+                        <tr><td>M</td><td>T</td><td>Mn</td><td>2/50</td><td>F</td><td>T</td><td>Mn</td><td>4/50</td></tr>
+                        <tr><td>M</td><td>T</td><td>L</td><td>2/50</td><td>F</td><td>T</td><td>L</td><td>2/50</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>The twelve entries sum to 50/50 = 1, as a joint distribution must. Every question about this survey — "what fraction of teachers drink mango juice?" — is answered by summing the right subset of these rows.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Events and Marginalization</h2>
+            <p>An <strong>event</strong> is a set \(E\) of outcomes. From a joint distribution we can calculate the probability of any event by summing the rows in it:</p>
+            <div class="math-block">
+                \[ P(E) = \sum_{(x_1 \dots x_n) \in E} P(x_1, \dots, x_n) \]
+            </div>
+            <p>Typically the events we care about are <strong>partial assignments</strong>, like \( P(T = hot) \).</p>
+
+            <h3>Quiz: Events</h3>
+            <p>Given the joint distribution \( P(X,Y) \): (+x,+y) = 0.2, (+x,−y) = 0.3, (−x,+y) = 0.4, (−x,−y) = 0.1.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Question</th><th>Working</th><th>Answer</th></tr></thead>
+                    <tbody>
+                        <tr><td>\( P(+x, +y) \)</td><td>read one row</td><td><strong>0.2</strong></td></tr>
+                        <tr><td>\( P(+x) \)</td><td>\(0.2 + 0.3\)</td><td><strong>0.5</strong></td></tr>
+                        <tr><td>\( P(-y \text{ OR } +x) \)</td><td>\((0.3 + 0.1) + 0.5 - 0.3\)</td><td><strong>0.6</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>The last one is inclusion–exclusion:</p>
+            <div class="math-block">
+                \[ P(A \cup B) = P(A) + P(B) - P(A \cap B) \]
+            </div>
+            <p>Adding 0.4 and 0.5 alone would double-count the (+x, −y) row.</p>
+
+            <h3>Marginal Distributions</h3>
+            <p><strong>Marginal distributions</strong> are sub-tables which eliminate variables. <strong>Marginalization (summing out)</strong> combines collapsed rows by adding:</p>
+            <div class="math-block">
+                \[ P(X_1 = x_1) = \sum_{x_2} P(X_1 = x_1,\ X_2 = x_2) \]
+            </div>
+            <p>From the T/W joint above: \( P(hot) = 0.4 + 0.1 = 0.5 \), \( P(sun) = 0.4 + 0.2 = 0.6 \), \( P(rain) = 0.1 + 0.3 = 0.4 \).</p>
+
+            <h3>Quiz: Marginal Distributions</h3>
+            <p>From the same \(P(X,Y)\): \( P(+x) = 0.5,\ P(-x) = 0.5 \) and \( P(+y) = 0.6,\ P(-y) = 0.4 \).</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Conditional Probability</h2>
+            <p>A simple relation between joint and conditional probabilities — in fact this is taken as the <em>definition</em> of a conditional probability:</p>
+            <div class="math-block">
+                \[ P(a \mid b) = \frac{P(a, b)}{P(b)} \]
+            </div>
+            <p><strong>Conditional distributions</strong> are probability distributions over some variables given fixed values of others. From the T/W joint:</p>
+            <div class="math-block">
+                \[ P(W = sun \mid T = cold) = \frac{P(sun, cold)}{P(cold)} = \frac{0.2}{0.5} = 0.4 \]
+                \[ P(W = rain \mid T = cold) = \frac{0.3}{0.5} = 0.6 \]
+            </div>
+            <p>Note the conditional distribution is itself a proper distribution — 0.4 + 0.6 = 1.</p>
+
+            <h3>Quiz: Conditional Probabilities</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Question</th><th>Working</th><th>Answer</th></tr></thead>
+                    <tbody>
+                        <tr><td>\( P(+x \mid +y) \)</td><td>\(0.2 / 0.6\)</td><td><strong>1/3 ≈ 0.333</strong></td></tr>
+                        <tr><td>\( P(-x \mid +y) \)</td><td>\(0.4 / 0.6\)</td><td><strong>2/3 ≈ 0.667</strong></td></tr>
+                        <tr><td>\( P(-y \mid +x) \)</td><td>\(0.3 / 0.5\)</td><td><strong>0.6</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Probabilistic Inference</h3>
+            <p><strong>Probabilistic inference</strong> means computing a desired probability from other known probabilities (e.g. a conditional from a joint). We generally compute <em>conditional</em> probabilities — these represent the agent's beliefs given the evidence — and beliefs change as evidence arrives:</p>
+            <ul>
+                <li>\[ P(\text{on time} \mid \text{no reported accidents}) = 0.90 \]</li>
+                <li>\[ P(\text{on time} \mid \text{no accidents, 5 a.m.}) = 0.95 \]</li>
+                <li>\[ P(\text{on time} \mid \text{no accidents, 5 a.m., raining}) = 0.80 \]</li>
+            </ul>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Product Rule and Chain Rule</h2>
+            <h3>The Product Rule</h3>
+            <p>Sometimes we have conditional distributions but want the joint. Rearranging the definition of conditional probability:</p>
+            <div class="math-block">
+                \[ P(a, b) = P(a \mid b)\, P(b) \]
+            </div>
+            <p><strong>Example.</strong> Given \( P(W) \) and \( P(D \mid W) \), multiply to get the joint \( P(D, W) \):</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>D</th><th>W</th><th>\(P(D \mid W)\)</th><th>\(P(W)\)</th><th>\(P(D, W)\)</th></tr></thead>
+                    <tbody>
+                        <tr><td>wet</td><td>sun</td><td>0.1</td><td>0.8</td><td>0.08</td></tr>
+                        <tr><td>dry</td><td>sun</td><td>0.9</td><td>0.8</td><td>0.72</td></tr>
+                        <tr><td>wet</td><td>rain</td><td>0.7</td><td>0.2</td><td>0.14</td></tr>
+                        <tr><td>dry</td><td>rain</td><td>0.3</td><td>0.2</td><td>0.06</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>The Chain Rule</h3>
+            <p>More generally, we can always write any joint distribution as an incremental product of conditional distributions:</p>
+            <div class="math-block">
+                \[ P(x_1, x_2, x_3) = P(x_1)\, P(x_2 \mid x_1)\, P(x_3 \mid x_1, x_2) \]
+                \[ P(x_1, x_2, \dots, x_n) = \prod_i P(x_i \mid x_1, \dots, x_{i-1}) \]
+            </div>
+            <p>This is <em>always</em> true — no independence assumption needed. It is the foundation that Bayes' nets and Naive Bayes both build on.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Bayes' Rule</h2>
+            <p>There are two ways to factor a joint distribution over two variables:</p>
+            <div class="math-block">
+                \[ P(a, b) = P(a \mid b)\, P(b) = P(b \mid a)\, P(a) \]
+            </div>
+            <p>Dividing, we get <strong>Bayes' Rule</strong>:</p>
+            <div class="math-block">
+                \[ P(a \mid b) = \frac{P(b \mid a)\, P(a)}{P(b)} \]
+            </div>
+            <p><strong>Why is this helpful?</strong> It lets us build one conditional from its reverse. Often one conditional is tricky but the other one is simple — and it is the foundation of many systems (automatic speech recognition, machine translation). It is in the running for the <em>most important equation in AI</em>.</p>
+
+            <h3>Inference with Bayes' Rule</h3>
+            <p>The classic use is getting a <strong>diagnostic</strong> probability from a <strong>causal</strong> one:</p>
+            <div class="math-block">
+                \[ P(\text{cause} \mid \text{effect}) = \frac{P(\text{effect} \mid \text{cause})\, P(\text{cause})}{P(\text{effect})} \]
+            </div>
+            <p><strong>Example.</strong> \(M\): meningitis, \(S\): stiff neck. Given \( P(+m) = 0.0001 \), \( P(+s \mid +m) = 0.8 \), \( P(+s \mid -m) = 0.01 \):</p>
+            <div class="math-block">
+                \[ P(+m \mid +s) = \frac{P(+s \mid +m) P(+m)}{P(+s \mid +m)P(+m) + P(+s \mid -m)P(-m)} = \frac{0.8 \times 0.0001}{0.8 \times 0.0001 + 0.01 \times 0.9999} \approx 0.0079 \]
+            </div>
+            <ul>
+                <li><strong>Note:</strong> the posterior probability of meningitis is still very small — under 1% — because the prior is tiny. A strong likelihood cannot rescue a rare cause on its own.</li>
+                <li><strong>Note:</strong> you should still get stiff necks checked out! Why? Because the <em>cost</em> of missing meningitis is enormous. Probability alone does not make the decision — utility does.</li>
+            </ul>
+
+            <h3>Quiz: Bayes' Rule</h3>
+            <p>Given \( P(W) \) = {sun 0.8, rain 0.2} and \( P(D \mid W) \) as in the product-rule table, what is \( P(W \mid dry) \)?</p>
+            <div class="math-block">
+                \[ P(dry) = 0.72 + 0.06 = 0.78 \]
+                \[ P(sun \mid dry) = \frac{0.72}{0.78} = \frac{12}{13} \approx 0.923 \qquad P(rain \mid dry) = \frac{0.06}{0.78} = \frac{1}{13} \approx 0.077 \]
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Independence</h2>
+            <p>Two variables are <strong>independent</strong> if their joint distribution factors into a product of two simpler distributions:</p>
+            <div class="math-block">
+                \[ \forall x, y:\ P(x, y) = P(x)\, P(y) \qquad \text{equivalently} \qquad \forall x, y:\ P(x \mid y) = P(x) \]
+                \[ \text{written } X \perp\!\!\!\perp Y \]
+            </div>
+            <p>Independence is a <em>simplifying modelling assumption</em>. Empirical joint distributions are at best "close" to independent.</p>
+
+            <h3>Example: Independence?</h3>
+            <p>With marginals \(P(T)\) = {hot 0.5, cold 0.5} and \(P(W)\) = {sun 0.6, rain 0.4}:</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>T</th><th>W</th><th>Joint 1</th><th>Joint 2</th><th>\(P(T)P(W)\)</th></tr></thead>
+                    <tbody>
+                        <tr><td>hot</td><td>sun</td><td>0.4</td><td>0.3</td><td>0.30</td></tr>
+                        <tr><td>hot</td><td>rain</td><td>0.1</td><td>0.2</td><td>0.20</td></tr>
+                        <tr><td>cold</td><td>sun</td><td>0.2</td><td>0.3</td><td>0.30</td></tr>
+                        <tr><td>cold</td><td>rain</td><td>0.3</td><td>0.2</td><td>0.20</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p><strong>Joint 1 is not independent</strong> — 0.4 ≠ 0.5 × 0.6. <strong>Joint 2 is independent</strong> — every cell equals the product of its marginals.</p>
+            <p><strong>N fair, independent coin flips:</strong> the full joint needs \(2^N\) numbers, but independence means you only need \(N\) numbers (one per flip). That collapse is exactly what we are hunting for.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Conditional Independence</h2>
+            <p>Unconditional (absolute) independence is very rare. <strong>Conditional independence</strong> is our most basic and robust form of knowledge about uncertain environments.</p>
+            <p>Consider \( P(\text{Toothache}, \text{Cavity}, \text{Catch}) \). If I have a cavity, the probability that the probe catches in it doesn't depend on whether I have a toothache:</p>
+            <ul>
+                <li>\[ P(+catch \mid +toothache, +cavity) = P(+catch \mid +cavity) \]</li>
+                <li>The same holds if I don't have a cavity:
+                    \[ P(+catch \mid +toothache, -cavity) = P(+catch \mid -cavity) \]</li>
+                <li>So <em>Catch</em> is conditionally independent of <em>Toothache</em> given <em>Cavity</em>.</li>
+            </ul>
+            <p>Formally, \(X\) is conditionally independent of \(Y\) given \(Z\) if and only if:</p>
+            <div class="math-block">
+                \[ \forall x,y,z:\ P(x, y \mid z) = P(x \mid z)\, P(y \mid z) \]
+                \[ \text{equivalently} \qquad \forall x,y,z:\ P(x \mid z, y) = P(x \mid z) \]
+            </div>
+            <p>These statements are equivalent and each can be derived from the other easily.</p>
+            <div class="callout">
+                <p><strong>Think about these domains:</strong> Traffic, Umbrella, Raining — is Traffic independent of Umbrella given Raining? And Fire, Smoke, Alarm — is Alarm independent of Fire given Smoke? In each case the middle variable "explains away" the connection between the other two.</p>
+            </div>
+
+            <h3>Conditional Independence and the Chain Rule</h3>
+            <p>Start from the chain rule, which is always valid:</p>
+            <div class="math-block">
+                \[ P(X_1, X_2, \dots, X_n) = \prod_i P(X_i \mid X_1 \dots X_{i-1}) \]
+            </div>
+            <p>Now assume conditional independences and the conditioning sets shrink dramatically. Bayes' nets / graphical models are the machinery for expressing exactly which conditional independence assumptions we are making.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Bayes' Nets: The Big Picture</h2>
+            <h3>Graphical Model Notation</h3>
+            <ul>
+                <li><strong>Nodes:</strong> variables (with domains). Can be assigned (observed) or unassigned (unobserved).</li>
+                <li><strong>Arcs:</strong> interactions. Similar to CSP constraints; they indicate "direct influence" between variables, and formally they encode conditional independence.</li>
+                <li>For now, imagine that arrows mean direct causation — though in general they don't.</li>
+            </ul>
+
+            <h3>Bayes' Net Semantics</h3>
+            <p>A Bayes net is <strong>topology (graph) + local conditional probabilities</strong>:</p>
+            <ul>
+                <li>A set of nodes, one per variable \(X\).</li>
+                <li>A directed, acyclic graph.</li>
+                <li>A conditional distribution for each node — a collection of distributions over \(X\), one for each combination of the parents' values. This is the <strong>CPT</strong> (conditional probability table), a description of a noisy "causal" process.</li>
+            </ul>
+
+            <h3>Probabilities in Bayes' Nets</h3>
+            <p>Bayes' nets implicitly encode joint distributions as a product of local conditional distributions. To see what probability a BN gives to a full assignment, multiply all the relevant conditionals together:</p>
+            <div class="math-block">
+                \[ P(x_1, x_2, \dots, x_n) = \prod_{i=1}^{n} P(x_i \mid \text{parents}(X_i)) \]
+            </div>
+            <p>Why is this guaranteed to give a proper joint distribution? Because it is the chain rule (always valid) plus the assumed conditional independences. <strong>Not every BN can represent every joint distribution</strong> — the topology enforces certain conditional independencies.</p>
+            <div class="table-wrap">
+                <table>
+                    <caption><strong>Example: Traffic.</strong> \(R\) = it rains, \(T\) = there is traffic, with \(R \rightarrow T\).</caption>
+                    <thead><tr><th>\(P(R)\)</th><th></th><th>\(P(T \mid R)\)</th><th></th></tr></thead>
+                    <tbody>
+                        <tr><td>+r</td><td>1/4</td><td>+r, +t</td><td>3/4</td></tr>
+                        <tr><td>−r</td><td>3/4</td><td>+r, −t</td><td>1/4</td></tr>
+                        <tr><td></td><td></td><td>−r, +t</td><td>1/2</td></tr>
+                        <tr><td></td><td></td><td>−r, −t</td><td>1/2</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>With \(N\) independent coin flips the net has <em>no arcs</em> — only distributions whose variables are absolutely independent can be represented by a Bayes' net with no arcs.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Classification</h2>
+            <p>Up until now: how to use a model to make optimal decisions. <strong>Machine learning</strong> is how to acquire a model from data / experience — learning parameters (e.g. probabilities), structure (e.g. BN graphs), or hidden concepts (e.g. clustering).</p>
+            <p><strong>Classification:</strong> given inputs \(x\), predict labels (classes) \(y\).</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Task</th><th>Input</th><th>Classes</th><th>Features</th></tr></thead>
+                    <tbody>
+                        <tr><th>Spam filter</th><td>an email</td><td>spam / ham</td><td>Words (<em>FREE!</em>), text patterns ($dd, CAPS), non-text (SenderInContacts)</td></tr>
+                        <tr><th>Digit recognition</th><td>images / pixel grids</td><td>a digit 0–9</td><td>Pixels: (6,8)=ON; shape patterns: NumComponents, AspectRatio, NumLoops</td></tr>
+                        <tr><th>Medical diagnosis</th><td>symptoms</td><td>diseases</td><td>—</td></tr>
+                        <tr><th>Fraud detection</th><td>account activity</td><td>fraud / no fraud</td><td>—</td></tr>
+                        <tr><th>Essay grading</th><td>a document</td><td>grades</td><td>—</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p><strong>Setup in every case:</strong> get a large collection of labelled examples (someone has to hand-label all this data), then learn to predict labels of new, future instances. <strong>Features</strong> are the attributes used to make the decision.</p>
+
+            <h3>Model-Based Classification</h3>
+            <ul>
+                <li>Build a model (e.g. a Bayes' net) where <em>both</em> the label and the features are random variables.</li>
+                <li>Instantiate any observed features.</li>
+                <li>Query for the distribution of the label conditioned on the features.</li>
+            </ul>
+            <p>The challenges: what structure should the BN have, and how should we learn its parameters?</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>The Naive Bayes Model</h2>
+            <p>Naive Bayes answers the structure question in the simplest possible way: <strong>one parent (the label \(Y\)) pointing at every feature, and no arcs among the features.</strong></p>
+            <div class="math-block">
+                \[ P(Y, F_1, F_2, \dots, F_n) = P(Y) \prod_{i=1}^{n} P(F_i \mid Y) \]
+            </div>
+            <p>We only have to specify how each feature depends on the class. The "naive" part is the assumption that the features are <strong>conditionally independent given the label</strong>.</p>
+
+            <h3>Why this matters: parameter counts</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Model</th><th>Number of parameters</th><th>Growth</th></tr></thead>
+                    <tbody>
+                        <tr><th>Full joint \(P(Y, F_1 \dots F_n)\)</th><td>\(|Y| \times |F|^n\) values</td><td>exponential in \(n\)</td></tr>
+                        <tr><th>Naive Bayes</th><td>\(|Y|\) for the prior + \(n \times |F| \times |Y|\) for the CPTs</td><td><strong>linear in \(n\)</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="callout">
+                <p>The model is very simplistic, but often works anyway. That combination — wrong assumptions, useful answers — is why Naive Bayes is still a real tool and not just a teaching example.</p>
+            </div>
+
+            <h3>Inference for Naive Bayes</h3>
+            <p><strong>Goal:</strong> compute the posterior distribution over the label variable \(Y\) given evidence \(f_1 \dots f_n\).</p>
+            <ol>
+                <li><strong>Step 1:</strong> get the joint probability of the label and the evidence, for each label:
+                    \[ P(y, f_1 \dots f_n) = P(y) \prod_i P(f_i \mid y) \]
+                </li>
+                <li><strong>Step 2:</strong> sum over labels to get the probability of the evidence:
+                    \[ P(f_1 \dots f_n) = \sum_y P(y, f_1 \dots f_n) \]
+                </li>
+                <li><strong>Step 3:</strong> normalize — divide Step 1 by Step 2:
+                    \[ P(y \mid f_1 \dots f_n) = \frac{P(y, f_1 \dots f_n)}{P(f_1 \dots f_n)} \]
+                </li>
+            </ol>
+            <p>In practice \(P(f_1 \dots f_n)\) is the same for every label, so it is common to compute the unnormalized scores and normalize only at the end. That constant is often written \(\alpha\).</p>
+
+            <h3>What do we need in order to use Naive Bayes?</h3>
+            <ul>
+                <li><strong>An inference method</strong> — the three steps above. Nothing new here.</li>
+                <li><strong>Estimates of the local conditional probability tables:</strong> \(P(Y)\), the prior over labels, and \(P(F_i \mid Y)\) for each feature. These are collectively the <strong>parameters</strong> of the model, denoted \(\theta\).</li>
+            </ul>
+            <p>Where do the parameters come from? <strong>Training data counts</strong> — which is what the worked examples below do.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Building up: a single-evidence classifier</h2>
+            <p>Before the full model, take just one feature. Using the 14-day weather dataset below with only <em>Humidity</em> as evidence:</p>
+            <ul>
+                <li><strong>Priors:</strong> \(P(play = yes) = 9/14\), \(P(play = no) = 5/14\).</li>
+                <li>How many times is Humidity = normal out of all 9 Yes's? 6. So \(P(normal \mid yes) = 6/9\).</li>
+                <li>How many times is Humidity = normal out of all 5 No's? 1. So \(P(normal \mid no) = 1/5\).</li>
+                <li>Similarly \(P(high \mid yes) = 3/9\) and \(P(high \mid no) = 4/5\).</li>
+            </ul>
+            <p><strong>Today is a high humidity day — what is the probability we play?</strong></p>
+            <div class="math-block">
+                \[ P(yes \mid high) = P(yes)P(high \mid yes)\,\alpha = \tfrac{9}{14} \cdot \tfrac{3}{9} \cdot \alpha = \tfrac{3}{14}\alpha \]
+                \[ P(no \mid high) = P(no)P(high \mid no)\,\alpha = \tfrac{5}{14} \cdot \tfrac{4}{5} \cdot \alpha = \tfrac{4}{14}\alpha \]
+            </div>
+            <p>So the odds are <strong>4:3 against playing</strong> given high humidity — versus <strong>5:9 against</strong> before any evidence. Observing high humidity moved the belief substantially, and we never needed \(P(high)\) itself.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Worked Example: Play Golf</h2>
+            <p>The standard 14-row weather dataset. Four features — Outlook, Temp, Humidity, Windy — and the label Play Golf.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>#</th><th>Outlook</th><th>Temp</th><th>Humidity</th><th>Windy</th><th>Play Golf</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td>Rainy</td><td>Hot</td><td>High</td><td>False</td><td>No</td></tr>
+                        <tr><td>2</td><td>Rainy</td><td>Hot</td><td>High</td><td>True</td><td>No</td></tr>
+                        <tr><td>3</td><td>Overcast</td><td>Hot</td><td>High</td><td>False</td><td>Yes</td></tr>
+                        <tr><td>4</td><td>Sunny</td><td>Mild</td><td>High</td><td>False</td><td>Yes</td></tr>
+                        <tr><td>5</td><td>Sunny</td><td>Cool</td><td>Normal</td><td>False</td><td>Yes</td></tr>
+                        <tr><td>6</td><td>Sunny</td><td>Cool</td><td>Normal</td><td>True</td><td>No</td></tr>
+                        <tr><td>7</td><td>Overcast</td><td>Cool</td><td>Normal</td><td>True</td><td>Yes</td></tr>
+                        <tr><td>8</td><td>Rainy</td><td>Mild</td><td>High</td><td>False</td><td>No</td></tr>
+                        <tr><td>9</td><td>Rainy</td><td>Cool</td><td>Normal</td><td>False</td><td>Yes</td></tr>
+                        <tr><td>10</td><td>Sunny</td><td>Mild</td><td>Normal</td><td>False</td><td>Yes</td></tr>
+                        <tr><td>11</td><td>Rainy</td><td>Mild</td><td>Normal</td><td>True</td><td>Yes</td></tr>
+                        <tr><td>12</td><td>Overcast</td><td>Mild</td><td>High</td><td>True</td><td>Yes</td></tr>
+                        <tr><td>13</td><td>Overcast</td><td>Hot</td><td>Normal</td><td>False</td><td>Yes</td></tr>
+                        <tr><td>14</td><td>Sunny</td><td>Mild</td><td>High</td><td>True</td><td>No</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p><strong>Priors:</strong> 9 Yes and 5 No out of 14, so \(P(Yes) = 9/14\) and \(P(No) = 5/14\).</p>
+
+            <h3>Likelihood tables</h3>
+            <p>Each entry is a count divided by the class total (9 for Yes, 5 for No):</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Feature</th><th>Value</th><th>\(P(\cdot \mid Yes)\)</th><th>\(P(\cdot \mid No)\)</th></tr></thead>
+                    <tbody>
+                        <tr><th rowspan="3">Outlook</th><td>Sunny</td><td>3/9</td><td>2/5</td></tr>
+                        <tr><td>Overcast</td><td>4/9</td><td><strong>0/5</strong></td></tr>
+                        <tr><td>Rainy</td><td>2/9</td><td>3/5</td></tr>
+                        <tr><th rowspan="3">Temp</th><td>Hot</td><td>2/9</td><td>2/5</td></tr>
+                        <tr><td>Mild</td><td>4/9</td><td>2/5</td></tr>
+                        <tr><td>Cool</td><td>3/9</td><td>1/5</td></tr>
+                        <tr><th rowspan="2">Humidity</th><td>High</td><td>3/9</td><td>4/5</td></tr>
+                        <tr><td>Normal</td><td>6/9</td><td>1/5</td></tr>
+                        <tr><th rowspan="2">Windy</th><td>False</td><td>6/9</td><td>2/5</td></tr>
+                        <tr><td>True</td><td>3/9</td><td>3/5</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Note \(P(Overcast \mid No) = 0/5\). That zero is a landmine — hold that thought until the smoothing section.</p>
+
+            <h3>Query 1 — Sunny, Hot, Normal humidity, no wind</h3>
+            <div class="math-block">
+                \[ P(Yes \mid today) = \frac{P(Sunny \mid Yes)P(Hot \mid Yes)P(Normal \mid Yes)P(NoWind \mid Yes)P(Yes)}{P(today)} \]
+            </div>
+            <p>\(P(today)\) is common to both classes, so we ignore it and compute proportional scores:</p>
+            <div class="math-block">
+                \[ P(Yes \mid today) \propto \tfrac{3}{9} \cdot \tfrac{2}{9} \cdot \tfrac{6}{9} \cdot \tfrac{6}{9} \cdot \tfrac{9}{14} \approx 0.0212 \]
+                \[ P(No \mid today) \propto \tfrac{2}{5} \cdot \tfrac{2}{5} \cdot \tfrac{1}{5} \cdot \tfrac{2}{5} \cdot \tfrac{5}{14} \approx 0.0046 \]
+            </div>
+            <p>The two posteriors must sum to 1, so normalize:</p>
+            <div class="math-block">
+                \[ P(Yes \mid today) = \frac{0.0212}{0.0212 + 0.0046} \approx \mathbf{0.8217} \qquad P(No \mid today) = \frac{0.0046}{0.0212 + 0.0046} \approx \mathbf{0.1783} \]
+            </div>
+            <p><strong>Answer: play golf</strong>, with about 82% confidence.</p>
+
+            <h3>Query 2 — Sunny, Cool, High humidity, windy</h3>
+            <p>Reading the likelihoods for this evidence straight off the table above:</p>
+            <div class="math-block">
+                \[ P(yes \mid E) \propto \tfrac{3}{9} \cdot \tfrac{3}{9} \cdot \tfrac{3}{9} \cdot \tfrac{3}{9} \cdot \tfrac{9}{14} = \tfrac{1}{126} \approx 0.0079 \]
+                \[ P(no \mid E) \propto \tfrac{2}{5} \cdot \tfrac{1}{5} \cdot \tfrac{4}{5} \cdot \tfrac{3}{5} \cdot \tfrac{5}{14} \approx 0.0137 \]
+            </div>
+            <p>Normalizing: \(P(yes \mid E) \approx 0.367\) and \(P(no \mid E) \approx 0.633\). <strong>Answer: don't play</strong> — the same dataset, opposite conclusion, driven entirely by the evidence.</p>
+            <p>Don't worry about the \(1/P(E)\) term; it is \(\alpha\), the normalization constant.</p>
+            <div class="callout">
+                <p><strong>Careful — the lecture slides use two different versions of this dataset.</strong> The table printed on the slides (reproduced above) has <em>Sunny</em> on 3 Yes days and 2 No days. The later slides that work this second query use the textbook version of the weather data, in which <em>Sunny</em> and <em>Rainy</em> are swapped — \(P(Sunny \mid yes) = 2/9\) and \(P(Sunny \mid no) = 3/5\) — and therefore quote \(0.0053\) and \(0.0206\), normalizing to about 20% / 80%. The column totals are identical in both versions, so the discrepancy is easy to miss. <strong>The conclusion is the same either way — don't play</strong> — but check which table you have been given before quoting numbers in an exam.</p>
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Smoothing</h2>
+            <h3>The problem: unseen events</h3>
+            <p>Look again at \(P(Overcast \mid No) = 0/5\). If a test day is Overcast, then <em>every</em> term in the No product is multiplied by zero:</p>
+            <div class="math-block">
+                \[ P(No \mid \text{Overcast}, \dots) \propto \tfrac{2}{5} \cdot \dots \cdot \mathbf{0} \cdot \dots = 0 \]
+            </div>
+            <p>The classifier becomes <strong>absolutely certain</strong> the answer is Yes, on the strength of five training rows that merely happened not to include an overcast non-golf day. This is <strong>overfitting</strong>: one unobserved combination vetoes an entire class no matter what the other features say.</p>
+
+            <h3>Laplace smoothing</h3>
+            <p><strong>Laplace's estimate:</strong> pretend you saw every outcome one more time than you actually did. Extended: pretend you saw every outcome \(k\) extra times.</p>
+            <div class="math-block">
+                \[ P_{LAP,k}(x) = \frac{c(x) + k}{N + k|X|} \]
+            </div>
+            <p>and for conditionals — smooth each condition independently:</p>
+            <div class="math-block">
+                \[ P_{LAP,k}(x \mid y) = \frac{c(x, y) + k}{c(y) + k|X|} \]
+            </div>
+            <ul>
+                <li>\(c(x)\) is the count of \(x\), \(N\) is the total count, and \(|X|\) is the <strong>number of values the variable can take</strong> — not the number of training rows.</li>
+                <li><strong>\(k\) is the strength of the prior.</strong> Laplace with \(k = 0\) is just the unsmoothed count ratio.</li>
+            </ul>
+            <p><strong>Example.</strong> You draw three balls: red, red, blue. So \(N = 3\), \(|X| = 2\):</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>\(k\)</th><th>\(P(red)\)</th><th>\(P(blue)\)</th><th>Effect</th></tr></thead>
+                    <tbody>
+                        <tr><td>0</td><td>2/3 ≈ 0.667</td><td>1/3 ≈ 0.333</td><td>raw counts</td></tr>
+                        <tr><td>1</td><td>3/5 = 0.600</td><td>2/5 = 0.400</td><td>pulled toward uniform</td></tr>
+                        <tr><td>100</td><td>102/203 ≈ 0.502</td><td>101/203 ≈ 0.498</td><td>almost entirely uniform</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>As \(k\) grows the data matters less and the uniform prior matters more.</p>
+
+            <h3>Worked Example: Play Golf with \(k = 2\)</h3>
+            <p>Same query — Sunny, Hot, Normal humidity, no wind — now with Laplace smoothing at \(k = 2\). Watch the \(|X|\) for each feature: Outlook and Temp have 3 values, Humidity and Windy have 2, and the label has 2.</p>
+            <div class="math-block">
+                \[ P(y) = \frac{9+2}{14 + 2 \cdot 2} = \frac{11}{18} \qquad P(n) = \frac{5+2}{14 + 2 \cdot 2} = \frac{7}{18} \]
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Term</th><th>\(|X|\)</th><th>Given Yes</th><th>Given No</th></tr></thead>
+                    <tbody>
+                        <tr><th>\(P(sunny \mid \cdot)\)</th><td>3</td><td>\(\frac{3+2}{9+2\cdot3} = \frac{5}{15}\)</td><td>\(\frac{2+2}{5+2\cdot3} = \frac{4}{11}\)</td></tr>
+                        <tr><th>\(P(hot \mid \cdot)\)</th><td>3</td><td>\(\frac{2+2}{9+2\cdot3} = \frac{4}{15}\)</td><td>\(\frac{2+2}{5+2\cdot3} = \frac{4}{11}\)</td></tr>
+                        <tr><th>\(P(normal \mid \cdot)\)</th><td>2</td><td>\(\frac{6+2}{9+2\cdot2} = \frac{8}{13}\)</td><td>\(\frac{1+2}{5+2\cdot2} = \frac{3}{9}\)</td></tr>
+                        <tr><th>\(P(false \mid \cdot)\)</th><td>2</td><td>\(\frac{6+2}{9+2\cdot2} = \frac{8}{13}\)</td><td>\(\frac{2+2}{5+2\cdot2} = \frac{4}{9}\)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="math-block">
+                \[ P(y, \text{today}) = \tfrac{11}{18} \cdot \tfrac{5}{15} \cdot \tfrac{4}{15} \cdot \tfrac{8}{13} \cdot \tfrac{8}{13} \approx 0.0206 \]
+                \[ P(n, \text{today}) = \tfrac{7}{18} \cdot \tfrac{4}{11} \cdot \tfrac{4}{11} \cdot \tfrac{3}{9} \cdot \tfrac{4}{9} \approx 0.0076 \]
+                \[ P(y \mid \text{today}) = \frac{0.0206}{0.0206 + 0.0076} \approx \mathbf{0.73} \qquad P(n \mid \text{today}) \approx \mathbf{0.27} \]
+            </div>
+            <p>Still "play golf", but the confidence has dropped from <strong>82% to 73%</strong>. That is smoothing doing its job: it pulls every estimate toward uniform, so the model becomes less willing to make extreme claims from thin evidence.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Practice: Past Exam Question</h2>
+            <div class="callout">
+                <p>Consider the following data collected from city schools to determine whether a student is suitable to play in the football team. Use a Naive Bayes classifier with <strong>Laplacian smoothing (k = 1)</strong> to determine whether a student with the features &lt;14, Short, High, High&gt; is likely to be selected. &nbsp;<em>[7 marks]</em></p>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Age</th><th>Height</th><th>Speed</th><th>Stamina</th><th>Selected</th></tr></thead>
+                    <tbody>
+                        <tr><td>12</td><td>Tall</td><td>High</td><td>High</td><td>Yes</td></tr>
+                        <tr><td>13</td><td>Average</td><td>High</td><td>Low</td><td>No</td></tr>
+                        <tr><td>12</td><td>Short</td><td>Normal</td><td>High</td><td>No</td></tr>
+                        <tr><td>14</td><td>Tall</td><td>High</td><td>Low</td><td>Yes</td></tr>
+                        <tr><td>13</td><td>Tall</td><td>Normal</td><td>High</td><td>Yes</td></tr>
+                        <tr><td>14</td><td>Short</td><td>Normal</td><td>Low</td><td>No</td></tr>
+                        <tr><td>12</td><td>Average</td><td>High</td><td>High</td><td>Yes</td></tr>
+                        <tr><td>13</td><td>Short</td><td>High</td><td>Low</td><td>No</td></tr>
+                        <tr><td>14</td><td>Tall</td><td>Normal</td><td>High</td><td>Yes</td></tr>
+                        <tr><td>14</td><td>Average</td><td>Normal</td><td>Low</td><td>No</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Solution</h3>
+            <p>There are 10 rows: 5 Yes and 5 No. Domain sizes: Age {12,13,14} → \(|X|=3\); Height {Tall, Average, Short} → \(|X|=3\); Speed {High, Normal} → \(|X|=2\); Stamina {High, Low} → \(|X|=2\); label → \(|X|=2\).</p>
+            <div class="math-block">
+                \[ P(F = yes) = \frac{5+1}{10 + 1 \cdot 2} = \frac{6}{12} \qquad P(F = no) = \frac{5+1}{10 + 1 \cdot 2} = \frac{6}{12} \]
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Term</th><th>Raw counts</th><th>Given Yes</th><th>Given No</th></tr></thead>
+                    <tbody>
+                        <tr><th>\(P(14 \mid \cdot)\)</th><td>2 of 5 Yes, 2 of 5 No</td><td>\(\frac{2+1}{5+3} = \frac{3}{8}\)</td><td>\(\frac{2+1}{5+3} = \frac{3}{8}\)</td></tr>
+                        <tr><th>\(P(Short \mid \cdot)\)</th><td><strong>0</strong> of 5 Yes, 3 of 5 No</td><td>\(\frac{0+1}{5+3} = \frac{1}{8}\)</td><td>\(\frac{3+1}{5+3} = \frac{4}{8}\)</td></tr>
+                        <tr><th>\(P(Speed{=}High \mid \cdot)\)</th><td>3 of 5 Yes, 2 of 5 No</td><td>\(\frac{3+1}{5+2} = \frac{4}{7}\)</td><td>\(\frac{2+1}{5+2} = \frac{3}{7}\)</td></tr>
+                        <tr><th>\(P(Stamina{=}High \mid \cdot)\)</th><td>4 of 5 Yes, 1 of 5 No</td><td>\(\frac{4+1}{5+2} = \frac{5}{7}\)</td><td>\(\frac{1+1}{5+2} = \frac{2}{7}\)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Note the smoothing earning its keep: no selected student is Short, so the raw \(P(Short \mid yes)\) is 0 and would have forced the Yes score to zero outright.</p>
+            <div class="math-block">
+                \[ P(yes, 14, short, high, high) = \tfrac{6}{12} \cdot \tfrac{3}{8} \cdot \tfrac{1}{8} \cdot \tfrac{4}{7} \cdot \tfrac{5}{7} = \frac{15}{32 \cdot 49} \approx 0.0096 \]
+                \[ P(no, 14, short, high, high) = \tfrac{6}{12} \cdot \tfrac{3}{8} \cdot \tfrac{4}{8} \cdot \tfrac{3}{7} \cdot \tfrac{2}{7} = \frac{9}{16 \cdot 49} \approx 0.0115 \]
+            </div>
+            <p>Normalizing: \(P(yes \mid x) = \frac{15}{33} = \frac{5}{11} \approx 45.5\%\) and \(P(no \mid x) = \frac{18}{33} = \frac{6}{11} \approx 54.5\%\).</p>
+            <div class="callout">
+                <p><strong>Answer: the student is NOT likely to be selected</strong>, since \(0.0115 > 0.0096\). It is a close call, and being Short is what decides it.</p>
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Exam Checklist</h2>
+            <ul>
+                <li>Read a probability off a <strong>joint table</strong>; compute an event by summing rows; remember inclusion–exclusion for OR.</li>
+                <li><strong>Marginalize</strong> by summing out a variable; <strong>condition</strong> by dividing by the evidence probability.</li>
+                <li>State and apply the <strong>product rule</strong>, <strong>chain rule</strong> and <strong>Bayes' rule</strong>; get a diagnostic probability from a causal one.</li>
+                <li>Test <strong>independence</strong> by checking \(P(x,y) = P(x)P(y)\) for every cell; state <strong>conditional independence</strong> both ways.</li>
+                <li>Write the Naive Bayes factorization and say why the parameter count is <strong>linear</strong> rather than exponential in \(n\).</li>
+                <li>Build <strong>likelihood tables</strong> from a dataset by counting, then classify a query and <strong>normalize</strong> at the end.</li>
+                <li>Apply <strong>Laplace smoothing</strong> — and be careful that \(|X|\) is the number of <em>values of that feature</em>, and that the denominator for a conditional is \(c(y) + k|X|\), not \(N + k|X|\).</li>
+            </ul>
+        </section>
+
+        <section class="glass-panel">
+            <h2>References</h2>
+            <ul>
+                <li>AIMA Chapter 13.2–13.5 (probability, Bayes' rule) and 20.2 (Naive Bayes models)</li>
+                <li>CS 188 (UC Berkeley), Probability and Naive Bayes — <a href="http://ai.berkeley.edu">ai.berkeley.edu</a></li>
+                <li>Previous year questions</li>
+            </ul>
+        </section>
+    </div>
+</body>
+</html>

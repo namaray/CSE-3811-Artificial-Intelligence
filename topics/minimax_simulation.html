@@ -242,6 +242,15 @@
 
         .hint { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.75rem; }
 
+        /* On phone widths the long "Cutoff test" option and the fixed-width
+           text fields pushed past the viewport; let them shrink and wrap. */
+        @media (max-width: 640px) {
+            .sim-controls { gap: 0.6rem; }
+            .sim-controls .group { flex-wrap: wrap; min-width: 0; max-width: 100%; }
+            select.ctrl, button.ctrl { max-width: 100%; }
+            input.leaf-input { min-width: 0; flex: 1 1 100%; }
+        }
+
         /* Says what the current mode will and won't show, so an empty tree of
            cuts never reads as a broken simulation. */
         .mode-note {
