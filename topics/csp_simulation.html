@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Coloring Simulation - AI Notes</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .sim-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .sim-controls .group { display: flex; align-items: center; gap: 0.5rem; }
+
+        button.ctrl, select.ctrl {
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.55rem 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+        }
+
+        button.ctrl:hover:not(:disabled), select.ctrl:hover {
+            background: rgba(108, 92, 231, 0.25);
+            border-color: var(--accent-primary);
+        }
+
+        button.ctrl:active:not(:disabled) { transform: translateY(1px); }
+        button.ctrl:disabled, select.ctrl:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        button.ctrl.primary { background: var(--accent-primary); border-color: var(--accent-primary); }
+        button.ctrl.primary:hover:not(:disabled) { background: #8377ec; }
+
+        select.ctrl { padding-right: 0.6rem; }
+        select.ctrl option { background: #16161d; color: var(--text-main); }
+
+        .ctrl-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        input[type=range] { accent-color: var(--accent-primary); width: 110px; }
+
+        /* Heuristic toggles */
+        .toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.5rem 0.85rem;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .toggle:hover { border-color: var(--accent-primary); }
+        .toggle input { accent-color: var(--accent-primary); cursor: pointer; }
+        .toggle.on { background: rgba(108, 92, 231, 0.22); border-color: var(--accent-primary); }
+
+        /* Layout */
+        .sim-grid {
+            display: grid;
+            grid-template-columns: minmax(300px, 1.35fr) minmax(240px, 1fr);
+            gap: 1.25rem;
+            align-items: start;
+        }
+
+        @media (max-width: 760px) { .sim-grid { grid-template-columns: 1fr; } }
+
+        .map-wrap {
+            overflow-x: auto;
+            background: rgba(0, 0, 0, 0.22);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.5rem;
+        }
+
+        svg.map { display: block; width: 100%; height: auto; }
+
+        .region {
+            stroke: rgba(255, 255, 255, 0.45);
+            stroke-width: 2;
+            fill: rgba(255, 255, 255, 0.07);
+            transition: fill 0.3s ease, stroke 0.2s ease;
+        }
+
+        .region.current { stroke: #fff; stroke-width: 4; }
+        .region.conflict { stroke: #e8556d; stroke-width: 4; }
+        .region.wipeout { stroke: #e8556d; stroke-width: 4; stroke-dasharray: 6 4; }
+
+        .region-label {
+            fill: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 800;
+            text-anchor: middle;
+            pointer-events: none;
+            paint-order: stroke;
+            stroke: rgba(0, 0, 0, 0.55);
+            stroke-width: 3px;
+            stroke-linejoin: round;
+        }
+
+        .cgraph-edge { stroke: rgba(255, 255, 255, 0.5); stroke-width: 2; stroke-dasharray: 4 3; }
+        .cgraph-node { fill: rgba(10, 10, 14, 0.85); stroke: var(--accent-secondary); stroke-width: 2; }
+
+        /* Domains panel */
+        .domains {
+            background: rgba(0, 0, 0, 0.22);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem 1.1rem;
+        }
+
+        .domains h4 { margin: 0 0 0.85rem; font-size: 0.78rem; text-transform: uppercase;
+                      letter-spacing: 1px; color: var(--text-muted); font-weight: 600; }
+
+        .dom-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.4rem 0.5rem;
+            border-radius: 7px;
+            transition: background 0.2s ease;
+        }
+
+        .dom-row.current { background: rgba(108, 92, 231, 0.2); }
+        .dom-row.empty { background: rgba(232, 85, 109, 0.16); }
+
+        .dom-name {
+            width: 46px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--text-main);
+            flex-shrink: 0;
+        }
+
+        .chips { display: flex; gap: 0.32rem; flex-wrap: wrap; }
+
+        .chip {
+            width: 20px; height: 20px;
+            border-radius: 5px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            transition: opacity 0.25s ease;
+        }
+
+        .chip.gone { opacity: 0.2; }
+
+        .chip.gone::after {
+            content: '';
+            position: absolute;
+            left: -3px; right: -3px; top: 7px;
+            height: 2px;
+            background: #e8556d;
+            transform: rotate(-45deg);
+        }
+
+        .chip.assigned { border-color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,0.25); }
+
+        .dom-count { font-size: 0.78rem; color: var(--text-muted); margin-left: auto; flex-shrink: 0; }
+
+        /* Stats + log */
+        .stat-row { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.25rem 0; }
+
+        .stat {
+            flex: 1 1 120px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+        }
+
+        .stat .k { display: block; font-size: 0.7rem; text-transform: uppercase;
+                   letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.3rem; }
+        .stat .v { font-size: 1.45rem; font-weight: 800; color: var(--text-main); }
+        .stat .v.accent { color: var(--accent-secondary); }
+        .stat .v.danger { color: #e8556d; }
+
+        .log {
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 1rem 1.2rem;
+            height: 220px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.83rem;
+            line-height: 1.65;
+        }
+
+        .log div { color: var(--text-muted); white-space: pre-wrap; }
+        .log div.cur { color: var(--text-main); background: rgba(108, 92, 231, 0.18); border-radius: 4px; }
+        .log div.bad { color: #ef8b9c; }
+        .log div.good { color: var(--accent-secondary); }
+
+        .mode-note {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.04);
+            border-left: 3px solid var(--glass-border);
+            border-radius: 6px;
+            padding: 0.7rem 1rem;
+            margin: 0 0 1.25rem;
+        }
+
+        .mode-note strong { color: var(--text-main); }
+        .mode-note.good { border-left-color: var(--accent-secondary); color: #a9e8e6; }
+        .mode-note.good strong { color: var(--accent-secondary); }
+        .mode-note.bad { border-left-color: #e8556d; color: #e8b4bd; }
+        .mode-note.bad strong { color: #ff9dae; }
+
+        .legend { display: flex; flex-wrap: wrap; gap: 1.1rem; font-size: 0.85rem;
+                  color: var(--text-muted); margin-top: 1rem; align-items: center; }
+        .legend span { display: inline-flex; align-items: center; gap: 0.45rem; }
+        .sw { width: 14px; height: 14px; border-radius: 4px; display: inline-block;
+              border: 2px solid rgba(255,255,255,0.35); }
+
+        .hint { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.75rem; }
+
+        @media (max-width: 640px) {
+            .sim-controls { gap: 0.6rem; }
+            .sim-controls .group { flex-wrap: wrap; min-width: 0; max-width: 100%; }
+            select.ctrl, button.ctrl { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
+    <div class="container">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link"><span>←</span> Back to Table of Contents</a>
+            <a href="csp.html" class="nav-link">CSP Notes <span>→</span></a>
+        </nav>
+
+        <header>
+            <h1>Map Coloring Simulation</h1>
+            <p style="text-align: center; margin-top: -1.5rem; margin-bottom: 3rem;">Watch backtracking search colour Australia — and see what filtering and ordering actually buy you</p>
+        </header>
+
+        <section class="glass-panel">
+            <h2>The Simulation</h2>
+
+            <div class="sim-controls">
+                <div class="group">
+                    <span class="ctrl-label">Colours</span>
+                    <select id="ncolors" class="ctrl">
+                        <option value="2">2 — red, green</option>
+                        <option value="3" selected>3 — red, green, blue</option>
+                        <option value="4">4 — + yellow</option>
+                    </select>
+                </div>
+                <div class="group">
+                    <span class="ctrl-label">Speed</span>
+                    <input type="range" id="speed" min="80" max="1400" step="20" value="480">
+                </div>
+            </div>
+
+            <div class="sim-controls">
+                <span class="ctrl-label">Improvements</span>
+                <label class="toggle" id="lbl-fc"><input type="checkbox" id="fc"> Forward checking</label>
+                <label class="toggle" id="lbl-mrv"><input type="checkbox" id="mrv"> MRV (variable order)</label>
+                <label class="toggle" id="lbl-lcv"><input type="checkbox" id="lcv"> LCV (value order)</label>
+            </div>
+
+            <div class="sim-controls">
+                <button id="play" class="ctrl primary">▶ Play</button>
+                <button id="step" class="ctrl">Step ›</button>
+                <button id="back" class="ctrl">‹ Back</button>
+                <button id="end" class="ctrl">Skip to end ⏭</button>
+                <button id="reset" class="ctrl">↺ Reset</button>
+                <label class="toggle" id="lbl-graph"><input type="checkbox" id="showgraph"> Show constraint graph</label>
+            </div>
+
+            <p class="mode-note" id="mode-note"></p>
+
+            <div class="sim-grid">
+                <div class="map-wrap">
+                    <svg id="map" class="map" viewBox="0 0 560 470" role="img" aria-label="Map of Australia being coloured"></svg>
+                </div>
+                <div class="domains">
+                    <h4>Domains</h4>
+                    <div id="domlist"></div>
+                    <div class="legend" style="margin-top:0.9rem; font-size:0.8rem;">
+                        <span><i class="chip gone" style="background:#888; position:relative; display:inline-block;"></i> eliminated</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-row">
+                <div class="stat"><span class="k">Status</span><span class="v accent" id="s-status" style="font-size:1.05rem;">—</span></div>
+                <div class="stat"><span class="k">Assignments</span><span class="v" id="s-assign">0</span></div>
+                <div class="stat"><span class="k">Backtracks</span><span class="v danger" id="s-back">0</span></div>
+                <div class="stat"><span class="k">Consistency checks</span><span class="v" id="s-checks">0</span></div>
+                <div class="stat"><span class="k">Values pruned</span><span class="v" id="s-pruned">0</span></div>
+            </div>
+
+            <div class="log" id="log"></div>
+
+            <div class="legend" id="legend"></div>
+            <p class="hint">Every pair of regions that share a border must get different colours. Tasmania borders nothing, so it can take any colour — it is the independent subproblem from the notes.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>How to Read It</h2>
+            <ul>
+                <li>The search assigns <strong>one variable at a time</strong>. The region currently being worked on is outlined in white, and the <strong>Domains</strong> panel on the right shows which colours each region still has available.</li>
+                <li>Backtracking is just depth-first search with <strong>fail-on-violation</strong>: before committing a colour it checks the already-assigned neighbours, and a clash flashes red and is skipped rather than explored.</li>
+                <li>When a region runs out of colours the search <strong>backtracks</strong> — it undoes the last assignment and tries the next colour there instead.</li>
+            </ul>
+
+            <h3>What each improvement does</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Toggle</th><th>What changes on screen</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <th>Forward checking</th>
+                            <td>The moment a colour is assigned, that colour is struck out of every unassigned neighbour's domain. When some domain empties, the failure is caught <em>immediately</em> — the region flashes with a dashed red outline — instead of being discovered many assignments later.</td>
+                        </tr>
+                        <tr>
+                            <th>MRV</th>
+                            <td>Changes <em>which</em> region is picked next: the one with the fewest legal colours left — the most constrained variable, so failure is discovered early rather than after a long wasted branch. On the 2-colour run it alone cuts backtracks from 10 to 4.</td>
+                        </tr>
+                        <tr>
+                            <th>LCV</th>
+                            <td>Changes <em>which colour</em> is tried first at a region: the one that rules out the fewest options for the neighbours, keeping as many downstream choices open as possible.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Things worth trying</h3>
+            <ul>
+                <li><strong>Set colours to 2 and run it.</strong> This is the interesting case. Australia cannot be 2-coloured, so the search has to exhaust every possibility before it can report failure — and that is where the improvements earn their keep:
+                    <div class="table-wrap">
+                        <table>
+                            <caption>Work done proving 2 colours impossible.</caption>
+                            <thead><tr><th>Configuration</th><th>Assignments</th><th>Backtracks</th><th>Consistency checks</th></tr></thead>
+                            <tbody>
+                                <tr><th>Plain backtracking</th><td>10</td><td>10</td><td>22</td></tr>
+                                <tr><th>+ MRV</th><td>4</td><td>4</td><td>10</td></tr>
+                                <tr><th>+ Forward checking</th><td>4</td><td>4</td><td>4</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </li>
+                <li><strong>Be aware that 3 colours is too easy to show much.</strong> With three colours plain backtracking solves Australia in 7 assignments and <em>never backtracks at all</em>, so the heuristics have nothing to repair — forward checking only trims consistency checks from 11 to 7. That is not a flaw in the heuristics; it is what an easy instance looks like. The reason is structural: SA's five neighbours form an open chain rather than a closed ring, so they only ever need two colours between them and a third is always left over for SA.</li>
+                <li><strong>Watch Tasmania.</strong> It has no constraints at all, so whatever it is given first is never revisited — the independent-subproblem idea from the <a href="csp.html">CSP notes</a>, visible in the trace.</li>
+            </ul>
+        </section>
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        var SVG_NS = 'http://www.w3.org/2000/svg';
+
+        var COLORS = [
+            { name: 'red',    hex: '#e74c3c' },
+            { name: 'green',  hex: '#2ecc71' },
+            { name: 'blue',   hex: '#3498db' },
+            { name: 'yellow', hex: '#f1c40f' }
+        ];
+
+        // Schematic Australia: polygons share edges so adjacency is visible.
+        var REGIONS = {
+            WA:  { pts: '40,110 215,105 215,340 130,362 45,255',        label: [124, 236] },
+            NT:  { pts: '215,105 338,95 338,235 215,235',               label: [276, 172] },
+            SA:  { pts: '215,235 338,235 358,250 366,336 252,376 215,340', label: [284, 302] },
+            Q:   { pts: '338,95 520,118 508,250 358,250 338,235',        label: [426, 180] },
+            NSW: { pts: '358,250 508,250 494,332 362,338',               label: [432, 294] },
+            V:   { pts: '362,338 494,332 474,376 378,374',               label: [428, 356] },
+            T:   { pts: '418,412 458,406 466,448 424,455',               label: [442, 432] }
+        };
+
+        var VARS = ['WA', 'NT', 'Q', 'NSW', 'V', 'SA', 'T'];
+
+        var NEIGH = {
+            WA:  ['NT', 'SA'],
+            NT:  ['WA', 'SA', 'Q'],
+            SA:  ['WA', 'NT', 'Q', 'NSW', 'V'],
+            Q:   ['NT', 'SA', 'NSW'],
+            NSW: ['Q', 'SA', 'V'],
+            V:   ['SA', 'NSW'],
+            T:   []
+        };
+
+        var els = {}, events = [], cursor = 0, timer = null;
+        var st = {};   // render state
+
+        function ncolors() { return +document.getElementById('ncolors').value; }
+        function palette() { return COLORS.slice(0, ncolors()); }
+        function useFC()  { return document.getElementById('fc').checked; }
+        function useMRV() { return document.getElementById('mrv').checked; }
+        function useLCV() { return document.getElementById('lcv').checked; }
+        function hexOf(n) { var c = COLORS.find(function (x) { return x.name === n; }); return c ? c.hex : '#888'; }
+
+        /* ---------- trace generation ---------- */
+
+        function generate() {
+            var ev = [], asn = {}, dom = {};
+            var pal = palette().map(function (c) { return c.name; });
+            VARS.forEach(function (v) { dom[v] = pal.slice(); });
+
+            // colours still legal for v given the current assignment
+            function legal(v) {
+                return dom[v].filter(function (c) {
+                    return NEIGH[v].every(function (n) { return asn[n] !== c; });
+                });
+            }
+
+            function pick() {
+                var un = VARS.filter(function (v) { return !(v in asn); });
+                if (!useMRV()) return un[0];
+                var best = un[0], bl = legal(un[0]).length;
+                un.forEach(function (v) {
+                    var l = legal(v).length;
+                    if (l < bl) { best = v; bl = l; }
+                });
+                return best;
+            }
+
+            // how many options this colour removes from unassigned neighbours
+            function ruleOut(v, val) {
+                return NEIGH[v].filter(function (n) {
+                    return !(n in asn) && legal(n).indexOf(val) >= 0;
+                }).length;
+            }
+
+            function order(v) {
+                var vals = dom[v].slice();
+                if (!useLCV()) return vals;
+                return vals.map(function (val) { return [val, ruleOut(v, val)]; })
+                           .sort(function (a, b) { return a[1] - b[1]; })
+                           .map(function (x) { return x[0]; });
+            }
+
+            function bt(depth) {
+                if (Object.keys(asn).length === VARS.length) { ev.push({ t: 'solution' }); return true; }
+
+                var v = pick();
+                ev.push({ t: 'select', v: v, depth: depth, mrv: useMRV(), n: legal(v).length });
+
+                var vals = order(v);
+                for (var i = 0; i < vals.length; i++) {
+                    var val = vals[i];
+                    ev.push({ t: 'try', v: v, val: val, depth: depth });
+
+                    var clash = null;
+                    for (var j = 0; j < NEIGH[v].length; j++) {
+                        if (asn[NEIGH[v][j]] === val) { clash = NEIGH[v][j]; break; }
+                    }
+                    if (clash) { ev.push({ t: 'conflict', v: v, val: val, other: clash, depth: depth }); continue; }
+
+                    asn[v] = val;
+                    ev.push({ t: 'assign', v: v, val: val, depth: depth });
+
+                    var saved = {}, wipe = null;
+                    if (useFC()) {
+                        for (var k = 0; k < NEIGH[v].length; k++) {
+                            var n = NEIGH[v][k];
+                            if (n in asn) continue;
+                            if (dom[n].indexOf(val) >= 0) {
+                                if (!saved[n]) saved[n] = dom[n].slice();
+                                dom[n] = dom[n].filter(function (c) { return c !== val; });
+                                ev.push({ t: 'prune', from: v, n: n, val: val, left: dom[n].slice(), depth: depth });
+                                if (dom[n].length === 0) { wipe = n; break; }
+                            }
+                        }
+                        if (wipe) ev.push({ t: 'wipeout', n: wipe, cause: v, depth: depth });
+                    }
+
+                    if (!wipe && bt(depth + 1)) return true;
+
+                    if (Object.keys(saved).length) {
+                        var restore = {};
+                        Object.keys(saved).forEach(function (n2) { restore[n2] = saved[n2].slice(); dom[n2] = saved[n2]; });
+                        ev.push({ t: 'restore', doms: restore, depth: depth });
+                    }
+                    delete asn[v];
+                    ev.push({ t: 'unassign', v: v, val: val, depth: depth });
+                }
+
+                ev.push({ t: 'exhausted', v: v, depth: depth });
+                return false;
+            }
+
+            if (!bt(0)) ev.push({ t: 'failure' });
+            return ev;
+        }
+
+        /* ---------- log text ---------- */
+
+        function describe(e) {
+            var pad = '  '.repeat(e.depth || 0);
+            switch (e.t) {
+                case 'select':
+                    return { cls: '', text: pad + '→ pick ' + e.v +
+                        (e.mrv ? '  (MRV: fewest legal values, ' + e.n + ')' : '  (next in order)') };
+                case 'try':
+                    return { cls: '', text: pad + '   try ' + e.v + ' = ' + e.val };
+                case 'conflict':
+                    return { cls: 'bad', text: pad + '   ✗ ' + e.val + ' clashes with ' + e.other + ' — skip' };
+                case 'assign':
+                    return { cls: '', text: pad + '   ✓ assign ' + e.v + ' = ' + e.val };
+                case 'prune':
+                    return { cls: '', text: pad + '     filter: remove ' + e.val + ' from ' + e.n +
+                        ' → {' + e.left.join(', ') + '}' };
+                case 'wipeout':
+                    return { cls: 'bad', text: pad + '     ! ' + e.n + ' has no values left — backtrack now' };
+                case 'restore':
+                    return { cls: '', text: pad + '     undo filtering' };
+                case 'unassign':
+                    return { cls: 'bad', text: pad + '   ← backtrack: unassign ' + e.v };
+                case 'exhausted':
+                    return { cls: 'bad', text: pad + '✗ ' + e.v + ' has no more values to try' };
+                case 'solution':
+                    return { cls: 'good', text: '★ complete assignment — all constraints satisfied' };
+                case 'failure':
+                    return { cls: 'bad', text: '✗ search space exhausted — no solution exists' };
+            }
+            return { cls: '', text: '' };
+        }
+
+        /* ---------- build DOM ---------- */
+
+        function build() {
+            var svg = document.getElementById('map');
+            while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+            var gRegions = document.createElementNS(SVG_NS, 'g');
+            var gGraph   = document.createElementNS(SVG_NS, 'g');
+            var gLabels  = document.createElementNS(SVG_NS, 'g');
+            svg.appendChild(gRegions); svg.appendChild(gGraph); svg.appendChild(gLabels);
+            els.graphLayer = gGraph;
+
+            els.region = {};
+            VARS.forEach(function (v) {
+                var p = document.createElementNS(SVG_NS, 'polygon');
+                p.setAttribute('points', REGIONS[v].pts);
+                p.setAttribute('class', 'region');
+                gRegions.appendChild(p);
+                els.region[v] = p;
+            });
+
+            // constraint graph overlay (hidden unless toggled)
+            var drawn = {};
+            VARS.forEach(function (v) {
+                NEIGH[v].forEach(function (n) {
+                    var key = [v, n].sort().join('-');
+                    if (drawn[key]) return;
+                    drawn[key] = 1;
+                    var l = document.createElementNS(SVG_NS, 'line');
+                    l.setAttribute('x1', REGIONS[v].label[0]); l.setAttribute('y1', REGIONS[v].label[1] - 5);
+                    l.setAttribute('x2', REGIONS[n].label[0]); l.setAttribute('y2', REGIONS[n].label[1] - 5);
+                    l.setAttribute('class', 'cgraph-edge');
+                    gGraph.appendChild(l);
+                });
+            });
+            VARS.forEach(function (v) {
+                var c = document.createElementNS(SVG_NS, 'circle');
+                c.setAttribute('cx', REGIONS[v].label[0]); c.setAttribute('cy', REGIONS[v].label[1] - 5);
+                c.setAttribute('r', 15);
+                c.setAttribute('class', 'cgraph-node');
+                gGraph.appendChild(c);
+            });
+
+            VARS.forEach(function (v) {
+                var t = document.createElementNS(SVG_NS, 'text');
+                t.setAttribute('x', REGIONS[v].label[0]);
+                t.setAttribute('y', REGIONS[v].label[1]);
+                t.setAttribute('class', 'region-label');
+                t.textContent = v;
+                gLabels.appendChild(t);
+            });
+
+            // domain rows
+            var list = document.getElementById('domlist');
+            list.innerHTML = '';
+            els.domRow = {}; els.chips = {}; els.count = {};
+            VARS.forEach(function (v) {
+                var row = document.createElement('div');
+                row.className = 'dom-row';
+                var name = document.createElement('span');
+                name.className = 'dom-name'; name.textContent = v;
+                var chips = document.createElement('span');
+                chips.className = 'chips';
+                var count = document.createElement('span');
+                count.className = 'dom-count';
+                row.appendChild(name); row.appendChild(chips); row.appendChild(count);
+                list.appendChild(row);
+                els.domRow[v] = row; els.chips[v] = chips; els.count[v] = count;
+            });
+
+            // legend
+            var lg = document.getElementById('legend');
+            lg.innerHTML = '';
+            palette().forEach(function (c) {
+                var s = document.createElement('span');
+                s.innerHTML = '<i class="sw" style="background:' + c.hex + '"></i> ' + c.name;
+                lg.appendChild(s);
+            });
+        }
+
+        /* ---------- playback ---------- */
+
+        function resetState() {
+            st = {
+                asn: {}, dom: {}, cur: null, trying: null,
+                conflict: null, wipe: null,
+                assigns: 0, backs: 0, checks: 0, pruned: 0,
+                done: null
+            };
+            var pal = palette().map(function (c) { return c.name; });
+            VARS.forEach(function (v) { st.dom[v] = pal.slice(); });
+            cursor = 0;
+        }
+
+        function apply(e) {
+            st.conflict = null; st.wipe = null;
+            switch (e.t) {
+                case 'select':   st.cur = e.v; st.trying = null; break;
+                case 'try':      st.trying = { v: e.v, val: e.val }; st.checks++; break;
+                case 'conflict': st.conflict = { v: e.v, val: e.val, other: e.other }; break;
+                case 'assign':   st.asn[e.v] = e.val; st.assigns++; st.trying = null; break;
+                case 'prune':    st.dom[e.n] = e.left.slice(); st.pruned++; break;
+                case 'wipeout':  st.wipe = e.n; break;
+                case 'restore':  Object.keys(e.doms).forEach(function (n) { st.dom[n] = e.doms[n].slice(); }); break;
+                case 'unassign': delete st.asn[e.v]; st.backs++; st.cur = e.v; break;
+                case 'exhausted':st.cur = e.v; break;
+                case 'solution': st.done = 'solved'; st.cur = null; break;
+                case 'failure':  st.done = 'failed'; st.cur = null; break;
+            }
+        }
+
+        function applyUpTo(target) {
+            resetState();
+            for (var i = 0; i < target; i++) apply(events[i]);
+            cursor = target;
+        }
+
+        function render() {
+            VARS.forEach(function (v) {
+                var p = els.region[v];
+                var cls = 'region';
+                if (st.wipe === v) cls += ' wipeout';
+                else if (st.conflict && st.conflict.v === v) cls += ' conflict';
+                else if (st.cur === v) cls += ' current';
+                p.setAttribute('class', cls);
+
+                var fill = 'rgba(255,255,255,0.07)';
+                if (st.asn[v]) fill = hexOf(st.asn[v]);
+                else if (st.conflict && st.conflict.v === v) fill = hexOf(st.conflict.val);
+                else if (st.trying && st.trying.v === v) fill = hexOf(st.trying.val);
+                p.style.fill = fill;
+
+                // domain chips
+                var chips = els.chips[v];
+                chips.innerHTML = '';
+                palette().forEach(function (c) {
+                    var i = document.createElement('i');
+                    var gone = st.dom[v].indexOf(c.name) < 0;
+                    var isAsn = st.asn[v] === c.name;
+                    i.className = 'chip' + (gone ? ' gone' : '') + (isAsn ? ' assigned' : '');
+                    i.style.background = c.hex;
+                    i.title = c.name;
+                    chips.appendChild(i);
+                });
+                els.count[v].textContent = st.asn[v] ? '= ' + st.asn[v] : st.dom[v].length + ' left';
+                var row = els.domRow[v];
+                row.className = 'dom-row' + (st.cur === v ? ' current' : '') + (st.dom[v].length === 0 ? ' empty' : '');
+            });
+
+            els.graphLayer.style.display = document.getElementById('showgraph').checked ? '' : 'none';
+
+            document.getElementById('s-assign').textContent = st.assigns;
+            document.getElementById('s-back').textContent = st.backs;
+            document.getElementById('s-checks').textContent = st.checks;
+            document.getElementById('s-pruned').textContent = st.pruned;
+            var stat = document.getElementById('s-status');
+            stat.textContent = st.done === 'solved' ? 'Solved' : st.done === 'failed' ? 'No solution' :
+                               cursor === 0 ? 'Ready' : 'Searching…';
+            stat.className = 'v ' + (st.done === 'solved' ? 'accent' : st.done === 'failed' ? 'danger' : '');
+
+            document.getElementById('back').disabled = cursor === 0;
+            document.getElementById('step').disabled = cursor >= events.length;
+            document.getElementById('end').disabled = cursor >= events.length;
+
+            ['fc', 'mrv', 'lcv', 'showgraph'].forEach(function (id) {
+                var l = document.getElementById('lbl-' + id);
+                if (l) l.className = 'toggle' + (document.getElementById(id).checked ? ' on' : '');
+            });
+
+            updateNote();
+        }
+
+        function updateNote() {
+            var note = document.getElementById('mode-note');
+            var on = [];
+            if (useFC()) on.push('forward checking');
+            if (useMRV()) on.push('MRV');
+            if (useLCV()) on.push('LCV');
+            var cfg = on.length ? on.join(' + ') : 'plain backtracking, no improvements';
+
+            if (st.done === 'solved') {
+                note.className = 'mode-note good';
+                note.innerHTML = '<strong>Solved</strong> with ' + cfg + ' — <strong>' + st.assigns +
+                    '</strong> assignments, <strong>' + st.backs + '</strong> backtracks, <strong>' +
+                    st.checks + '</strong> consistency checks. Change the toggles and run it again to compare.';
+            } else if (st.done === 'failed') {
+                note.className = 'mode-note bad';
+                note.innerHTML = '<strong>No solution exists</strong> — with ' + ncolors() +
+                    ' colours Australia cannot be coloured, and the search proved it by exhausting every option: <strong>' +
+                    st.backs + '</strong> backtracks and <strong>' + st.checks + '</strong> consistency checks under ' + cfg + '.' +
+                    (on.length ? '' : ' Turn on forward checking or MRV and run it again to prove the same thing with far less work.');
+            } else {
+                note.className = 'mode-note';
+                note.innerHTML = 'Running <strong>' + cfg + '</strong> with <strong>' + ncolors() +
+                    '</strong> colours. The white outline is the region being worked on; the panel on the right is each region’s remaining domain.';
+            }
+        }
+
+        function renderLog() {
+            var logEl = document.getElementById('log');
+            logEl.innerHTML = '';
+            for (var i = 0; i < cursor; i++) {
+                var d = describe(events[i]);
+                if (!d.text) continue;
+                var row = document.createElement('div');
+                row.className = d.cls + (i === cursor - 1 ? ' cur' : '');
+                row.textContent = d.text;
+                logEl.appendChild(row);
+            }
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function stepForward() {
+            if (cursor >= events.length) { pause(); return; }
+            apply(events[cursor]); cursor++;
+            render(); renderLog();
+            if (cursor >= events.length) pause();
+        }
+
+        function stepBack() {
+            if (cursor === 0) return;
+            pause(); applyUpTo(cursor - 1); render(); renderLog();
+        }
+
+        function play() {
+            if (cursor >= events.length) applyUpTo(0);
+            timer = setInterval(stepForward, +document.getElementById('speed').value);
+            document.getElementById('play').textContent = '❚❚ Pause';
+        }
+
+        function pause() {
+            if (timer) { clearInterval(timer); timer = null; }
+            document.getElementById('play').textContent = '▶ Play';
+        }
+
+        function rebuild() {
+            pause();
+            events = generate();
+            build();
+            applyUpTo(0);
+            render(); renderLog();
+        }
+
+        /* ---------- wiring ---------- */
+
+        document.getElementById('play').addEventListener('click', function () { timer ? pause() : play(); });
+        document.getElementById('step').addEventListener('click', function () { pause(); stepForward(); });
+        document.getElementById('back').addEventListener('click', stepBack);
+        document.getElementById('end').addEventListener('click', function () {
+            pause(); applyUpTo(events.length); render(); renderLog();
+        });
+        document.getElementById('reset').addEventListener('click', function () {
+            pause(); applyUpTo(0); render(); renderLog();
+        });
+        ['ncolors', 'fc', 'mrv', 'lcv'].forEach(function (id) {
+            document.getElementById(id).addEventListener('change', rebuild);
+        });
+        document.getElementById('showgraph').addEventListener('change', function () { render(); });
+        document.getElementById('speed').addEventListener('input', function () {
+            if (timer) { pause(); play(); }
+        });
+
+        rebuild();
+    })();
+    </script>
+</body>
+</html>
