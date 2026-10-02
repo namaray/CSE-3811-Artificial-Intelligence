@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regression - AI Notes</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/theme.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link"><span>←</span> Back to Table of Contents</a>
+        </nav>
+
+        <header>
+            <h1>Regression</h1>
+            <p style="text-align: center; margin-top: -1rem; margin-bottom: 2.5rem;">Linear regression &amp; logistic regression — lecture notes by Dr. Ohidujjaman Tuhin, CSE, UIU</p>
+        </header>
+
+        <section class="glass-panel">
+            <h2>Two kinds of regression</h2>
+            <p>Both methods fit a model to labelled training data, so both are <strong>supervised learning</strong>. They differ in what they predict:</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th></th><th>Linear regression</th><th>Logistic regression</th></tr></thead>
+                    <tbody>
+                        <tr><th>Predicts</th><td>A continuous number (e.g. sales)</td><td>A probability between 0 and 1, then a class</td></tr>
+                        <tr><th>Model</th><td>\(y = a_0 + a_1 x\)</td><td>\(p = \dfrac{1}{1 + e^{-z}}\), &nbsp; \(z = \log(\text{odds})\) linear in \(x\)</td></tr>
+                        <tr><th>Used for</th><td>Regression / forecasting</td><td>Classification (pass / fail)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="callout">
+                <p>Despite the name, <strong>logistic regression is a classifier</strong>. It regresses the <em>log-odds</em> on the input, then turns that into a probability and thresholds it.</p>
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Linear Regression</h2>
+            <p>The linear regression equation is</p>
+            <div class="math-block">
+                \[ y = a_0 + a_1 x + e \]
+            </div>
+            <p>where \(a_1\) is the slope, \(a_0\) the intercept, and \(e\) the error term the fitted line does not capture. The coefficients come from the data:</p>
+            <div class="math-block">
+                \[ a_1 = \frac{\overline{xy} - \bar{x}\,\bar{y}}{\overline{x^2} - \bar{x}^2} \qquad\qquad a_0 = \bar{y} - a_1 \bar{x} \]
+            </div>
+            <p>A bar means "average over the data". So \(\overline{xy}\) is the mean of the products \(x_i y_i\), and \(\overline{x^2}\) is the mean of the squares — <em>not</em> the square of the mean, which is \(\bar{x}^2\). Mixing those two up is the most common slip.</p>
+            <p>These are the <strong>least-squares</strong> coefficients: the line that minimises the sum of squared vertical errors. The same slope is often written in this form instead — the two are algebraically identical:</p>
+            <div class="math-block">
+                \[ a_1 = \frac{\sum (x_i-\bar{x})(y_i-\bar{y})}{\sum (x_i-\bar{x})^2} \]
+            </div>
+
+            <h3>Worked example: weekly sales</h3>
+            <p>Five weeks of sales data (in thousands). Apply linear regression to predict the <strong>7th</strong> and <strong>12th</strong> week sales.</p>
+            <p>Build one table with the two extra columns the formula needs, \(x^2\) and \(xy\), then sum and average each column:</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th></th><th>\(x_i\) (week)</th><th>\(y_i\) (sales)</th><th>\(x_i^2\)</th><th>\(x_i y_i\)</th></tr></thead>
+                    <tbody>
+                        <tr><td></td><td>1</td><td>1.2</td><td>1</td><td>1.2</td></tr>
+                        <tr><td></td><td>2</td><td>1.8</td><td>4</td><td>3.6</td></tr>
+                        <tr><td></td><td>3</td><td>2.6</td><td>9</td><td>7.8</td></tr>
+                        <tr><td></td><td>4</td><td>3.2</td><td>16</td><td>12.8</td></tr>
+                        <tr><td></td><td>5</td><td>3.8</td><td>25</td><td>19.0</td></tr>
+                        <tr><th>Sum</th><td>15</td><td>12.6</td><td>55</td><td>44.4</td></tr>
+                        <tr><th>Average</th><td>\(\bar{x} = 3\)</td><td>\(\bar{y} = 2.52\)</td><td>\(\overline{x^2} = 11\)</td><td>\(\overline{xy} = 8.88\)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="math-block">
+                \[ a_1 = \frac{8.88 - 3 \times 2.52}{11 - 3^2} = \frac{8.88 - 7.56}{2} = \frac{1.32}{2} = \mathbf{0.66} \]
+                \[ a_0 = 2.52 - 0.66 \times 3 = 2.52 - 1.98 = \mathbf{0.54} \]
+            </div>
+            <p>So the regression equation is</p>
+            <div class="math-block">
+                \[ y = 0.54 + 0.66\,x \]
+            </div>
+            <p>and the predictions follow by substitution:</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Week</th><th>Working</th><th>Predicted sales</th></tr></thead>
+                    <tbody>
+                        <tr><th>7th</th><td>\(0.54 + 0.66 \times 7\)</td><td><strong>5.16</strong> thousand</td></tr>
+                        <tr><th>12th</th><td>\(0.54 + 0.66 \times 12\)</td><td><strong>8.46</strong> thousand</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="callout">
+                <p><strong>Checking your line.</strong> A least-squares line with an intercept always passes through \((\bar{x}, \bar{y})\): here \(0.54 + 0.66 \times 3 = 2.52 = \bar{y}\). ✓ It is a ten-second check that catches most arithmetic errors in \(a_0\).</p>
+                <p>Also notice both predictions <em>extrapolate</em> beyond the observed weeks 1–5. The line fits the data closely, but week 12 is more than twice as far out as the data reaches — the further you extrapolate, the less the model can be trusted.</p>
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Logistic Regression</h2>
+            <p>Logistic regression uses the <strong>sigmoid function</strong> to squash any real number into the range (0, 1), so it can be read as a probability:</p>
+            <div class="math-block">
+                \[ s(x) = \frac{1}{1 + e^{-x}} \]
+            </div>
+            <p>The sigmoid is an S-shaped curve: very negative inputs give values near 0, very positive inputs give values near 1, and an input of 0 gives exactly 0.5 — the usual <strong>threshold</strong> between the two classes.</p>
+            <p>The model is linear in the <strong>log-odds</strong>, and the probability comes from passing that through the sigmoid:</p>
+            <div class="math-block">
+                \[ z = \log(\text{odds}) = \log\frac{p}{1-p} \qquad\qquad p = \frac{1}{1 + e^{-z}} \]
+            </div>
+            <p>Here \(\log\) is the natural logarithm. The two equations are inverses of each other, and both directions come up in exams.</p>
+
+            <h3>Worked example: pass or fail</h3>
+            <p>The pass/fail record of five students:</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Hours studied</th><th>29</th><th>15</th><th>33</th><th>28</th><th>39</th></tr></thead>
+                    <tbody><tr><th>Pass (1) / Fail (0)</th><td>0</td><td>0</td><td>1</td><td>1</td><td>1</td></tr></tbody>
+                </table>
+            </div>
+            <p>Assume the optimizer suggests this model for the odds of passing:</p>
+            <div class="math-block">
+                \[ \log(\text{odds}) = z = -64 + 2 \times \text{hours} \]
+            </div>
+
+            <h4>Problem 1 — probability of passing after 33 hours</h4>
+            <div class="math-block">
+                \[ z = -64 + 2 \times 33 = -64 + 66 = 2 \]
+                \[ p = \frac{1}{1 + e^{-2}} = \frac{1}{1 + 0.1353} \approx \mathbf{0.88} \]
+            </div>
+            <p>A student who studies 33 hours has about an <strong>88% chance</strong> of passing.</p>
+
+            <h4>Problem 2 — minimum hours for more than 95% probability</h4>
+            <p>Set \(p = 0.95\) and solve for \(z\), then for hours:</p>
+            <div class="math-block">
+                \[ \frac{1}{1 + e^{-z}} = 0.95 \;\Rightarrow\; 0.95\,(1 + e^{-z}) = 1 \;\Rightarrow\; 0.95\,e^{-z} = 0.05 \]
+                \[ e^{-z} = \frac{0.05}{0.95} = 0.0526 \;\Rightarrow\; -z = \ln(0.0526) = -2.94 \;\Rightarrow\; z = 2.94 \]
+                \[ 2.94 = -64 + 2 \times \text{hours} \;\Rightarrow\; \text{hours} = \frac{66.94}{2} = \mathbf{33.47} \]
+            </div>
+            <p>The student should study <strong>at least 33.47 hours</strong> to pass with more than 95% probability.</p>
+            <div class="callout">
+                <p><strong>Shortcut.</strong> Solving for \(z\) is just the log-odds formula run backwards — one line instead of four, and a good way to check the long derivation:</p>
+                \[ z = \ln\frac{p}{1-p} = \ln\frac{0.95}{0.05} = \ln 19 \approx 2.944 \]
+            </div>
+
+            <h4>How well does the given model fit the data?</h4>
+            <p>The decision threshold \(p = 0.5\) is where \(z = 0\), i.e. \(-64 + 2 \times \text{hours} = 0\), so <strong>hours = 32</strong>. Run the five students through it:</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Hours</th><th>\(z\)</th><th>\(p\)</th><th>Predicted</th><th>Actual</th><th></th></tr></thead>
+                    <tbody>
+                        <tr><td>15</td><td>−34</td><td>≈ 0.000</td><td>Fail</td><td>Fail</td><td>✓</td></tr>
+                        <tr><td>28</td><td>−8</td><td>≈ 0.000</td><td>Fail</td><td><strong>Pass</strong></td><td>✗</td></tr>
+                        <tr><td>29</td><td>−6</td><td>≈ 0.002</td><td>Fail</td><td>Fail</td><td>✓</td></tr>
+                        <tr><td>33</td><td>2</td><td>≈ 0.881</td><td>Pass</td><td>Pass</td><td>✓</td></tr>
+                        <tr><td>39</td><td>14</td><td>≈ 1.000</td><td>Pass</td><td>Pass</td><td>✓</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Four of five are correct; the 28-hour student is misclassified. That is not a flaw in this particular model — <strong>no</strong> model based only on hours can get all five right, because the 28-hour student passed while the 29-hour student failed. Any rule that says "more hours, more likely to pass" must get at least one of those two wrong. Real data is rarely perfectly separable, which is exactly why logistic regression outputs a probability rather than a hard yes/no.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Exam Checklist</h2>
+            <ul>
+                <li>For linear regression, build the table with <strong>\(x^2\)</strong> and <strong>\(xy\)</strong> columns, then sum and average every column before touching the formula.</li>
+                <li>Keep \(\overline{x^2}\) (mean of squares) and \(\bar{x}^2\) (square of the mean) apart.</li>
+                <li>Compute \(a_1\) first — \(a_0\) depends on it. Then check the line passes through \((\bar{x}, \bar{y})\).</li>
+                <li>Write the final equation explicitly, then substitute for each prediction.</li>
+                <li>For logistic regression, compute \(z\) first, then \(p = 1/(1+e^{-z})\).</li>
+                <li>To find the input needed for a target probability, use \(z = \ln\frac{p}{1-p}\), then solve the linear equation for the input.</li>
+                <li>\(p = 0.5\) exactly when \(z = 0\) — that gives the decision boundary.</li>
+            </ul>
+        </section>
+    </div>
+</body>
+</html>

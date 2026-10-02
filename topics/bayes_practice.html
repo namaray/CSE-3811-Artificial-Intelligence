@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Probability &amp; Bayes' Nets — Practice Questions</title>
     <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/theme.js"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
         details.ans {
-            background: rgba(0, 206, 201, 0.07);
-            border: 1px solid rgba(0, 206, 201, 0.28);
+            background: var(--accent-2-soft);
+            border: 1px solid var(--accent-2-line);
             border-radius: 10px;
             padding: 0.1rem 1.2rem;
             margin: 1rem 0 1.75rem;
@@ -30,7 +31,7 @@
         details.ans > summary::-webkit-details-marker { display: none; }
         details.ans > summary::before { content: '▶ '; font-size: 0.75rem; }
         details.ans[open] > summary::before { content: '▼ '; }
-        details.ans[open] > summary { border-bottom: 1px solid rgba(0, 206, 201, 0.2); margin-bottom: 0.9rem; }
+        details.ans[open] > summary { border-bottom: 1px solid var(--accent-2-line); margin-bottom: 0.9rem; }
         details.ans > *:last-child { margin-bottom: 1rem; }
 
         .qpart {
@@ -43,7 +44,7 @@
         .qpart b.tag { color: var(--accent-primary); }
 
         .scope {
-            background: rgba(108, 92, 231, 0.12);
+            background: var(--accent-soft);
             border-left: 4px solid var(--accent-primary);
             border-radius: 8px;
             padding: 1rem 1.5rem;
@@ -53,8 +54,6 @@
     </style>
 </head>
 <body>
-    <div class="glow-orb orb-1"></div>
-    <div class="glow-orb orb-2"></div>
 
     <div class="container">
         <nav class="nav">

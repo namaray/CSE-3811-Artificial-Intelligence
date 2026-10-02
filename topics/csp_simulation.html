@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Map Coloring Simulation - AI Notes</title>
     <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/theme.js"></script>
     <style>
         .sim-controls {
             display: flex;
@@ -21,7 +22,7 @@
             font-size: 0.9rem;
             font-weight: 600;
             color: var(--text-main);
-            background: rgba(255, 255, 255, 0.06);
+            background: var(--tint-2);
             border: 1px solid var(--glass-border);
             border-radius: 8px;
             padding: 0.55rem 1rem;
@@ -30,7 +31,7 @@
         }
 
         button.ctrl:hover:not(:disabled), select.ctrl:hover {
-            background: rgba(108, 92, 231, 0.25);
+            background: var(--accent-soft);
             border-color: var(--accent-primary);
         }
 
@@ -38,10 +39,10 @@
         button.ctrl:disabled, select.ctrl:disabled { opacity: 0.35; cursor: not-allowed; }
 
         button.ctrl.primary { background: var(--accent-primary); border-color: var(--accent-primary); }
-        button.ctrl.primary:hover:not(:disabled) { background: #8377ec; }
+        button.ctrl.primary:hover:not(:disabled) { background: var(--accent-hover); }
 
         select.ctrl { padding-right: 0.6rem; }
-        select.ctrl option { background: #16161d; color: var(--text-main); }
+        select.ctrl option { background: var(--surface); color: var(--text-main); }
 
         .ctrl-label {
             font-size: 0.8rem;
@@ -60,7 +61,7 @@
             font-size: 0.88rem;
             font-weight: 600;
             color: var(--text-main);
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--tint-1);
             border: 1px solid var(--glass-border);
             border-radius: 8px;
             padding: 0.5rem 0.85rem;
@@ -71,7 +72,7 @@
 
         .toggle:hover { border-color: var(--accent-primary); }
         .toggle input { accent-color: var(--accent-primary); cursor: pointer; }
-        .toggle.on { background: rgba(108, 92, 231, 0.22); border-color: var(--accent-primary); }
+        .toggle.on { background: var(--accent-soft); border-color: var(--accent-primary); }
 
         /* Layout */
         .sim-grid {
@@ -85,7 +86,7 @@
 
         .map-wrap {
             overflow-x: auto;
-            background: rgba(0, 0, 0, 0.22);
+            background: var(--surface-2);
             border: 1px solid var(--glass-border);
             border-radius: 12px;
             padding: 0.5rem;
@@ -94,35 +95,35 @@
         svg.map { display: block; width: 100%; height: auto; }
 
         .region {
-            stroke: rgba(255, 255, 255, 0.45);
+            stroke: var(--line-strong);
             stroke-width: 2;
-            fill: rgba(255, 255, 255, 0.07);
+            fill: var(--tint-2);
             transition: fill 0.3s ease, stroke 0.2s ease;
         }
 
-        .region.current { stroke: #fff; stroke-width: 4; }
-        .region.conflict { stroke: #e8556d; stroke-width: 4; }
-        .region.wipeout { stroke: #e8556d; stroke-width: 4; stroke-dasharray: 6 4; }
+        .region.current { stroke: var(--heading); stroke-width: 4; }
+        .region.conflict { stroke: var(--danger); stroke-width: 4; }
+        .region.wipeout { stroke: var(--danger); stroke-width: 4; stroke-dasharray: 6 4; }
 
         .region-label {
             fill: var(--text-main);
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             font-size: 15px;
             font-weight: 800;
             text-anchor: middle;
             pointer-events: none;
             paint-order: stroke;
-            stroke: rgba(0, 0, 0, 0.55);
+            stroke: var(--halo);
             stroke-width: 3px;
             stroke-linejoin: round;
         }
 
-        .cgraph-edge { stroke: rgba(255, 255, 255, 0.5); stroke-width: 2; stroke-dasharray: 4 3; }
-        .cgraph-node { fill: rgba(10, 10, 14, 0.85); stroke: var(--accent-secondary); stroke-width: 2; }
+        .cgraph-edge { stroke: var(--line-strong); stroke-width: 2; stroke-dasharray: 4 3; }
+        .cgraph-node { fill: var(--surface); stroke: var(--accent-secondary); stroke-width: 2; }
 
         /* Domains panel */
         .domains {
-            background: rgba(0, 0, 0, 0.22);
+            background: var(--surface-2);
             border: 1px solid var(--glass-border);
             border-radius: 12px;
             padding: 1rem 1.1rem;
@@ -140,8 +141,8 @@
             transition: background 0.2s ease;
         }
 
-        .dom-row.current { background: rgba(108, 92, 231, 0.2); }
-        .dom-row.empty { background: rgba(232, 85, 109, 0.16); }
+        .dom-row.current { background: var(--accent-soft); }
+        .dom-row.empty { background: var(--danger-soft); }
 
         .dom-name {
             width: 46px;
@@ -156,7 +157,7 @@
         .chip {
             width: 20px; height: 20px;
             border-radius: 5px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid var(--line);
             position: relative;
             transition: opacity 0.25s ease;
         }
@@ -168,11 +169,11 @@
             position: absolute;
             left: -3px; right: -3px; top: 7px;
             height: 2px;
-            background: #e8556d;
+            background: var(--danger);
             transform: rotate(-45deg);
         }
 
-        .chip.assigned { border-color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,0.25); }
+        .chip.assigned { border-color: var(--heading); box-shadow: 0 0 0 2px var(--tint-2); }
 
         .dom-count { font-size: 0.78rem; color: var(--text-muted); margin-left: auto; flex-shrink: 0; }
 
@@ -181,7 +182,7 @@
 
         .stat {
             flex: 1 1 120px;
-            background: rgba(255, 255, 255, 0.04);
+            background: var(--tint-1);
             border: 1px solid var(--glass-border);
             border-radius: 10px;
             padding: 0.8rem 1rem;
@@ -191,29 +192,29 @@
                    letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.3rem; }
         .stat .v { font-size: 1.45rem; font-weight: 800; color: var(--text-main); }
         .stat .v.accent { color: var(--accent-secondary); }
-        .stat .v.danger { color: #e8556d; }
+        .stat .v.danger { color: var(--danger); }
 
         .log {
-            background: rgba(0, 0, 0, 0.28);
+            background: var(--surface-2);
             border: 1px solid var(--glass-border);
             border-radius: 10px;
             padding: 1rem 1.2rem;
             height: 220px;
             overflow-y: auto;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
             font-size: 0.83rem;
             line-height: 1.65;
         }
 
         .log div { color: var(--text-muted); white-space: pre-wrap; }
-        .log div.cur { color: var(--text-main); background: rgba(108, 92, 231, 0.18); border-radius: 4px; }
-        .log div.bad { color: #ef8b9c; }
+        .log div.cur { color: var(--text-main); background: var(--accent-soft); border-radius: 4px; }
+        .log div.bad { color: var(--danger); }
         .log div.good { color: var(--accent-secondary); }
 
         .mode-note {
             font-size: 0.9rem;
             color: var(--text-muted);
-            background: rgba(255, 255, 255, 0.04);
+            background: var(--tint-1);
             border-left: 3px solid var(--glass-border);
             border-radius: 6px;
             padding: 0.7rem 1rem;
@@ -221,43 +222,44 @@
         }
 
         .mode-note strong { color: var(--text-main); }
-        .mode-note.good { border-left-color: var(--accent-secondary); color: #a9e8e6; }
+        .mode-note.good { border-left-color: var(--accent-secondary); color: var(--accent-2); }
         .mode-note.good strong { color: var(--accent-secondary); }
-        .mode-note.bad { border-left-color: #e8556d; color: #e8b4bd; }
-        .mode-note.bad strong { color: #ff9dae; }
+        .mode-note.bad { border-left-color: var(--danger); color: var(--danger); }
+        .mode-note.bad strong { color: var(--danger); }
 
         .legend { display: flex; flex-wrap: wrap; gap: 1.1rem; font-size: 0.85rem;
                   color: var(--text-muted); margin-top: 1rem; align-items: center; }
         .legend span { display: inline-flex; align-items: center; gap: 0.45rem; }
         .sw { width: 14px; height: 14px; border-radius: 4px; display: inline-block;
-              border: 2px solid rgba(255,255,255,0.35); }
+              border: 2px solid var(--line-strong); }
 
         .hint { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.75rem; }
 
         /* Static worked search tree in "Tracing It on Paper" */
         .trace-tree { display: block; }
-        .tt-edge { stroke: rgba(255, 255, 255, 0.3); stroke-width: 2; }
-        .tt-edge.fail { stroke: rgba(232, 85, 109, 0.4); stroke-dasharray: 4 3; }
+        .tt-edge { stroke: var(--line); stroke-width: 2; }
+        .tt-edge.fail { stroke: var(--danger-line); stroke-dasharray: 4 3; }
         .tt-box { stroke-width: 2; }
-        .tt-box.ok { fill: rgba(0, 206, 201, 0.14); stroke: var(--accent-secondary); }
-        .tt-box.fail { fill: rgba(232, 85, 109, 0.12); stroke: #e8556d; stroke-dasharray: 4 3; }
-        .tt-root { fill: rgba(255, 255, 255, 0.08); stroke: rgba(255, 255, 255, 0.4); }
+        .tt-dotc { stroke: var(--line-strong); stroke-width: 1; }
+        .tt-box.ok { fill: var(--accent-2-soft); stroke: var(--accent-secondary); }
+        .tt-box.fail { fill: var(--danger-soft); stroke: var(--danger); stroke-dasharray: 4 3; }
+        .tt-root { fill: var(--tint-2); stroke: var(--line-strong); }
         .tt-lbl {
             fill: var(--text-main);
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             font-size: 12.5px;
             font-weight: 700;
         }
         .tt-lbl.dim { fill: var(--text-muted); }
         .tt-num {
             fill: var(--text-muted);
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             font-size: 10px;
             font-weight: 700;
         }
         .tt-why {
-            fill: #ef8b9c;
-            font-family: 'Outfit', sans-serif;
+            fill: var(--danger);
+            font-family: 'Inter', system-ui, sans-serif;
             font-size: 11px;
             font-weight: 700;
         }
@@ -282,8 +284,8 @@
         .dom-table .tiny u { color: var(--accent-secondary); text-decoration: none; font-weight: 700; }
 
         .tt-dead {
-            fill: #ff9dae;
-            font-family: 'Outfit', sans-serif;
+            fill: var(--danger);
+            font-family: 'Inter', system-ui, sans-serif;
             font-size: 11.5px;
             font-weight: 800;
         }
@@ -296,8 +298,6 @@
     </style>
 </head>
 <body>
-    <div class="glow-orb orb-1"></div>
-    <div class="glow-orb orb-2"></div>
 
     <div class="container">
         <nav class="nav">
@@ -354,7 +354,7 @@
                     <h4>Domains</h4>
                     <div id="domlist"></div>
                     <div class="legend" style="margin-top:0.9rem; font-size:0.8rem;">
-                        <span><i class="chip gone" style="background:#888; position:relative; display:inline-block;"></i> eliminated</span>
+                        <span><i class="chip gone" style="background:var(--text-muted); position:relative; display:inline-block;"></i> eliminated</span>
                     </div>
                 </div>
             </div>
@@ -427,7 +427,7 @@
             <p>An exam will ask you to do this by hand rather than watch it run. Below is the <strong>complete</strong> search tree for the case the simulation runs — <strong>2 colours, plain backtracking</strong>, no improvements — so you can see exactly what a full answer looks like.</p>
             <div class="callout">
                 <p>Write the two orderings at the top before drawing anything. Markers look for them, and the tree is unmarkable without them.</p>
-                <p style="font-family:'Courier New',monospace; margin-bottom:0;">Variable order:&nbsp; WA, NT, Q, NSW, V, SA, T<br>Value order:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; R, G</p>
+                <p style="font-family:'JetBrains Mono',ui-monospace,monospace; margin-bottom:0;">Variable order:&nbsp; WA, NT, Q, NSW, V, SA, T<br>Value order:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; R, G</p>
             </div>
 
             <div class="table-wrap">
@@ -458,102 +458,102 @@
                     <rect class="tt-box tt-root" x="462.0" y="29.0" width="52" height="30" rx="8"/>
                     <text class="tt-lbl" x="488.0" y="49.0" text-anchor="middle">{ }</text>
                     <rect class="tt-box ok" x="156.5" y="119.0" width="68" height="30" rx="8"/>
-                    <circle cx="168.5" cy="134.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="168.5" cy="134.0" r="5" fill="#e74c3c" class="tt-dotc"/>
                     <text class="tt-lbl" x="199.5" y="139.0" text-anchor="middle">WA=R</text>
                     <text class="tt-num" x="152.5" y="121.0" text-anchor="end">1</text>
                     <rect class="tt-box fail" x="14.0" y="209.0" width="68" height="30" rx="8"/>
-                    <circle cx="26.0" cy="224.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="26.0" cy="224.0" r="5" fill="#e74c3c" class="tt-dotc"/>
                     <text class="tt-lbl dim" x="57.0" y="229.0" text-anchor="middle">NT=R</text>
                     <text class="tt-num" x="10.0" y="211.0" text-anchor="end">2</text>
                     <text class="tt-why" x="48.0" y="253.0" text-anchor="middle">&#10007; WA</text>
                     <rect class="tt-box ok" x="299.0" y="209.0" width="68" height="30" rx="8"/>
-                    <circle cx="311.0" cy="224.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="311.0" cy="224.0" r="5" fill="#2ecc71" class="tt-dotc"/>
                     <text class="tt-lbl" x="342.0" y="229.0" text-anchor="middle">NT=G</text>
                     <text class="tt-num" x="295.0" y="211.0" text-anchor="end">3</text>
                     <rect class="tt-box ok" x="184.0" y="299.0" width="68" height="30" rx="8"/>
-                    <circle cx="196.0" cy="314.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="196.0" cy="314.0" r="5" fill="#e74c3c" class="tt-dotc"/>
                     <text class="tt-lbl" x="227.0" y="319.0" text-anchor="middle">Q=R</text>
                     <text class="tt-num" x="180.0" y="301.0" text-anchor="end">4</text>
                     <rect class="tt-box fail" x="94.0" y="389.0" width="68" height="30" rx="8"/>
-                    <circle cx="106.0" cy="404.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="106.0" cy="404.0" r="5" fill="#e74c3c" class="tt-dotc"/>
                     <text class="tt-lbl dim" x="137.0" y="409.0" text-anchor="middle">NSW=R</text>
                     <text class="tt-num" x="90.0" y="391.0" text-anchor="end">5</text>
                     <text class="tt-why" x="128.0" y="433.0" text-anchor="middle">&#10007; Q</text>
                     <rect class="tt-box ok" x="274.0" y="389.0" width="68" height="30" rx="8"/>
-                    <circle cx="286.0" cy="404.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="286.0" cy="404.0" r="5" fill="#2ecc71" class="tt-dotc"/>
                     <text class="tt-lbl" x="317.0" y="409.0" text-anchor="middle">NSW=G</text>
                     <text class="tt-num" x="270.0" y="391.0" text-anchor="end">6</text>
                     <rect class="tt-box ok" x="214.0" y="479.0" width="68" height="30" rx="8"/>
-                    <circle cx="226.0" cy="494.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="226.0" cy="494.0" r="5" fill="#e74c3c" class="tt-dotc"/>
                     <text class="tt-lbl" x="257.0" y="499.0" text-anchor="middle">V=R</text>
                     <text class="tt-num" x="210.0" y="481.0" text-anchor="end">7</text>
                     <rect class="tt-box fail" x="174.0" y="569.0" width="68" height="30" rx="8"/>
-                    <circle cx="186.0" cy="584.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="186.0" cy="584.0" r="5" fill="#e74c3c" class="tt-dotc"/>
                     <text class="tt-lbl dim" x="217.0" y="589.0" text-anchor="middle">SA=R</text>
                     <text class="tt-num" x="170.0" y="571.0" text-anchor="end">8</text>
                     <text class="tt-why" x="208.0" y="613.0" text-anchor="middle">&#10007; WA</text>
                     <rect class="tt-box fail" x="254.0" y="569.0" width="68" height="30" rx="8"/>
-                    <circle cx="266.0" cy="584.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="266.0" cy="584.0" r="5" fill="#2ecc71" class="tt-dotc"/>
                     <text class="tt-lbl dim" x="297.0" y="589.0" text-anchor="middle">SA=G</text>
                     <text class="tt-num" x="250.0" y="571.0" text-anchor="end">9</text>
                     <text class="tt-why" x="288.0" y="613.0" text-anchor="middle">&#10007; NT</text>
                     <rect class="tt-box fail" x="334.0" y="479.0" width="68" height="30" rx="8"/>
-                    <circle cx="346.0" cy="494.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="346.0" cy="494.0" r="5" fill="#2ecc71" class="tt-dotc"/>
                     <text class="tt-lbl dim" x="377.0" y="499.0" text-anchor="middle">V=G</text>
                     <text class="tt-num" x="330.0" y="481.0" text-anchor="end">10</text>
                     <text class="tt-why" x="368.0" y="523.0" text-anchor="middle">&#10007; NSW</text>
                     <rect class="tt-box fail" x="414.0" y="299.0" width="68" height="30" rx="8"/>
-                    <circle cx="426.0" cy="314.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="426.0" cy="314.0" r="5" fill="#2ecc71" class="tt-dotc"/>
                     <text class="tt-lbl dim" x="457.0" y="319.0" text-anchor="middle">Q=G</text>
                     <text class="tt-num" x="410.0" y="301.0" text-anchor="end">11</text>
                     <text class="tt-why" x="448.0" y="343.0" text-anchor="middle">&#10007; NT</text>
                     <rect class="tt-box ok" x="751.5" y="119.0" width="68" height="30" rx="8"/>
-                    <circle cx="763.5" cy="134.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="763.5" cy="134.0" r="5" fill="#2ecc71" class="tt-dotc"/>
                     <text class="tt-lbl" x="794.5" y="139.0" text-anchor="middle">WA=G</text>
                     <text class="tt-num" x="747.5" y="121.0" text-anchor="end">12</text>
                     <rect class="tt-box ok" x="609.0" y="209.0" width="68" height="30" rx="8"/>
-                    <circle cx="621.0" cy="224.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="621.0" cy="224.0" r="5" fill="#e74c3c" class="tt-dotc"/>
                     <text class="tt-lbl" x="652.0" y="229.0" text-anchor="middle">NT=R</text>
                     <text class="tt-num" x="605.0" y="211.0" text-anchor="end">13</text>
                     <rect class="tt-box fail" x="494.0" y="299.0" width="68" height="30" rx="8"/>
-                    <circle cx="506.0" cy="314.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="506.0" cy="314.0" r="5" fill="#e74c3c" class="tt-dotc"/>
                     <text class="tt-lbl dim" x="537.0" y="319.0" text-anchor="middle">Q=R</text>
                     <text class="tt-num" x="490.0" y="301.0" text-anchor="end">14</text>
                     <text class="tt-why" x="528.0" y="343.0" text-anchor="middle">&#10007; NT</text>
                     <rect class="tt-box ok" x="724.0" y="299.0" width="68" height="30" rx="8"/>
-                    <circle cx="736.0" cy="314.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="736.0" cy="314.0" r="5" fill="#2ecc71" class="tt-dotc"/>
                     <text class="tt-lbl" x="767.0" y="319.0" text-anchor="middle">Q=G</text>
                     <text class="tt-num" x="720.0" y="301.0" text-anchor="end">15</text>
                     <rect class="tt-box ok" x="634.0" y="389.0" width="68" height="30" rx="8"/>
-                    <circle cx="646.0" cy="404.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="646.0" cy="404.0" r="5" fill="#e74c3c" class="tt-dotc"/>
                     <text class="tt-lbl" x="677.0" y="409.0" text-anchor="middle">NSW=R</text>
                     <text class="tt-num" x="630.0" y="391.0" text-anchor="end">16</text>
                     <rect class="tt-box fail" x="574.0" y="479.0" width="68" height="30" rx="8"/>
-                    <circle cx="586.0" cy="494.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="586.0" cy="494.0" r="5" fill="#e74c3c" class="tt-dotc"/>
                     <text class="tt-lbl dim" x="617.0" y="499.0" text-anchor="middle">V=R</text>
                     <text class="tt-num" x="570.0" y="481.0" text-anchor="end">17</text>
                     <text class="tt-why" x="608.0" y="523.0" text-anchor="middle">&#10007; NSW</text>
                     <rect class="tt-box ok" x="694.0" y="479.0" width="68" height="30" rx="8"/>
-                    <circle cx="706.0" cy="494.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="706.0" cy="494.0" r="5" fill="#2ecc71" class="tt-dotc"/>
                     <text class="tt-lbl" x="737.0" y="499.0" text-anchor="middle">V=G</text>
                     <text class="tt-num" x="690.0" y="481.0" text-anchor="end">18</text>
                     <rect class="tt-box fail" x="654.0" y="569.0" width="68" height="30" rx="8"/>
-                    <circle cx="666.0" cy="584.0" r="5" fill="#e74c3c" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="666.0" cy="584.0" r="5" fill="#e74c3c" class="tt-dotc"/>
                     <text class="tt-lbl dim" x="697.0" y="589.0" text-anchor="middle">SA=R</text>
                     <text class="tt-num" x="650.0" y="571.0" text-anchor="end">19</text>
                     <text class="tt-why" x="688.0" y="613.0" text-anchor="middle">&#10007; NT</text>
                     <rect class="tt-box fail" x="734.0" y="569.0" width="68" height="30" rx="8"/>
-                    <circle cx="746.0" cy="584.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="746.0" cy="584.0" r="5" fill="#2ecc71" class="tt-dotc"/>
                     <text class="tt-lbl dim" x="777.0" y="589.0" text-anchor="middle">SA=G</text>
                     <text class="tt-num" x="730.0" y="571.0" text-anchor="end">20</text>
                     <text class="tt-why" x="768.0" y="613.0" text-anchor="middle">&#10007; WA</text>
                     <rect class="tt-box fail" x="814.0" y="389.0" width="68" height="30" rx="8"/>
-                    <circle cx="826.0" cy="404.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="826.0" cy="404.0" r="5" fill="#2ecc71" class="tt-dotc"/>
                     <text class="tt-lbl dim" x="857.0" y="409.0" text-anchor="middle">NSW=G</text>
                     <text class="tt-num" x="810.0" y="391.0" text-anchor="end">21</text>
                     <text class="tt-why" x="848.0" y="433.0" text-anchor="middle">&#10007; Q</text>
                     <rect class="tt-box fail" x="894.0" y="209.0" width="68" height="30" rx="8"/>
-                    <circle cx="906.0" cy="224.0" r="5" fill="#2ecc71" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+                    <circle cx="906.0" cy="224.0" r="5" fill="#2ecc71" class="tt-dotc"/>
                     <text class="tt-lbl dim" x="937.0" y="229.0" text-anchor="middle">NT=G</text>
                     <text class="tt-num" x="890.0" y="211.0" text-anchor="end">22</text>
                     <text class="tt-why" x="928.0" y="253.0" text-anchor="middle">&#10007; WA</text>
@@ -564,8 +564,8 @@
             </div>
 
             <div class="legend">
-                <span><i class="sw" style="background:rgba(0,206,201,.14); border-color:#00cec9;"></i> consistent — assign, go deeper</span>
-                <span><i class="sw" style="background:rgba(232,85,109,.12); border-color:#e8556d; border-style:dashed;"></i> clashes — reject, try next value</span>
+                <span><i class="sw" style="background:var(--accent-2-soft); border-color:var(--accent-2);"></i> consistent — assign, go deeper</span>
+                <span><i class="sw" style="background:var(--danger-soft); border-color:var(--danger); border-style:dashed;"></i> clashes — reject, try next value</span>
                 <span><b style="color:var(--text-muted);">1…22</b> the order nodes are tried</span>
             </div>
 
@@ -609,7 +609,7 @@
             <p><strong>Different technique, different diagram.</strong> The search tree above is the right answer for plain backtracking. For forward checking and MRV it is the wrong tool: what those techniques change is how the <em>domains</em> shrink, so the format an exam wants is a <strong>domain table</strong>.</p>
             <p>There is a practical reason too. With three colours Australia never backtracks at all — plain backtracking solves it in 7 assignments with 0 backtracks — so a search tree here would be a single straight line down the page with nothing to show. All of the content lives in the domains.</p>
             <div class="callout">
-                <p style="font-family:'Courier New',monospace; margin-bottom:0;">Variable order:&nbsp; WA, NT, Q, NSW, V, SA, T &nbsp;&nbsp;(unless MRV changes it)<br>Value order:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; R, G, B</p>
+                <p style="font-family:'JetBrains Mono',ui-monospace,monospace; margin-bottom:0;">Variable order:&nbsp; WA, NT, Q, NSW, V, SA, T &nbsp;&nbsp;(unless MRV changes it)<br>Value order:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; R, G, B</p>
             </div>
 
             <h3>1. Forward checking</h3>
@@ -629,49 +629,49 @@
                 <th>T</th>
                 <th>Pruned</th></tr></thead><tbody>
                 <tr><td>0</td><th>—</th>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
                 <td class="tiny">—</td></tr>
                 <tr><td>1</td><th>WA = R</th>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
-                <td><span class="dm"><b class="out">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="out">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
                 <td class="tiny">NT−R, SA−R</td></tr>
                 <tr><td>2</td><th>NT = G</th>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="out">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
                 <td class="tiny">SA−G, Q−G</td></tr>
                 <tr><td>3</td><th>Q = R</th>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
-                <td><span class="dm"><b class="out">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
                 <td class="tiny">NSW−R</td></tr>
                 <tr><td>4</td><th>NSW = G</th>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="out">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
                 <td class="tiny">V−G</td></tr>
                 <tr><td>5</td><th>V = R</th>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
@@ -679,8 +679,8 @@
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
-                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
                 <td class="tiny">—</td></tr>
                 <tr><td>6</td><th>SA = B</th>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
@@ -689,7 +689,7 @@
                 <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="set" style="background:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
                 <td class="tiny">—</td></tr>
                 <tr><td>7</td><th>T = R</th>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
@@ -722,53 +722,53 @@
                 <th>Pruned</th></tr></thead><tbody>
                 <tr><td>0</td><th>—</th>
                 <td class="tiny">initial domains</td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
                 <td class="tiny">—</td></tr>
                 <tr><td>1</td><th>WA = R</th>
                 <td class="tiny"><u>WA:3</u> NT:3 Q:3 NSW:3 V:3 SA:3 T:3</td>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
-                <td><span class="dm"><b class="out">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="out">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
                 <td class="tiny">NT−R, SA−R</td></tr>
                 <tr><td>2</td><th>NT = G</th>
                 <td class="tiny"><u>NT:2</u> Q:3 NSW:3 V:3 SA:2 T:3</td>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="live" style="color:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="out">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
                 <td class="tiny">SA−G, Q−G</td></tr>
                 <tr><td>3</td><th>SA = B</th>
                 <td class="tiny">Q:2 NSW:3 V:3 <u>SA:1</u> T:3</td>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="out">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="set" style="background:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
                 <td class="tiny">Q−B, NSW−B, V−B</td></tr>
                 <tr><td>4</td><th>Q = R</th>
                 <td class="tiny"><u>Q:1</u> NSW:2 V:2 T:3</td>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
-                <td><span class="dm"><b class="out">R</b><b class="live" style="color:#2ecc71">G</b><b class="out">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="out">R</b><b class="live" style="color:var(--c-green)">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="set" style="background:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
                 <td class="tiny">NSW−R</td></tr>
                 <tr><td>5</td><th>NSW = G</th>
                 <td class="tiny"><u>NSW:1</u> V:2 T:3</td>
@@ -776,9 +776,9 @@
                 <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="out">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="set" style="background:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
                 <td class="tiny">V−G</td></tr>
                 <tr><td>6</td><th>V = R</th>
                 <td class="tiny"><u>V:1</u> T:3</td>
@@ -788,7 +788,7 @@
                 <td><span class="dm"><b class="out">R</b><b class="set" style="background:#2ecc71">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="set" style="background:#e74c3c">R</b><b class="out">G</b><b class="out">B</b></span></td>
                 <td><span class="dm"><b class="out">R</b><b class="out">G</b><b class="set" style="background:#3498db">B</b></span></td>
-                <td><span class="dm"><b class="live" style="color:#e74c3c">R</b><b class="live" style="color:#2ecc71">G</b><b class="live" style="color:#3498db">B</b></span></td>
+                <td><span class="dm"><b class="live" style="color:var(--c-red)">R</b><b class="live" style="color:var(--c-green)">G</b><b class="live" style="color:var(--c-blue)">B</b></span></td>
                 <td class="tiny">—</td></tr>
                 <tr><td>7</td><th>T = R</th>
                 <td class="tiny"><u>T:3</u></td>
@@ -1140,7 +1140,7 @@
                 else if (st.cur === v) cls += ' current';
                 p.setAttribute('class', cls);
 
-                var fill = 'rgba(255,255,255,0.07)';
+                var fill = 'var(--tint-2)';
                 if (st.asn[v]) fill = hexOf(st.asn[v]);
                 else if (st.conflict && st.conflict.v === v) fill = hexOf(st.conflict.val);
                 else if (st.trying && st.trying.v === v) fill = hexOf(st.trying.val);
