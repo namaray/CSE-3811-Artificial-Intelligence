@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monte Carlo Methods - AI Notes</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/theme.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link"><span>←</span> Back to Table of Contents</a>
+        </nav>
+
+        <header>
+            <h1>Monte Carlo Methods</h1>
+            <p style="text-align: center; margin-top: -1rem; margin-bottom: 2.5rem;">Estimating by repeated random sampling — from expected values and π to action values and a clinic simulation</p>
+        </header>
+
+        <section class="glass-panel">
+            <h2>What is a Monte Carlo Algorithm?</h2>
+            <p>A <strong>Monte Carlo algorithm</strong> is a computational process that uses random numbers to produce an outcome. It simulates the behaviour of other systems. It is <strong>not an exact method but a heuristic one</strong>: it uses randomness and statistics to get a result.</p>
+            <ul>
+                <li>Monte Carlo methods use <strong>repeated random sampling</strong> to solve complex problems involving uncertainty, probability and optimization in AI.</li>
+                <li><strong>Monte Carlo simulation</strong> is a method used to predict and understand the behaviour of systems involving uncertainty.</li>
+                <li>They solve difficult AI problems by repeatedly using random simulations to <strong>estimate the probability or expected quality</strong> of different outcomes.</li>
+            </ul>
+
+            <h3>How does Monte Carlo simulation work?</h3>
+            <ol>
+                <li><strong>Define the problem</strong> — identify the process to simulate, e.g. stock prices or an engineering model.</li>
+                <li><strong>Model the inputs</strong> — e.g. use a normal distribution to represent stock-price fluctuations.</li>
+                <li><strong>Run simulations</strong> — generate random inputs from the chosen distributions and repeat the process many times.</li>
+                <li><strong>Analyse the results</strong> — the output is a <em>distribution</em> of outcomes: a range of possible scenarios, not just a single expected value.</li>
+            </ol>
+
+            <h3>The core formula</h3>
+            <p>Given a function \(f(x)\) and a domain \(D\), the expected value of \(f\) is estimated by averaging it over random samples:</p>
+            <div class="math-block">
+                \[ E[f(x)] \approx \frac{1}{N} \sum_{i=1}^{N} f(x_i) \]
+            </div>
+            <p>where \(N\) is the number of random samples and the \(x_i\) are random samples drawn from \(D\). Everything else on this page is this one formula applied to different things.</p>
+
+            <h3>Applications in AI</h3>
+            <ul>
+                <li><strong>Game playing</strong> — chess, Go, poker.</li>
+                <li><strong>Reinforcement learning</strong> — estimating returns and action values.</li>
+                <li><strong>Probabilistic inference</strong> — estimating probabilities in complex models.</li>
+                <li><strong>Robotics</strong> — planning under uncertainty.</li>
+                <li><strong>Optimization</strong> — finding good solutions in large search spaces.</li>
+                <li><strong>Decision-making</strong> — evaluating uncertain outcomes.</li>
+            </ul>
+            <p><strong>Example.</strong> If a move is simulated 1,000 times and wins 650 times, its estimated winning probability is \(P(\text{win}) = 650/1000 = 0.65\), i.e. <strong>65%</strong>.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>The Basic Mathematical Idea</h2>
+            <h3>Estimating an expected value</h3>
+            <p>Suppose we want the expected value of a random variable \(X\):</p>
+            <div class="math-block">
+                \[ \mu = E[X] = \int x\,f(x)\,dx \]
+            </div>
+            <p>where \(f(x)\) is the probability density function. If this integral is hard to compute analytically, <strong>estimate it with random samples</strong>: draw \(N\) independent samples \(X_1, X_2, \dots, X_N\) from the distribution of \(X\), and take their mean:</p>
+            <div class="math-block">
+                \[ \hat{\mu} = \frac{1}{N} \sum_{i=1}^{N} X_i \]
+            </div>
+            <p><strong>Example.</strong> Take these \(N = 5\) samples:</p>
+            <div class="math-block">
+                \[ X_1 = 2,\quad X_2 = 5,\quad X_3 = 3,\quad X_4 = 7,\quad X_5 = 4 \]
+            </div>
+            <p>Their mean is the estimate:</p>
+            <div class="math-block">
+                \[ \hat{\mu} = \frac{2+5+3+7+4}{5} = \frac{21}{5} = 4.2 \qquad\Rightarrow\qquad E[X] \approx 4.2 \]
+            </div>
+
+            <h3>Estimating a probability</h3>
+            <p>To estimate \(P(A)\), run \(N\) random trials and define an <strong>indicator variable</strong> for each:</p>
+            <div class="math-block">
+                \[ I_i = \begin{cases} 1, & \text{if event } A \text{ occurs} \\ 0, & \text{otherwise} \end{cases} \]
+            </div>
+            <p>Then \(P(A) = E[I]\), so a probability is just the expected value of an indicator, and the same averaging works:</p>
+            <div class="math-block">
+                \[ \hat{P}(A) = \frac{1}{N} \sum_{i=1}^{N} I_i \]
+            </div>
+            <p><strong>Example.</strong> In 10 simulations, event A occurs 6 times, so \(I_1 + I_2 + \cdots + I_{10} = 6\) and \(\hat{P}(A) = 6/10 = 0.6\), i.e. <strong>60%</strong>.</p>
+
+            <h3>Why does Monte Carlo work?</h3>
+            <p>The mathematical foundation is the <strong>Law of Large Numbers</strong>: as the number of samples grows, the sample mean converges to the true mean.</p>
+            <div class="math-block">
+                \[ \frac{1}{N} \sum_{i=1}^{N} X_i \;\rightarrow\; E[X] \quad\text{as } N \rightarrow \infty, \qquad\text{so}\qquad \hat{\mu} \rightarrow \mu \]
+            </div>
+            <p>More simulations generally produce a more accurate estimate.</p>
+
+            <h3>Monte Carlo error</h3>
+            <p>The standard error of a Monte Carlo estimate is approximately</p>
+            <div class="math-block">
+                \[ SE = \frac{\sigma}{\sqrt{N}} \qquad\Rightarrow\qquad \text{Error} \propto \frac{1}{\sqrt{N}} \]
+            </div>
+            <p>where \(\sigma\) is the standard deviation of the population and \(N\) the number of simulations.</p>
+            <div class="table-wrap">
+                <table style="max-width:460px;">
+                    <thead><tr><th>Simulations \(N\)</th><th>Error factor \(1/\sqrt{N}\)</th></tr></thead>
+                    <tbody>
+                        <tr><td>100</td><td>≈ 1/10</td></tr>
+                        <tr><td>1,000</td><td>≈ 1/31.6</td></tr>
+                        <tr><td>10,000</td><td>≈ 1/100</td></tr>
+                        <tr><td>100,000</td><td>≈ 1/316</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="callout">
+                <p><strong>The key consequence:</strong> increasing the number of simulations by <strong>100×</strong> reduces the typical error by only <strong>10×</strong>. Accuracy is cheap at first and expensive later — each extra decimal place of precision costs 100 times more simulation.</p>
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>A Classic Example: Estimating π</h2>
+            <p>Take the unit square \(0 \le x \le 1,\ 0 \le y \le 1\), and the quarter circle inside it, \(x^2 + y^2 \le 1\).</p>
+            <div class="math-block">
+                \[ A_s = 1 \times 1 = 1 \qquad\qquad A_c = \frac{\pi r^2}{4} = \frac{\pi (1)^2}{4} = \frac{\pi}{4} \]
+                \[ \frac{A_c}{A_s} = \frac{\pi / 4}{1} = \frac{\pi}{4} \qquad\Rightarrow\qquad \pi = 4\,\frac{A_c}{A_s} \]
+            </div>
+            <p>This is why the 1×1 square is convenient: its area is 1, so the area ratio <em>is</em> the quarter circle's area.</p>
+
+            <h3>Generate and count random points</h3>
+            <p>Generate \(N\) random points \((x_i, y_i)\), with \(x_i, y_i \sim U(0, 1)\). For every point check whether \(x_i^2 + y_i^2 \le 1\); if so it lies inside the quarter circle. Count those as \(N_c\). The fraction landing inside estimates the area ratio:</p>
+            <div class="math-block">
+                \[ \frac{N_c}{N} \approx \frac{\text{Area of quarter circle}}{\text{Area of square}} = \frac{\pi}{4} \qquad\Rightarrow\qquad \hat{\pi} = 4\,\frac{N_c}{N} \]
+            </div>
+
+            <h3>Worked examples</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>\(N\)</th><th>\(N_c\)</th><th>\(N_c / N\)</th><th>\(\hat{\pi} = 4 N_c / N\)</th></tr></thead>
+                    <tbody>
+                        <tr><td>10,000</td><td>7,850</td><td>0.785</td><td><strong>3.14</strong></td></tr>
+                        <tr><td>10,000</td><td>7,000</td><td>0.700</td><td><strong>2.8</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>The first is close to \(\pi = 3.14159\ldots\), since \(\pi/4 \approx 0.785\) — about 78.54% of points should land inside. The second is far off: only 70% landed inside. With more random points, the estimate tends to approach π.</p>
+            <div class="callout">
+                <p><strong>Worth noticing — use the error formula on the second example.</strong> For a proportion, \(\sigma = \sqrt{p(1-p)}\), so with \(N = 10{,}000\):</p>
+                <div class="math-block" style="margin:0.6rem 0;">
+                    \[ SE\!\left(\tfrac{N_c}{N}\right) = \sqrt{\frac{0.785 \times 0.215}{10000}} \approx 0.0041 \qquad\Rightarrow\qquad SE(\hat{\pi}) \approx 4 \times 0.0041 \approx 0.016 \]
+                </div>
+                <p>So a genuine run of 10,000 points should land within about ±0.03 of π roughly 95% of the time. Getting 2.8 is about <strong>20 standard errors</strong> away — not bad luck but a sign of a broken random number generator. Treat that example as illustrating the arithmetic, not as a realistic outcome at this \(N\).</p>
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Monte Carlo in AI</h2>
+            <p>In AI, the same principle estimates the <strong>value of an action</strong>. Suppose an agent has an action \(a\), and we run \(N\) simulations with rewards \(R_1, R_2, \dots, R_N\). The estimated value of \(a\) is their mean:</p>
+            <div class="math-block">
+                \[ \hat{Q}(a) = \frac{1}{N} \sum_{i=1}^{N} R_i \]
+            </div>
+            <p><strong>Example.</strong> Five simulations give \(R = 10, 5, 8, 12, 15\):</p>
+            <div class="math-block">
+                \[ \hat{Q}(a) = \frac{10+5+8+12+15}{5} = \frac{50}{5} = 10 \]
+            </div>
+            <p>If another action has \(\hat{Q}(b) = 7\), the AI prefers \(a\), because \(\hat{Q}(a) &gt; \hat{Q}(b)\).</p>
+
+            <h3>Monte Carlo Tree Search (MCTS)</h3>
+            <p>For MCTS, the mathematical process is:</p>
+            <div class="math-block" style="text-align:center;">
+                <p style="margin:0;">Random simulations &nbsp;→&nbsp; Rewards &nbsp;→&nbsp; Average reward &nbsp;→&nbsp; Action selection</p>
+            </div>
+            <p>For a node (state) \(s\) and action \(a\):</p>
+            <div class="math-block">
+                \[ Q(s, a) = \frac{W(s, a)}{N(s, a)} \]
+            </div>
+            <ul>
+                <li>\(N(s, a)\) — number of times action \(a\) was simulated from state \(s\)</li>
+                <li>\(W(s, a)\) — total accumulated reward</li>
+                <li>\(Q(s, a)\) — estimated average value</li>
+            </ul>
+            <p><strong>Example.</strong> An action simulated 100 times accumulating a total reward of 65 has \(N(s,a) = 100\), \(W(s,a) = 65\), so \(Q(s, a) = 65/100 = 0.65\).</p>
+            <p>This is the core idea behind Monte Carlo methods in AI: use repeated random simulations and their average outcome to estimate an unknown probability, value, or decision quality.</p>
+
+            <h3>Worked example: choosing between two actions</h3>
+            <p>Run 5 independent simulations of each action from state \(s\):</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Action</th><th>Returns \(G_1 \dots G_5\)</th><th>Sum</th><th>\(\hat{Q}(s, \cdot) = \text{sum} / 5\)</th></tr></thead>
+                    <tbody>
+                        <tr><th>\(a\)</th><td>8, 6, 10, 7, 9</td><td>40</td><td><strong>8</strong></td></tr>
+                        <tr><th>\(b\)</th><td>5, 8, 6, 7, 4</td><td>30</td><td><strong>6</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Since \(\hat{Q}(s, a) = 8 &gt; \hat{Q}(s, b) = 6\), the AI selects <strong>action \(a\)</strong>.</p>
+
+            <h3>General Monte Carlo formula in AI</h3>
+            <div class="math-block">
+                \[ \hat{Q}(s, a) = \frac{G_1 + G_2 + \cdots + G_N}{N} \qquad\text{and as } N \rightarrow \infty,\quad \hat{Q}(s, a) \rightarrow Q(s, a) \]
+            </div>
+            <p>This is the mathematical foundation of Monte Carlo methods in reinforcement learning and MCTS.</p>
+            <div class="callout">
+                <p><strong>Key point:</strong> Monte Carlo does not calculate \(Q(s, a)\) exactly. It <strong>estimates</strong> \(Q(s,a)\) by repeatedly simulating possible outcomes and averaging their returns. With only five runs per action, as here, the estimates are rough — the error formula above says the comparison becomes trustworthy only as \(N\) grows.</p>
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Worked Problem: Simulating a Dental Clinic</h2>
+            <div class="callout">
+                <p><strong>Problem.</strong> Ramesh is a dentist who schedules all his patients for 30-minute appointments. Some patients take more or less than 30 minutes depending on the type of dental work. Simulate the clinic for 4 hours and find the <strong>average waiting time</strong> of patients and the <strong>idle time</strong> of the doctor. Assume every patient arrives exactly on schedule.</p>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Category</th><th>Time required (min)</th><th>No. of patients</th><th>Probability</th></tr></thead>
+                    <tbody>
+                        <tr><td>Filling</td><td>45</td><td>30</td><td>0.30</td></tr>
+                        <tr><td>Crowning</td><td>60</td><td>15</td><td>0.15</td></tr>
+                        <tr><td>Cleaning</td><td>15</td><td>10</td><td>0.10</td></tr>
+                        <tr><td>Extracting</td><td>45</td><td>25</td><td>0.25</td></tr>
+                        <tr><td>Checkup</td><td>15</td><td>20</td><td>0.20</td></tr>
+                        <tr><th>Total</th><td>—</td><td>100</td><td>1.00</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Random numbers to use: <strong>42, 82, 10, 34, 25, 66, 17, 79</strong>. With 30-minute slots, 8 patients are scheduled within 4 hours.</p>
+            <p>The question's wording says "ideal time of doctor"; it means the doctor's <strong>idle</strong> time — the solution's own column is headed that way.</p>
+
+            <h3>Step 1 — map random numbers to categories</h3>
+            <p>Build the cumulative probability, then give each category a block of two-digit random numbers whose size matches its probability — 30 numbers for 0.30, 15 for 0.15, and so on:</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Category</th><th>Probability</th><th>Cumulative</th><th>Random-number interval</th></tr></thead>
+                    <tbody>
+                        <tr><td>Filling</td><td>0.30</td><td>0.30</td><td>00 – 29</td></tr>
+                        <tr><td>Crowning</td><td>0.15</td><td>0.45</td><td>30 – 44</td></tr>
+                        <tr><td>Cleaning</td><td>0.10</td><td>0.55</td><td>45 – 54</td></tr>
+                        <tr><td>Extracting</td><td>0.25</td><td>0.80</td><td>55 – 79</td></tr>
+                        <tr><td>Checkup</td><td>0.20</td><td>1.00</td><td>80 – 99</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Each interval ends one below the next cumulative value × 100. For example, Crowning covers 30 up to 44 because the cumulative probability reaches 0.45.</p>
+
+            <h3>Step 2 — assign each patient a category</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Patient</th><th>Scheduled arrival</th><th>Random no.</th><th>Category</th><th>Service time (min)</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td>8:00</td><td>42</td><td>Crowning</td><td>60</td></tr>
+                        <tr><td>2</td><td>8:30</td><td>82</td><td>Checkup</td><td>15</td></tr>
+                        <tr><td>3</td><td>9:00</td><td>10</td><td>Filling</td><td>45</td></tr>
+                        <tr><td>4</td><td>9:30</td><td>34</td><td>Crowning</td><td>60</td></tr>
+                        <tr><td>5</td><td>10:00</td><td>25</td><td>Filling</td><td>45</td></tr>
+                        <tr><td>6</td><td>10:30</td><td>66</td><td>Extracting</td><td>45</td></tr>
+                        <tr><td>7</td><td>11:00</td><td>17</td><td>Filling</td><td>45</td></tr>
+                        <tr><td>8</td><td>11:30</td><td>79</td><td>Extracting</td><td>45</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Step 3 — run the clinic</h3>
+            <p>Service starts at the later of the patient's arrival and the moment the doctor becomes free. Waiting time = start − arrival; doctor idle time = any gap between finishing one patient and the next arriving.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Patient</th><th>Arrival</th><th>Service start</th><th>Duration</th><th>Service end</th><th>Waiting (min)</th><th>Doctor idle</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td>8:00</td><td>8:00</td><td>60</td><td>9:00</td><td>0</td><td>0</td></tr>
+                        <tr><td>2</td><td>8:30</td><td>9:00</td><td>15</td><td>9:15</td><td>30</td><td>0</td></tr>
+                        <tr><td>3</td><td>9:00</td><td>9:15</td><td>45</td><td>10:00</td><td>15</td><td>0</td></tr>
+                        <tr><td>4</td><td>9:30</td><td>10:00</td><td>60</td><td>11:00</td><td>30</td><td>0</td></tr>
+                        <tr><td>5</td><td>10:00</td><td>11:00</td><td>45</td><td>11:45</td><td>60</td><td>0</td></tr>
+                        <tr><td>6</td><td>10:30</td><td>11:45</td><td>45</td><td>12:30</td><td>75</td><td>0</td></tr>
+                        <tr><td>7</td><td>11:00</td><td>12:30</td><td>45</td><td>1:15</td><td>90</td><td>0</td></tr>
+                        <tr><td>8</td><td>11:30</td><td>1:15</td><td>45</td><td>2:00</td><td>105</td><td>0</td></tr>
+                        <tr><th colspan="5">Total</th><td><strong>405</strong></td><td><strong>0</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="math-block">
+                \[ \text{Average waiting time} = \frac{\sum t}{n} = \frac{405}{8} = \mathbf{50.625\ \text{min}} \qquad\qquad \text{Doctor's idle time} = \mathbf{0} \]
+            </div>
+            <div class="callout">
+                <p><strong>Why the waits keep growing.</strong> The expected service time is</p>
+                <div class="math-block" style="margin:0.6rem 0;">
+                    \[ 0.30 \times 45 + 0.15 \times 60 + 0.10 \times 15 + 0.25 \times 45 + 0.20 \times 15 = 38.25 \text{ min} \]
+                </div>
+                <p>— longer than the 30-minute slot. On average each patient adds about 8 minutes to the queue, so waits climb steadily and the doctor is never idle. This sample was worse than average: its mean service time was 45 minutes, which is why the last patient waits 105 minutes and the clinic runs until 2:00 instead of noon.</p>
+                <p>One run of 8 patients is a single random sample. A proper Monte Carlo study would repeat the day with many sets of random numbers and average the results — exactly the \(1/\sqrt{N}\) story above.</p>
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Exam Checklist</h2>
+            <ul>
+                <li>Define Monte Carlo: repeated random sampling to estimate quantities — heuristic, not exact.</li>
+                <li>Estimate an expected value as a sample mean, and a probability as the mean of an indicator.</li>
+                <li>Cite the <strong>Law of Large Numbers</strong> for why it works, and \(SE = \sigma/\sqrt{N}\) for how accurate it is.</li>
+                <li>Derive \(\hat{\pi} = 4N_c/N\) from the area ratio of the quarter circle to the unit square.</li>
+                <li>Compute \(\hat{Q}(s,a)\) as an average of returns, or \(W/N\), and pick the action with the larger estimate.</li>
+                <li>For a simulation problem: cumulative probabilities → random-number intervals → category per random number → event table → averages.</li>
+                <li>In a queue table, service starts at <strong>max(arrival, doctor free)</strong>.</li>
+            </ul>
+        </section>
+    </div>
+</body>
+</html>

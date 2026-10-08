@@ -234,7 +234,7 @@ a:hover { text-decoration: underline; }
 
 .topic-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(270px, 100%), 1fr));
     gap: 1rem;
     margin-bottom: 0.5rem;
 }
@@ -415,6 +415,47 @@ tbody th {
     color: var(--heading);
     font-weight: 600;
 }
+
+/* ------------------------------------------------------------------
+   Charts and diagrams drawn as inline SVG (fuzzy logic, Markov models,
+   neural networks). Colours come from the theme tokens.
+   ------------------------------------------------------------------ */
+.chart-wrap {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.6rem 0.4rem 0.2rem;
+    margin: 1.1rem 0 1.4rem;
+    overflow-x: auto;
+}
+.chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.9rem; margin: 1.1rem 0 1.4rem; }
+.chart-grid .chart-wrap { margin: 0; }
+.chart-cap { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); text-align: center; margin: 0.1rem 0 0.4rem; }
+.mf-chart { display: block; width: 100%; min-width: 460px; height: auto; }
+.chart-grid .mf-chart { min-width: 240px; }
+.mf-chart.diagram { min-width: 300px; max-width: 520px; margin: 0 auto; }
+.mf-axis  { stroke: var(--line-strong); stroke-width: 1.3; }
+.mf-grid  { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; }
+.mf-guide { stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 3 3; }
+.mf-tick, .mf-axlab, .mf-legend { fill: var(--text-muted); font: 500 11.5px 'Inter', system-ui, sans-serif; }
+.mf-axlab, .mf-legend { font-weight: 600; }
+.mf-line  { fill: none; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.mf-name  { font: 700 12.5px 'Inter', system-ui, sans-serif; }
+line.mf-marker { stroke: var(--heading); stroke-width: 1.6; stroke-dasharray: 6 4; }
+.mf-dot   { fill: var(--heading); }
+.mf-val   { fill: var(--heading); font: 700 12.5px 'Inter', system-ui, sans-serif; paint-order: stroke; stroke: var(--surface-2); stroke-width: 4px; }
+.mf-line.mf-s1 { stroke: var(--c-blue); }    .mf-name.mf-s1, .mf-pt.mf-s1 { fill: var(--c-blue); }
+.mf-line.mf-s2 { stroke: var(--accent-2); }  .mf-name.mf-s2, .mf-pt.mf-s2 { fill: var(--accent-2); }
+.mf-line.mf-s3 { stroke: var(--c-yellow); }  .mf-name.mf-s3, .mf-pt.mf-s3 { fill: var(--c-yellow); }
+.mf-line.mf-s4 { stroke: var(--c-red); }     .mf-name.mf-s4, .mf-pt.mf-s4 { fill: var(--c-red); }
+.mf-line.mf-s5 { stroke: var(--c-green); }   .mf-name.mf-s5, .mf-pt.mf-s5 { fill: var(--c-green); }
+.mc-edge { fill: none; stroke: var(--line-strong); stroke-width: 2; }
+.mc-head { fill: var(--line-strong); }
+.mc-node { stroke-width: 2.5; }
+.mc-node.sun  { fill: color-mix(in srgb, var(--c-yellow) 22%, var(--surface)); stroke: var(--c-yellow); }
+.mc-node.rain { fill: color-mix(in srgb, var(--c-blue) 18%, var(--surface)); stroke: var(--c-blue); }
+.mc-lbl { fill: var(--heading); font: 700 15px 'Inter', system-ui, sans-serif; }
+.mc-p   { fill: var(--heading); font: 700 13.5px 'Inter', system-ui, sans-serif; }
 
 /* Primary buttons in the simulations sit on the accent colour. */
 button.ctrl.primary { color: var(--on-accent) !important; }

@@ -95,7 +95,8 @@
             </div>
             <p>Consequences of consistency:</p>
             <ul>
-                <li>The \( f \) value along a path never decreases: \( h(A) \leq \text{cost}(A \rightarrow C) + h(C) \)</li>
+                <li>The \( f \) value along a path never decreases:
+                    \[ h(A) \leq \text{cost}(A \rightarrow C) + h(C) \]</li>
                 <li>A* graph search is optimal.</li>
                 <li>Consistency implies admissibility.</li>
             </ul>
@@ -117,7 +118,7 @@
             <p>What if we had an easier 8-puzzle where any tile could slide any direction at any time, ignoring other tiles? The solution cost of that relaxed problem is the total Manhattan distance.</p>
             <ul>
                 <li><strong>Why is it admissible?</strong> Each tile must travel at least its Manhattan distance, and moves shift one tile at a time.</li>
-                <li>\( h(\text{start}) = 3 + 1 + 2 + \dots = 18 \)</li>
+                <li>\[ h(\text{start}) = 3 + 1 + 2 + \dots = 18 \]</li>
             </ul>
 
             <div class="table-wrap">
@@ -177,7 +178,10 @@
                 <li>Through A: \( C \) is reached with \( f = 2 + 1 = 3 \) — the genuinely cheaper path, cost 5 to the goal versus 6.</li>
                 <li>Because graph search closes \( C \) the first time it is expanded, the better path through A is discarded and A* returns the cost-6 plan.</li>
             </ul>
-            <p>The heuristic here is admissible but <strong>not consistent</strong> ( \( h(A) - h(C) = 3 > \text{cost}(A \rightarrow C) = 1 \) ), which is exactly what breaks it.</p>
+            <p>The heuristic here is admissible but <strong>not consistent</strong>, which is exactly what breaks it:</p>
+            <div class="math-block">
+                \[ h(A) - h(C) = 3 > \text{cost}(A \rightarrow C) = 1 \]
+            </div>
 
             <h3>Optimality of A* Graph Search</h3>
             <p>Sketch — consider what A* does with a consistent heuristic:</p>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markov Models - AI Notes</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/theme.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link"><span>←</span> Back to Table of Contents</a>
+        </nav>
+
+        <header>
+            <h1>Markov Models</h1>
+            <p style="text-align: center; margin-top: -1rem; margin-bottom: 2.5rem;">Classes 23 &amp; 24 &nbsp;•&nbsp; Markov chains, the mini-forward algorithm, stationary distributions</p>
+        </header>
+
+        <div class="callout">
+            <p>This deck covers Markov <strong>chains</strong> — the state is observed directly. It does not cover <em>Hidden</em> Markov Models, where the state is unobserved and only noisy evidence about it is seen.</p>
+        </div>
+
+        <section class="glass-panel">
+            <h2>Reasoning over Time or Space</h2>
+            <p>Often we want to <strong>reason about a sequence</strong> of observations:</p>
+            <ul>
+                <li>Speech recognition</li>
+                <li>Robot localization</li>
+                <li>User attention</li>
+                <li>Medical monitoring</li>
+            </ul>
+            <p>The Bayes' nets so far describe a single snapshot. To handle sequences we need to introduce <strong>time (or space)</strong> into our models.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Markov Models</h2>
+            <p>The value of \(X\) at a given time is called the <strong>state</strong>. A Markov model is a chain of states, each depending only on the one before:</p>
+            <div class="math-block" style="text-align:center;">
+                <p style="margin:0.2rem 0;">\(X_1 \rightarrow X_2 \rightarrow X_3 \rightarrow X_4 \rightarrow \cdots\)</p>
+                \[ P(X_1) \qquad\qquad P(X_t \mid X_{t-1}) \]
+            </div>
+            <ul>
+                <li><strong>Parameters:</strong> the <strong>transition probabilities</strong>, or <em>dynamics</em>, \(P(X_t \mid X_{t-1})\), which specify how the state evolves over time — plus the <strong>initial state probabilities</strong> \(P(X_1)\).</li>
+                <li><strong>Stationarity assumption:</strong> the transition probabilities are the same at all times.</li>
+                <li>This is the same as an MDP transition model, but with <strong>no choice of action</strong>.</li>
+            </ul>
+
+            <h3>Joint distribution of a Markov model</h3>
+            <div class="math-block">
+                \[ P(X_1, X_2, X_3, X_4) = P(X_1)\,P(X_2 \mid X_1)\,P(X_3 \mid X_2)\,P(X_4 \mid X_3) \]
+            </div>
+            <p>More generally:</p>
+            <div class="math-block">
+                \[ P(X_1, X_2, \dots, X_T) = P(X_1)\,P(X_2 \mid X_1)\,P(X_3 \mid X_2) \cdots P(X_T \mid X_{T-1}) = P(X_1) \prod_{t=2}^{T} P(X_t \mid X_{t-1}) \]
+            </div>
+            <p>Two questions to resolve:</p>
+            <ol>
+                <li>Does this indeed define a joint distribution?</li>
+                <li>Can every joint distribution be factored this way, or are we making assumptions about the joint by using this factorization?</li>
+            </ol>
+        </section>
+
+        <section class="glass-panel">
+            <h2>The Chain Rule and Markov Models</h2>
+            <p>From the chain rule, <em>every</em> joint distribution over \(X_1, X_2, X_3, X_4\) can be written as:</p>
+            <div class="math-block">
+                \[ P(X_1, X_2, X_3, X_4) = P(X_1)\,P(X_2 \mid X_1)\,P(X_3 \mid X_1, X_2)\,P(X_4 \mid X_1, X_2, X_3) \]
+            </div>
+            <p>Assuming that</p>
+            <div class="math-block">
+                \[ X_3 \perp\!\!\!\perp X_1 \mid X_2 \qquad\text{and}\qquad X_4 \perp\!\!\!\perp X_1, X_2 \mid X_3 \]
+            </div>
+            <p>shrinks each factor to depend only on the previous state, giving exactly the Markov factorization above. In general, from the chain rule:</p>
+            <div class="math-block">
+                \[ P(X_1, \dots, X_T) = P(X_1) \prod_{t=2}^{T} P(X_t \mid X_1, X_2, \dots, X_{t-1}) \]
+            </div>
+            <p>and assuming, for all \(t\),</p>
+            <div class="math-block">
+                \[ X_t \perp\!\!\!\perp X_1, \dots, X_{t-2} \mid X_{t-1} \]
+            </div>
+            <p>gives the Markov factorization \(P(X_1)\prod_{t=2}^{T} P(X_t \mid X_{t-1})\).</p>
+            <div class="callout">
+                <p><strong>So, the two questions answered.</strong> (1) <strong>Yes</strong>, it defines a valid joint distribution — it <em>is</em> the chain rule, which always holds, with some factors simplified. (2) <strong>No</strong>, not every joint can be written this way: the simplification is only legal because we <em>assumed</em> the conditional independences. This is the same idea as Bayes' net semantics — a Markov model is simply a Bayes' net shaped like a chain.</p>
+            </div>
+
+            <h3>Recap: the two assumptions</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Assumption</th><th>Statement</th><th>What it buys</th></tr></thead>
+                    <tbody>
+                        <tr><th>Markov property</th><td>\(X_t \perp\!\!\!\perp X_1, \dots, X_{t-2} \mid X_{t-1}\) for all \(t\)</td><td>The joint factors as \(P(X_1)\prod_t P(X_t \mid X_{t-1})\) — the future depends on the past only through the present.</td></tr>
+                        <tr><th>Stationarity</th><td>\(P(X_t \mid X_{t-1})\) is the same for all \(t\)</td><td>A single transition table describes every step.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Example Markov Chain: Weather</h2>
+            <ul>
+                <li><strong>States:</strong> \(X \in \{\text{rain}, \text{sun}\}\)</li>
+                <li><strong>Initial distribution:</strong> 1.0 sun</li>
+                <li><strong>Transition table</strong> \(P(X_t \mid X_{t-1})\):</li>
+            </ul>
+            <div class="table-wrap">
+                <table style="max-width:420px;">
+                    <thead><tr><th>\(X_{t-1}\)</th><th>\(X_t\)</th><th>\(P(X_t \mid X_{t-1})\)</th></tr></thead>
+                    <tbody>
+                        <tr><td>sun</td><td>sun</td><td>0.9</td></tr>
+                        <tr><td>sun</td><td>rain</td><td>0.1</td></tr>
+                        <tr><td>rain</td><td>sun</td><td>0.3</td></tr>
+                        <tr><td>rain</td><td>rain</td><td>0.7</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>The same table drawn as a <strong>state transition diagram</strong> — each arrow is a transition, labelled with its probability, and the arrows leaving any state sum to 1:</p>
+            <div class="chart-wrap"><svg class="mf-chart diagram" viewBox="0 0 460 190" role="img" aria-label="Weather Markov chain: sun stays sun 0.9, sun to rain 0.1, rain to sun 0.3, rain stays rain 0.7">
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mc-head"/></marker></defs>
+<path class="mc-edge" d="M160,72 C210,30 250,30 300,72" marker-end="url(#arr)"/>
+<path class="mc-edge" d="M300,118 C250,160 210,160 160,118" marker-end="url(#arr)"/>
+<path class="mc-edge" d="M95,70 C40,20 20,140 95,120" marker-end="url(#arr)"/>
+<path class="mc-edge" d="M365,70 C420,20 440,140 365,120" marker-end="url(#arr)"/>
+<circle class="mc-node rain" cx="125" cy="95" r="38"/><text class="mc-lbl" x="125" y="100" text-anchor="middle">rain</text>
+<circle class="mc-node sun" cx="335" cy="95" r="38"/><text class="mc-lbl" x="335" y="100" text-anchor="middle">sun</text>
+<text class="mc-p" x="230" y="34" text-anchor="middle">0.3</text>
+<text class="mc-p" x="230" y="172" text-anchor="middle">0.1</text>
+<text class="mc-p" x="28" y="100" text-anchor="middle">0.7</text>
+<text class="mc-p" x="438" y="100" text-anchor="middle">0.9</text>
+</svg></div>
+            <p>A third way, also in the slides, is a two-column "trellis" that lists the states at time \(t-1\) on the left and time \(t\) on the right, with an arrow for each transition. All three representations carry exactly the same information.</p>
+
+            <h3>What is the distribution after one step?</h3>
+            <p>Sum over every way of getting to "sun", weighting each by how likely it was to be in the starting state:</p>
+            <div class="math-block">
+                \[ P(X_2 = \text{sun}) = P(X_2 = \text{sun} \mid X_1 = \text{sun})\,P(X_1 = \text{sun}) + P(X_2 = \text{sun} \mid X_1 = \text{rain})\,P(X_1 = \text{rain}) \]
+                \[ = 0.9 \times 1.0 + 0.3 \times 0.0 = 0.9 \]
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>The Mini-Forward Algorithm</h2>
+            <p>Applying that one-step calculation repeatedly gives the <strong>mini-forward algorithm</strong>, which pushes the whole distribution forward one step at a time:</p>
+            <div class="math-block">
+                \[ P(x_t) = \sum_{x_{t-1}} P(x_t \mid x_{t-1})\,P(x_{t-1}) \]
+            </div>
+
+            <h3>Example run</h3>
+            <p>Each column is \(\langle P(\text{sun}), P(\text{rain}) \rangle\):</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Start</th><th>\(P(X_1)\)</th><th>\(P(X_2)\)</th><th>\(P(X_3)\)</th><th>\(P(X_4)\)</th><th>\(\cdots\ P(X_\infty)\)</th></tr></thead>
+                    <tbody>
+                        <tr><th>Sun</th><td>⟨1.0, 0.0⟩</td><td>⟨0.9, 0.1⟩</td><td>⟨0.84, 0.16⟩</td><td>⟨0.804, 0.196⟩</td><td><strong>⟨0.75, 0.25⟩</strong></td></tr>
+                        <tr><th>Rain</th><td>⟨0.0, 1.0⟩</td><td>⟨0.3, 0.7⟩</td><td>⟨0.48, 0.52⟩</td><td>⟨0.588, 0.412⟩</td><td><strong>⟨0.75, 0.25⟩</strong></td></tr>
+                        <tr><th>Any \(p\)</th><td>⟨\(p\), \(1-p\)⟩</td><td colspan="3">…</td><td><strong>⟨0.75, 0.25⟩</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>For instance, from sun:</p>
+            <div class="math-block">
+                \[ P(X_3 = \text{sun}) = 0.9 \times 0.9 + 0.3 \times 0.1 = 0.84 \]
+            </div>
+            <p>Watch both starting points close in on the same value:</p>
+            <div class="chart-wrap"><svg class="mf-chart" viewBox="0 0 600 260" role="img" aria-label="Probability of sun over time converging to 0.75 from both starting states">
+<line class="mf-grid" x1="50" y1="214.0" x2="576" y2="214.0"/>
+<text class="mf-tick" x="42" y="218.0" text-anchor="end">0</text>
+<line class="mf-grid" x1="50" y1="170.5" x2="576" y2="170.5"/>
+<text class="mf-tick" x="42" y="174.5" text-anchor="end">0.25</text>
+<line class="mf-grid" x1="50" y1="127.0" x2="576" y2="127.0"/>
+<text class="mf-tick" x="42" y="131.0" text-anchor="end">0.5</text>
+<line class="mf-grid" x1="50" y1="83.5" x2="576" y2="83.5"/>
+<text class="mf-tick" x="42" y="87.5" text-anchor="end">0.75</text>
+<line class="mf-grid" x1="50" y1="40.0" x2="576" y2="40.0"/>
+<text class="mf-tick" x="42" y="44.0" text-anchor="end">1</text>
+<text class="mf-tick" x="50.0" y="231.0" text-anchor="middle">1</text>
+<text class="mf-tick" x="97.8" y="231.0" text-anchor="middle">2</text>
+<text class="mf-tick" x="145.6" y="231.0" text-anchor="middle">3</text>
+<text class="mf-tick" x="193.5" y="231.0" text-anchor="middle">4</text>
+<text class="mf-tick" x="241.3" y="231.0" text-anchor="middle">5</text>
+<text class="mf-tick" x="289.1" y="231.0" text-anchor="middle">6</text>
+<text class="mf-tick" x="336.9" y="231.0" text-anchor="middle">7</text>
+<text class="mf-tick" x="384.7" y="231.0" text-anchor="middle">8</text>
+<text class="mf-tick" x="432.5" y="231.0" text-anchor="middle">9</text>
+<text class="mf-tick" x="480.4" y="231.0" text-anchor="middle">10</text>
+<text class="mf-tick" x="528.2" y="231.0" text-anchor="middle">11</text>
+<text class="mf-tick" x="576.0" y="231.0" text-anchor="middle">12</text>
+<line class="mf-axis" x1="50" y1="214.0" x2="576" y2="214.0"/>
+<line class="mf-axis" x1="50" y1="40" x2="50" y2="214"/>
+<line class="mf-marker" x1="50" y1="83.5" x2="576" y2="83.5"/>
+<text class="mf-val" x="572" y="76.5" text-anchor="end">stationary 0.75</text>
+<polyline class="mf-line mf-s3" points="50.0,40.0 97.8,57.4 145.6,67.8 193.5,74.1 241.3,77.9 289.1,80.1 336.9,81.5 384.7,82.3 432.5,82.8 480.4,83.1 528.2,83.2 576.0,83.3"/>
+<circle class="mf-pt mf-s3" cx="50.0" cy="40.0" r="3.6"/>
+<circle class="mf-pt mf-s3" cx="97.8" cy="57.4" r="3.6"/>
+<circle class="mf-pt mf-s3" cx="145.6" cy="67.8" r="3.6"/>
+<circle class="mf-pt mf-s3" cx="193.5" cy="74.1" r="3.6"/>
+<circle class="mf-pt mf-s3" cx="241.3" cy="77.9" r="3.6"/>
+<circle class="mf-pt mf-s3" cx="289.1" cy="80.1" r="3.6"/>
+<circle class="mf-pt mf-s3" cx="336.9" cy="81.5" r="3.6"/>
+<circle class="mf-pt mf-s3" cx="384.7" cy="82.3" r="3.6"/>
+<circle class="mf-pt mf-s3" cx="432.5" cy="82.8" r="3.6"/>
+<circle class="mf-pt mf-s3" cx="480.4" cy="83.1" r="3.6"/>
+<circle class="mf-pt mf-s3" cx="528.2" cy="83.2" r="3.6"/>
+<circle class="mf-pt mf-s3" cx="576.0" cy="83.3" r="3.6"/>
+<polyline class="mf-line mf-s1" points="50.0,214.0 97.8,161.8 145.6,130.5 193.5,111.7 241.3,100.4 289.1,93.6 336.9,89.6 384.7,87.2 432.5,85.7 480.4,84.8 528.2,84.3 576.0,84.0"/>
+<circle class="mf-pt mf-s1" cx="50.0" cy="214.0" r="3.6"/>
+<circle class="mf-pt mf-s1" cx="97.8" cy="161.8" r="3.6"/>
+<circle class="mf-pt mf-s1" cx="145.6" cy="130.5" r="3.6"/>
+<circle class="mf-pt mf-s1" cx="193.5" cy="111.7" r="3.6"/>
+<circle class="mf-pt mf-s1" cx="241.3" cy="100.4" r="3.6"/>
+<circle class="mf-pt mf-s1" cx="289.1" cy="93.6" r="3.6"/>
+<circle class="mf-pt mf-s1" cx="336.9" cy="89.6" r="3.6"/>
+<circle class="mf-pt mf-s1" cx="384.7" cy="87.2" r="3.6"/>
+<circle class="mf-pt mf-s1" cx="432.5" cy="85.7" r="3.6"/>
+<circle class="mf-pt mf-s1" cx="480.4" cy="84.8" r="3.6"/>
+<circle class="mf-pt mf-s1" cx="528.2" cy="84.3" r="3.6"/>
+<circle class="mf-pt mf-s1" cx="576.0" cy="84.0" r="3.6"/>
+<line class="mf-line mf-s3" x1="50" y1="16" x2="72" y2="16"/>
+<text class="mf-legend" x="78" y="20">start: sun</text>
+<line class="mf-line mf-s1" x1="176" y1="16" x2="198" y2="16"/>
+<text class="mf-legend" x="204" y="20">start: rain</text>
+<text class="mf-axlab" x="313.0" y="254" text-anchor="middle">time step t</text>
+<text class="mf-axlab" x="13" y="127.0" text-anchor="middle" transform="rotate(-90 13 127.0)">P(Xₜ = sun)</text>
+</svg></div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Stationary Distributions</h2>
+            <p>For most chains:</p>
+            <ul>
+                <li>The influence of the initial distribution gets less and less over time.</li>
+                <li>The distribution we end up in is <strong>independent of the initial distribution</strong>.</li>
+            </ul>
+            <p>The distribution we end up with is called the <strong>stationary distribution</strong> \(P_\infty\) of the chain. It is the distribution that one more step leaves unchanged:</p>
+            <div class="math-block">
+                \[ P_\infty(X) = P_{\infty+1}(X) = \sum_x P(X \mid x)\,P_\infty(x) \]
+            </div>
+
+            <h3>Example 1: weather</h3>
+            <p><strong>What is \(P(X)\) at time \(t = \infty\)?</strong> Write the stationary condition for each state:</p>
+            <div class="math-block">
+                \[ P_\infty(\text{sun}) = P(\text{sun} \mid \text{sun})\,P_\infty(\text{sun}) + P(\text{sun} \mid \text{rain})\,P_\infty(\text{rain}) \]
+                \[ P_\infty(\text{rain}) = P(\text{rain} \mid \text{sun})\,P_\infty(\text{sun}) + P(\text{rain} \mid \text{rain})\,P_\infty(\text{rain}) \]
+            </div>
+            <p>Substitute the numbers:</p>
+            <div class="math-block">
+                \[ P_\infty(\text{sun}) = 0.9\,P_\infty(\text{sun}) + 0.3\,P_\infty(\text{rain}) \;\Rightarrow\; P_\infty(\text{sun}) = 3\,P_\infty(\text{rain}) \]
+                \[ P_\infty(\text{rain}) = 0.1\,P_\infty(\text{sun}) + 0.7\,P_\infty(\text{rain}) \;\Rightarrow\; P_\infty(\text{rain}) = \tfrac{1}{3}\,P_\infty(\text{sun}) \]
+            </div>
+            <p>Both equations say the same thing. Adding \(P_\infty(\text{sun}) + P_\infty(\text{rain}) = 1\) pins down the values:</p>
+            <div class="math-block">
+                \[ P_\infty(\text{sun}) = \tfrac{3}{4} \qquad\qquad P_\infty(\text{rain}) = \tfrac{1}{4} \]
+            </div>
+            <p>That matches the 0.75 / 0.25 the mini-forward algorithm converged to.</p>
+
+            <h3>Example 2: a three-state chain</h3>
+            <p>Random variable \(X \in \{a, b, c\}\) with transition matrix</p>
+            <div class="math-block">
+                \[ \begin{array}{c|ccc} & a & b & c \\ \hline a & 2/5 & 2/5 & 1/5 \\ b & 1/5 & 3/5 & 1/5 \\ c & 1/5 & 2/5 & 2/5 \end{array} \]
+            </div>
+            <div class="callout">
+                <p><strong>Read the matrix correctly.</strong> Each <strong>row</strong> is the state you are coming <em>from</em> and each <strong>column</strong> the state you go <em>to</em>, so the entry in row \(b\), column \(a\) is \(P(a \mid b) = 1/5\). You can confirm the orientation because every row sums to 1. To find \(P_\infty(a)\) you need column \(a\): \(P(a \mid a), P(a \mid b), P(a \mid c)\).</p>
+            </div>
+            <p><strong>Equation for \(a\)</strong> — column \(a\) is \(2/5, 1/5, 1/5\):</p>
+            <div class="math-block">
+                \[ P_\infty(a) = \tfrac{2}{5}P_\infty(a) + \tfrac{1}{5}P_\infty(b) + \tfrac{1}{5}P_\infty(c) \]
+                \[ \Rightarrow 5P_\infty(a) = 2P_\infty(a) + P_\infty(b) + P_\infty(c) \;\Rightarrow\; 3P_\infty(a) - P_\infty(b) - P_\infty(c) = 0 \qquad \text{(i)} \]
+            </div>
+            <p><strong>Equation for \(b\)</strong> — column \(b\) is \(2/5, 3/5, 2/5\):</p>
+            <div class="math-block">
+                \[ P_\infty(b) = \tfrac{2}{5}P_\infty(a) + \tfrac{3}{5}P_\infty(b) + \tfrac{2}{5}P_\infty(c) \]
+                \[ \Rightarrow 5P_\infty(b) = 2P_\infty(a) + 3P_\infty(b) + 2P_\infty(c) \;\Rightarrow\; P_\infty(a) - P_\infty(b) + P_\infty(c) = 0 \qquad \text{(ii)} \]
+            </div>
+            <p><strong>Normalisation:</strong></p>
+            <div class="math-block">
+                \[ P_\infty(a) + P_\infty(b) + P_\infty(c) = 1 \qquad \text{(iii)} \]
+            </div>
+            <p><strong>Solve.</strong> From (ii), \(P_\infty(b) = P_\infty(a) + P_\infty(c)\). Substituting into (iii) gives \(2P_\infty(b) = 1\), so \(P_\infty(b) = 1/2\) and \(P_\infty(a) + P_\infty(c) = 1/2\). Then (i) becomes:</p>
+            <div class="math-block">
+                \[ 3P_\infty(a) - \tfrac12 - \left(\tfrac12 - P_\infty(a)\right) = 0 \;\Rightarrow\; 4P_\infty(a) = 1 \]
+            </div>
+            <p>which gives:</p>
+            <div class="math-block">
+                \[ P_\infty(a) = \tfrac{1}{4} \qquad P_\infty(b) = \tfrac{1}{2} \qquad P_\infty(c) = \tfrac{1}{4} \]
+            </div>
+            <div class="callout">
+                <p><strong>Why the equation for \(c\) is never used.</strong> The balance equations for all three states are not independent — any one follows from the other two, because probability that flows out of one state must flow into the others. On their own they have infinitely many solutions: any multiple of \((1, 2, 1)\) satisfies them. That is why the normalisation equation (iii) is always needed — it picks the one multiple that sums to 1. In general, for \(n\) states use any \(n - 1\) balance equations plus normalisation.</p>
+                <p><strong>Check your answer</strong> by pushing it through one step. For column \(a\):</p>
+                <div class="math-block" style="margin:0.6rem 0 0;">
+                    \[ \tfrac14 \cdot \tfrac25 + \tfrac12 \cdot \tfrac15 + \tfrac14 \cdot \tfrac15 = \tfrac{2+2+1}{20} = \tfrac14 \;✓ \]
+                </div>
+            </div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Exam Checklist</h2>
+            <ul>
+                <li>State the Markov factorization \(P(X_1)\prod_{t} P(X_t \mid X_{t-1})\), and derive it from the chain rule plus the conditional independence assumption.</li>
+                <li>Name the two assumptions: the <strong>Markov property</strong> and <strong>stationarity</strong>.</li>
+                <li>Convert between a transition table, a state diagram and a matrix — and say which way the matrix is read.</li>
+                <li>Run the mini-forward algorithm by hand, one step at a time:
+                    \[ P(x_t) = \sum_{x_{t-1}} P(x_t \mid x_{t-1})\,P(x_{t-1}) \]</li>
+                <li>Find a stationary distribution: write one balance equation per state, keep \(n-1\) of them, add \(\sum P_\infty = 1\), and solve.</li>
+                <li>Verify by checking that one more step leaves your answer unchanged.</li>
+            </ul>
+        </section>
+    </div>
+</body>
+</html>
