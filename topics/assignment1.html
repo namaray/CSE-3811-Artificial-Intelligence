@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment 1 — Solutions</title>
+    <meta name="description" content="CSE 3811 Assignment 1 questions with exam-style worked solutions: regression, k-means and fuzzy logic">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/theme.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        details.ans {
+            background: var(--accent-2-soft);
+            border: 1px solid var(--accent-2-line);
+            border-radius: 10px;
+            padding: 0.1rem 1.2rem;
+            margin: 1rem 0 1.75rem;
+        }
+
+        details.ans > summary {
+            cursor: pointer;
+            list-style: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--accent-secondary);
+            padding: 0.85rem 0;
+            user-select: none;
+        }
+
+        details.ans > summary::-webkit-details-marker { display: none; }
+        details.ans > summary::before { content: '▶ '; font-size: 0.75rem; }
+        details.ans[open] > summary::before { content: '▼ '; }
+        details.ans[open] > summary { border-bottom: 1px solid var(--accent-2-line); margin-bottom: 0.9rem; }
+        details.ans > *:last-child { margin-bottom: 1rem; }
+        details.ans h3 { font-size: 1rem; margin: 1.4rem 0 0.4rem; }
+        details.ans .math-block, details.ans .chart-wrap { background: var(--surface); }
+
+        .qpart {
+            border-left: 3px solid var(--glass-border);
+            padding-left: 1.1rem;
+            margin: 1.25rem 0;
+        }
+
+        .qpart > p:first-child { margin-bottom: 0.5rem; }
+        .qpart b.tag { color: var(--accent-primary); }
+        .marks { color: var(--text-muted); font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
+
+        .scope {
+            background: var(--accent-soft);
+            border-left: 4px solid var(--accent-primary);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .scope p:last-child, .scope ul:last-child { margin-bottom: 0; }
+
+        .final {
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            padding: 0.7rem 1rem;
+            margin: 1rem 0;
+            font-weight: 650;
+            color: var(--heading);
+            background: var(--surface);
+        }
+
+        .check { color: var(--text-muted); font-size: 0.9rem; }
+
+        h2.part {
+            margin: 2.75rem 0 1.25rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid var(--border-strong);
+        }
+
+        .toolbar { display: flex; justify-content: flex-end; margin: -0.5rem 0 1rem; }
+        .toolbar button {
+            font: inherit;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 0.45rem 0.95rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-strong);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+        }
+        .toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* Flow-diagram boxes (ML flow, fuzzy inference system) */
+        .fbox { fill: var(--surface); stroke: var(--accent); stroke-width: 2; }
+        .fbox.plain { fill: none; stroke: none; }
+        .fbox.alt { stroke: var(--accent-2); }
+        .ftxt { fill: var(--heading); font: 700 13px 'Inter', system-ui, sans-serif; }
+        .fsub { fill: var(--text-muted); font: 500 11px 'Inter', system-ui, sans-serif; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link"><span>←</span> Back to Table of Contents</a>
+        </nav>
+
+        <header>
+            <h1>Assignment 1 — Solutions</h1>
+            <p style="text-align: center; margin-top: -1.5rem; margin-bottom: 3rem;">Regression, k-means clustering and fuzzy logic — every question with an exam-style worked answer</p>
+        </header>
+
+        <div class="scope">
+            <p><strong>How these answers are written.</strong> Each one is laid out the way it should go on paper in an exam:</p>
+            <ul>
+                <li>For a calculation, write the <strong>formula first</strong>, then the substitution, then the result.</li>
+                <li><strong>Box or underline every final answer</strong> (shown boxed here).</li>
+                <li>Keep 3 decimal places in distances and probabilities, and rule tables with a pencil.</li>
+                <li>For theory, give about <strong>one point per mark</strong>, and draw every diagram the question asks for.</li>
+                <li>The <span class="check">✓ Check</span> lines are for checking your own work — they are not part of the answer.</li>
+            </ul>
+            <p>Answers are hidden — try each part first, then open it. Notes for these topics: <a href="regression.html">Regression</a>, <a href="kmeans_clustering.html">K-Means</a>, <a href="fuzzy_logic.html">Fuzzy Logic</a>.</p>
+        </div>
+
+        <div class="toolbar"><button type="button" id="toggle-all">Show all answers</button></div>
+
+<h2 class="part">Part A — Regression</h2>
+<section class="glass-panel"><h2>Q1. Linear and Logistic Regression — Calculation</h2>
+<p><strong>(a)</strong> A shop recorded its weekly sales (in thousands of Taka) for five weeks:</p>
+<div class="table-wrap"><table><thead><tr><th>Week (x)</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead><tbody><tr><th>Sales (y)</th><td>2.0</td><td>2.8</td><td>3.9</td><td>4.6</td><td>5.7</td></tr></tbody></table></div>
+<p>Use the formulas</p><div class="math-block">\[ a_1 = \frac{\overline{xy} - \bar{x}\,\bar{y}}{\overline{x^2} - \bar{x}^2} \qquad a_0 = \bar{y} - a_1 \bar{x} \]</div>
+<div class="qpart"><p><b class="tag">(a) 1.</b> Build a table with columns \(x\), \(y\), \(x^2\) and \(x\cdot y\), and find their sums and averages. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<div class="table-wrap"><table><thead><tr><th>\(x\)</th><th>\(y\)</th><th>\(x^2\)</th><th>\(x\cdot y\)</th></tr></thead><tbody><tr><td>1</td><td>2.0</td><td>1</td><td>2.0</td></tr><tr><td>2</td><td>2.8</td><td>4</td><td>5.6</td></tr><tr><td>3</td><td>3.9</td><td>9</td><td>11.7</td></tr><tr><td>4</td><td>4.6</td><td>16</td><td>18.4</td></tr><tr><td>5</td><td>5.7</td><td>25</td><td>28.5</td></tr><tr><td><strong>Σ = 15</strong></td><td><strong>Σ = 19.0</strong></td><td><strong>Σ = 55</strong></td><td><strong>Σ = 66.2</strong></td></tr><tr><td><strong>\(\bar{x}\) = 3</strong></td><td><strong>\(\bar{y}\) = 3.8</strong></td><td><strong>\(\overline{x^2}\) = 11</strong></td><td><strong>\(\overline{xy}\) = 13.24</strong></td></tr></tbody></table></div><p>With \(n = 5\): every average is the column sum divided by 5.</p><div class="math-block">\[ \bar{x} = \tfrac{15}{5} = 3 \quad \bar{y} = \tfrac{19.0}{5} = 3.8 \quad \overline{x^2} = \tfrac{55}{5} = 11 \quad \overline{xy} = \tfrac{66.2}{5} = 13.24 \]</div>
+</details>
+<div class="qpart"><p><b class="tag">(a) 2.</b> Using the formulas above, find \(a_1\) and \(a_0\) and write the regression equation. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<div class="math-block">\[ \begin{aligned} a_1 &= \frac{\overline{xy} - \bar{x}\,\bar{y}}{\overline{x^2} - \bar{x}^2} = \frac{13.24 - 3 \times 3.8}{11 - 3^2} = \frac{13.24 - 11.4}{11 - 9} = \frac{1.84}{2} = \mathbf{0.92} \\[4pt] a_0 &= \bar{y} - a_1\bar{x} = 3.8 - 0.92 \times 3 = 3.8 - 2.76 = \mathbf{1.04} \end{aligned} \]</div><div class="final">∴ Regression equation: \(\; y = 1.04 + 0.92x\)</div><p class="check">✓ <strong>Check:</strong> the line must pass through \((\bar{x}, \bar{y})\): \(1.04 + 0.92 \times 3 = 3.8 = \bar{y}\).</p>
+</details>
+<div class="qpart"><p><b class="tag">(a) 3.</b> Predict the sales for the 8th week and the 10th week. <span class="marks">[1 mark]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<div class="math-block">\[ \begin{aligned} x = 8: \quad y &= 1.04 + 0.92 \times 8 = 1.04 + 7.36 = 8.40 \\ x = 10: \quad y &= 1.04 + 0.92 \times 10 = 1.04 + 9.20 = 10.24 \end{aligned} \]</div><div class="final">∴ Week 8 ≈ 8.40 thousand Tk (Tk 8,400); &nbsp; Week 10 ≈ 10.24 thousand Tk (Tk 10,240)</div>
+</details>
+<p style="margin-top:1.75rem"><strong>(b)</strong> An optimizer suggests the following model for the odds of a student passing an exam:</p><div class="math-block">\[ \log(\text{odds}) = z = -20 + 0.8 \times \text{hours} \]</div>
+<div class="qpart"><p><b class="tag">(b) 1.</b> Calculate the probability of passing for a student who studies 28 hours. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<p>Sigmoid: \(p = \dfrac{1}{1 + e^{-z}}\)</p><div class="math-block">\[ \begin{aligned} z &= -20 + 0.8 \times 28 = -20 + 22.4 = 2.4 \\ p &= \frac{1}{1 + e^{-2.4}} = \frac{1}{1 + 0.0907} = \frac{1}{1.0907} = 0.917 \end{aligned} \]</div><div class="final">∴ P(pass) ≈ 0.917, i.e. about 91.7 %</div>
+</details>
+<div class="qpart"><p><b class="tag">(b) 2.</b> Find the minimum number of study hours needed to pass with a probability of more than 90%. <span class="marks">[3 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<p>Set \(p = 0.90\), solve for \(z\), then solve the model for hours.</p><div class="math-block">\[ \begin{aligned} \frac{1}{1 + e^{-z}} &= 0.90 \\ 0.90\,(1 + e^{-z}) &= 1 \\ 0.90\,e^{-z} &= 0.10 \\ e^{-z} &= \frac{0.10}{0.90} = 0.1111 \\ -z &= \ln(0.1111) = -2.197 \\ z &= 2.197 \end{aligned} \]</div><div class="math-block">\[ \begin{aligned} 2.197 &= -20 + 0.8 \times \text{hours} \\ 0.8 \times \text{hours} &= 22.197 \\ \text{hours} &= \frac{22.197}{0.8} = 27.75 \end{aligned} \]</div><div class="final">∴ The student must study more than 27.75 hours (≈ 28 hours) to pass with probability above 90 %</div><p class="check">✓ <strong>Check:</strong> part 1 showed 28 hours gives 91.7 % &gt; 90 %. Shortcut: \(z = \ln\frac{p}{1-p} = \ln\frac{0.9}{0.1} = \ln 9 = 2.197\).</p>
+</details>
+</section>
+<section class="glass-panel"><h2>Q2. Linear and Logistic Regression — Theory</h2>
+<div class="qpart"><p><b class="tag">1.</b> What is regression? Distinguish between linear regression and logistic regression in terms of output type, the equation used and typical applications. <span class="marks">[3 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<p><strong>Regression</strong> is a supervised learning technique that models the relationship between input (independent) variable(s) and an output (dependent) variable, so that the output can be predicted for new inputs.</p><div class="table-wrap"><table><thead><tr><th></th><th>Linear regression</th><th>Logistic regression</th></tr></thead><tbody><tr><th>Output type</th><td>A continuous real number (e.g. sales)</td><td>A probability between 0 and 1, then a class (0 / 1)</td></tr><tr><th>Equation</th><td>\(y = a_0 + a_1x + e\)</td><td>\(p = \dfrac{1}{1+e^{-z}},\; z = \log(\text{odds}) = a_0 + a_1x\)</td></tr><tr><th>Applications</th><td>Sales / price forecasting, predicting marks</td><td>Pass / fail, spam / not spam, disease yes / no</td></tr></tbody></table></div>
+</details>
+<div class="qpart"><p><b class="tag">2.</b> In the equation \(y = a_0 + a_1x + e\), explain what \(a_0\), \(a_1\) and \(e\) each represent. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<ul><li><strong>\(a_0\) (intercept):</strong> the value of \(y\) when \(x = 0\) — where the line cuts the y-axis.</li><li><strong>\(a_1\) (slope / regression coefficient):</strong> the change in \(y\) for a one-unit increase in \(x\).</li><li><strong>\(e\) (error / residual):</strong> the difference between the actual \(y\) and the predicted \(y\) — the part the line cannot explain.</li></ul>
+</details>
+<div class="qpart"><p><b class="tag">3.</b> Write the sigmoid function and sketch its S-curve. State its range and explain the role of the 0.5 threshold value in classification. <span class="marks">[3 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<div class="math-block">\[ s(z) = \frac{1}{1 + e^{-z}} \]</div><div class="chart-wrap"><svg class="mf-chart" viewBox="0 0 600 255" role="img" aria-label="Sigmoid S-curve rising from 0 to 1, passing 0.5 at z = 0">
+<line class="mf-grid" x1="50" y1="35" x2="570" y2="35"/>
+<line class="mf-guide" x1="50" y1="125" x2="570" y2="125"/>
+<line class="mf-axis" x1="50" y1="215" x2="575" y2="215"/>
+<line class="mf-axis" x1="310" y1="215" x2="310" y2="22"/>
+<text class="mf-tick" x="302" y="31" text-anchor="end">1</text>
+<text class="mf-tick" x="302" y="120" text-anchor="end">0.5</text>
+<text class="mf-tick" x="302" y="230" text-anchor="end">0</text>
+<text class="mf-tick" x="50" y="231" text-anchor="middle">-6</text>
+<text class="mf-tick" x="136.7" y="231" text-anchor="middle">-4</text>
+<text class="mf-tick" x="223.3" y="231" text-anchor="middle">-2</text>
+<text class="mf-tick" x="396.7" y="231" text-anchor="middle">2</text>
+<text class="mf-tick" x="483.3" y="231" text-anchor="middle">4</text>
+<text class="mf-tick" x="570" y="231" text-anchor="middle">6</text>
+<text class="mf-axlab" x="575" y="248" text-anchor="end">z</text>
+<text class="mf-axlab" x="318" y="30">s(z)</text>
+<polyline class="mf-line mf-s2" points="50,214.6 58.7,214.5 67.3,214.3 76,214.2 84.7,214 93.3,213.8 102,213.5 110.7,213.2 119.3,212.8 128,212.3 136.7,211.8 145.3,211.1 154,210.2 162.7,209.2 171.3,208 180,206.5 188.7,204.7 197.3,202.6 206,200 214.7,197 223.3,193.5 232,189.5 240.7,184.8 249.3,179.4 258,173.3 266.7,166.6 275.3,159.2 284,151.2 292.7,142.8 301.3,134 310,125 318.7,116 327.3,107.2 336,98.8 344.7,90.8 353.3,83.4 362,76.7 370.7,70.6 379.3,65.2 388,60.5 396.7,56.5 405.3,53 414,50 422.7,47.4 431.3,45.3 440,43.5 448.7,42 457.3,40.8 466,39.8 474.7,38.9 483.3,38.2 492,37.7 500.7,37.2 509.3,36.8 518,36.5 526.7,36.2 535.3,36 544,35.8 552.7,35.7 561.3,35.5 570,35.4"/>
+<circle class="mf-dot" cx="310" cy="125" r="4.5"/>
+<text class="mf-name mf-s5" x="560" y="95" text-anchor="end">p ≥ 0.5 → class 1 (pass)</text>
+<text class="mf-name mf-s4" x="60" y="153">p &lt; 0.5 → class 0 (fail)</text>
+<text class="mf-legend" x="318" y="141">threshold 0.5 at z = 0</text>
+</svg></div><ul><li><strong>Range:</strong> \(0 &lt; s(z) &lt; 1\) — \(s(z) \to 0\) as \(z \to -\infty\), \(s(0) = 0.5\), \(s(z) \to 1\) as \(z \to +\infty\).</li><li><strong>Role of the 0.5 threshold:</strong> if \(p \ge 0.5\) the input is classified as class 1 (e.g. pass); if \(p &lt; 0.5\) as class 0 (fail). \(p = 0.5\) exactly when \(z = 0\), so \(z = 0\) is the <strong>decision boundary</strong>.</li></ul>
+</details>
+<div class="qpart"><p><b class="tag">4.</b> Why is linear regression not suitable for a pass/fail prediction problem, while logistic regression is? <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<ul><li>Linear regression gives an unbounded output (it can be below 0 or above 1), so it cannot be read as a probability; a straight line also fits 0/1 data poorly.</li><li>Logistic regression passes the linear part through the sigmoid, which squeezes the output into (0, 1) — a valid probability — and the 0.5 threshold then gives a clear pass / fail class.</li></ul>
+</details>
+</section>
+<h2 class="part">Part B — Machine Learning &amp; K-Means Clustering</h2>
+<section class="glass-panel"><h2>Q3. K-Means and Modified K-Means</h2>
+<p>Classify the following five data points into two clusters:</p><p style="text-align:center"><strong>A(2, 3), &nbsp;B(3, 4), &nbsp;C(7, 8), &nbsp;D(6, 7), &nbsp;E(5, 6)</strong></p>
+<div class="qpart"><p><b class="tag">1.</b> Apply the k-means algorithm taking A(2, 3) as the initial centroid of Class-I and B(3, 4) as the initial centroid of Class-II. For every iteration, show the distance table, the class assigned to each point and the updated centroids. Continue until the algorithm stops, and present the output table (data, class, centroid). <span class="marks">[4 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<p>Euclidean distance: \(d = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}\)</p><h3>Iteration 1 — C₁(2, 3), C₂(3, 4)</h3><p>e.g. \(d(C, C_1) = \sqrt{(7-2)^2 + (8-3)^2} = \sqrt{50} = 7.071\)</p><div class="table-wrap"><table><thead><tr><th>Data</th><th>d to C₁(2, 3)</th><th>d to C₂(3, 4)</th><th>Class</th></tr></thead><tbody><tr><td>A(2, 3)</td><td>0</td><td>1.414</td><td>I</td></tr><tr><td>B(3, 4)</td><td>1.414</td><td>0</td><td>II</td></tr><tr><td>C(7, 8)</td><td>7.071</td><td>5.657</td><td>II</td></tr><tr><td>D(6, 7)</td><td>5.657</td><td>4.243</td><td>II</td></tr><tr><td>E(5, 6)</td><td>4.243</td><td>2.828</td><td>II</td></tr></tbody></table></div><div class="math-block">\[ \begin{aligned} \text{Class I: } A &amp;\Rightarrow C_1 = (2,\ 3) \\ \text{Class II: } B, C, D, E &amp;\Rightarrow C_2 = \left(\tfrac{3+7+6+5}{4},\ \tfrac{4+8+7+6}{4}\right) = (5.25,\ 6.25) \end{aligned} \]</div><h3>Iteration 2 — C₁(2, 3), C₂(5.25, 6.25)</h3><p>e.g. \(d(B, C_2) = \sqrt{(3-5.25)^2 + (4-6.25)^2} = \sqrt{10.125} = 3.182\)</p><div class="table-wrap"><table><thead><tr><th>Data</th><th>d to C₁(2, 3)</th><th>d to C₂(5.25, 6.25)</th><th>Class</th></tr></thead><tbody><tr><td>A(2, 3)</td><td>0</td><td>4.596</td><td>I</td></tr><tr><td>B(3, 4)</td><td>1.414</td><td>3.182</td><td><strong>I</strong> ← changed</td></tr><tr><td>C(7, 8)</td><td>7.071</td><td>2.475</td><td>II</td></tr><tr><td>D(6, 7)</td><td>5.657</td><td>1.061</td><td>II</td></tr><tr><td>E(5, 6)</td><td>4.243</td><td>0.354</td><td>II</td></tr></tbody></table></div><p>B moved from Class II to Class I, so recompute:</p><div class="math-block">\[ \begin{aligned} \text{Class I: } A, B &amp;\Rightarrow C_1 = \left(\tfrac{2+3}{2},\ \tfrac{3+4}{2}\right) = (2.5,\ 3.5) \\ \text{Class II: } C, D, E &amp;\Rightarrow C_2 = \left(\tfrac{7+6+5}{3},\ \tfrac{8+7+6}{3}\right) = (6,\ 7) \end{aligned} \]</div><h3>Iteration 3 — C₁(2.5, 3.5), C₂(6, 7)</h3><p>e.g. \(d(A, C_1) = \sqrt{(2-2.5)^2 + (3-3.5)^2} = \sqrt{0.5} = 0.707\)</p><div class="table-wrap"><table><thead><tr><th>Data</th><th>d to C₁(2.5, 3.5)</th><th>d to C₂(6, 7)</th><th>Class</th></tr></thead><tbody><tr><td>A(2, 3)</td><td>0.707</td><td>5.657</td><td>I</td></tr><tr><td>B(3, 4)</td><td>0.707</td><td>4.243</td><td>I</td></tr><tr><td>C(7, 8)</td><td>6.364</td><td>1.414</td><td>II</td></tr><tr><td>D(6, 7)</td><td>4.950</td><td>0</td><td>II</td></tr><tr><td>E(5, 6)</td><td>3.536</td><td>1.414</td><td>II</td></tr></tbody></table></div><p>No point changed class, so the centroids stay at (2.5, 3.5) and (6, 7). <strong>The centroids no longer move ⇒ the algorithm stops</strong> after 3 iterations.</p><p><strong>Output table:</strong></p><div class="table-wrap"><table><thead><tr><th>Data</th><th>Class</th><th>Centroid</th></tr></thead><tbody><tr><td>A(2, 3), B(3, 4)</td><td>I</td><td>(2.5, 3.5)</td></tr><tr><td>C(7, 8), D(6, 7), E(5, 6)</td><td>II</td><td>(6, 7)</td></tr></tbody></table></div>
+</details>
+<div class="qpart"><p><b class="tag">2.</b> Apply the modified k-means algorithm to the same data. Build the full distance matrix, select the initial centroids cleverly as the two points farthest apart, then iterate until the algorithm stops. <span class="marks">[4 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<h3>Step 1 — full distance matrix</h3><div class="table-wrap"><table><thead><tr><th></th><th>A(2,3)</th><th>B(3,4)</th><th>C(7,8)</th><th>D(6,7)</th><th>E(5,6)</th></tr></thead><tbody><tr><th>A</th><td>0</td><td>1.414</td><td><strong>7.071</strong></td><td>5.657</td><td>4.243</td></tr><tr><th>B</th><td>1.414</td><td>0</td><td>5.657</td><td>4.243</td><td>2.828</td></tr><tr><th>C</th><td><strong>7.071</strong></td><td>5.657</td><td>0</td><td>1.414</td><td>2.828</td></tr><tr><th>D</th><td>5.657</td><td>4.243</td><td>1.414</td><td>0</td><td>1.414</td></tr><tr><th>E</th><td>4.243</td><td>2.828</td><td>2.828</td><td>1.414</td><td>0</td></tr></tbody></table></div><p>The largest distance is <strong>7.071, between A and C</strong> ⇒ initial centroids <strong>C₁ = A(2, 3)</strong>, <strong>C₂ = C(7, 8)</strong>.</p><h3>Iteration 1 — C₁(2, 3), C₂(7, 8)</h3><div class="table-wrap"><table><thead><tr><th>Data</th><th>d to C₁(2, 3)</th><th>d to C₂(7, 8)</th><th>Class</th></tr></thead><tbody><tr><td>A(2, 3)</td><td>0</td><td>7.071</td><td>I</td></tr><tr><td>B(3, 4)</td><td>1.414</td><td>5.657</td><td>I</td></tr><tr><td>C(7, 8)</td><td>7.071</td><td>0</td><td>II</td></tr><tr><td>D(6, 7)</td><td>5.657</td><td>1.414</td><td>II</td></tr><tr><td>E(5, 6)</td><td>4.243</td><td>2.828</td><td>II</td></tr></tbody></table></div><div class="math-block">\[ \text{Class I: } A, B \Rightarrow C_1 = (2.5,\ 3.5) \qquad \text{Class II: } C, D, E \Rightarrow C_2 = (6,\ 7) \]</div><h3>Iteration 2 — C₁(2.5, 3.5), C₂(6, 7)</h3><p>The distances are exactly the iteration-3 table of part 1, so every point keeps its class. <strong>Centroids unchanged ⇒ the algorithm stops</strong> after 2 iterations.</p><div class="table-wrap"><table><thead><tr><th>Data</th><th>Class</th><th>Centroid</th></tr></thead><tbody><tr><td>A(2, 3), B(3, 4)</td><td>I</td><td>(2.5, 3.5)</td></tr><tr><td>C(7, 8), D(6, 7), E(5, 6)</td><td>II</td><td>(6, 7)</td></tr></tbody></table></div>
+</details>
+<div class="qpart"><p><b class="tag">3.</b> Compare the number of iterations each method needed and comment on the result. Then classify a new data point (4, 6) using the final centroids. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<div class="table-wrap"><table><thead><tr><th></th><th>K-means</th><th>Modified k-means</th></tr></thead><tbody><tr><th>Initial centroids</th><td>A(2,3), B(3,4)</td><td>A(2,3), C(7,8) — farthest pair</td></tr><tr><th>Iterations to stop</th><td>3</td><td><strong>2</strong></td></tr><tr><th>Final clusters</th><td>{A, B}, {C, D, E}</td><td>{A, B}, {C, D, E} — same</td></tr></tbody></table></div><p><strong>Comment:</strong> both reach the same clusters, but modified k-means needs one iteration fewer. A and B are only 1.414 apart, so ordinary k-means started with poor centroids (B was first put in the wrong class and had to be corrected). Choosing the farthest pair starts the centroids well separated, so it converges faster — at the cost of first computing all \(n(n-1)/2 = 10\) distances.</p><p><strong>New point P(4, 6)</strong> using the final centroids:</p><div class="math-block">\[ \begin{aligned} d(P, C_1) &amp;= \sqrt{(4-2.5)^2 + (6-3.5)^2} = \sqrt{2.25 + 6.25} = \sqrt{8.5} = 2.915 \\ d(P, C_2) &amp;= \sqrt{(4-6)^2 + (6-7)^2} = \sqrt{4 + 1} = \sqrt{5} = 2.236 \end{aligned} \]</div><p>Since \(2.236 &lt; 2.915\), P is closer to C₂.</p><div class="final">∴ (4, 6) belongs to Class II</div><p class="check">✓ <strong>Check:</strong> all five points (and both centroids) lie on the line \(y = x + 1\), so the distance between any two of them is \(1.414 \times\) the difference in \(x\) — e.g. \(d(C, A) = 1.414 \times 5 = 7.071\). Use this only to check; show the full formula in the exam. P(4, 6) is not on that line, so compute it in full.</p>
+</details>
+</section>
+<section class="glass-panel"><h2>Q4. Machine Learning Concepts</h2>
+<div class="qpart"><p><b class="tag">1.</b> What do you understand by machine learning? Show the input → learning algorithm → decision flow with a simple diagram. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<p><strong>Machine learning</strong> is a branch of artificial intelligence: a scientific discipline concerned with the design and development of algorithms that recognise complex patterns and make intelligent decisions based on input data.</p><div class="chart-wrap"><svg class="mf-chart" viewBox="0 0 600 100" role="img" aria-label="Input pattern or data goes into a learning algorithm, which produces an intelligent decision">
+<defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mc-head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="fbox plain" x="10" y="25" width="140" height="50" rx="8"/><text class="ftxt" x="80" y="47" text-anchor="middle">Input</text><text class="fsub" x="80" y="64" text-anchor="middle">pattern / data</text>
+<line class="mc-edge" x1="152" y1="50" x2="218" y2="50" marker-end="url(#ah1)"/>
+<rect class="fbox" x="222" y="25" width="156" height="50" rx="8"/><text class="ftxt" x="300" y="55" text-anchor="middle">Learning algorithm</text>
+<line class="mc-edge" x1="380" y1="50" x2="446" y2="50" marker-end="url(#ah1)"/>
+<rect class="fbox plain" x="450" y="25" width="140" height="50" rx="8"/><text class="ftxt" x="520" y="47" text-anchor="middle">Intelligent</text><text class="fsub" x="520" y="64" text-anchor="middle">decision</text>
+</svg></div>
+</details>
+<div class="qpart"><p><b class="tag">2.</b> Differentiate between supervised and unsupervised learning, stating the characteristics of each and giving two examples of algorithms for each. <span class="marks">[3 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<div class="table-wrap"><table><thead><tr><th></th><th>Supervised learning</th><th>Unsupervised learning</th></tr></thead><tbody><tr><th>Definition</th><td>Infers a function from <strong>labelled</strong> training data</td><td>Finds hidden structure in <strong>unlabelled</strong> data</td></tr><tr><th>Characteristics</th><td>Input data + output data (teacher / labelled data)</td><td>Input data only — no output, no teacher, no labels</td></tr><tr><th>Goal</th><td>Predict the output for new inputs</td><td>Discover groups / patterns (e.g. clusters)</td></tr><tr><th>Examples</th><td>Artificial neural network, decision tree learning (also SVM, Bayesian network)</td><td>K-means clustering, hierarchical clustering (also fuzzy C-means)</td></tr></tbody></table></div>
+</details>
+<div class="qpart"><p><b class="tag">3.</b> Define generalization and data mining. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<ul><li><strong>Generalization:</strong> the ability of an algorithm to perform accurately on new, unseen examples after having been trained on a learning data set.</li><li><strong>Data mining:</strong> the discovery of unknown (hidden) properties and patterns in data.</li></ul>
+</details>
+<div class="qpart"><p><b class="tag">4.</b> Explain the difference between a close test and an open test, using an AND-gate training example of your own. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<ul><li><strong>Close test:</strong> in the test phase, <strong>known</strong> input / output data (already used in training) are applied.</li><li><strong>Open test:</strong> in the test phase, <strong>unknown</strong> input data (never seen in training) are applied.</li></ul><div class="table-wrap"><table><thead><tr><th>Phase</th><th>A</th><th>B</th><th>A AND B</th><th>Test type</th></tr></thead><tbody><tr><td>Training</td><td>0</td><td>0</td><td>0</td><td>—</td></tr><tr><td>Training</td><td>0</td><td>1</td><td>0</td><td>—</td></tr><tr><td>Training</td><td>1</td><td>1</td><td>1</td><td>—</td></tr><tr><td>Test</td><td>0</td><td>1</td><td>0</td><td><strong>Close test</strong> (seen in training)</td></tr><tr><td>Test</td><td>1</td><td>0</td><td>?</td><td><strong>Open test</strong> (never seen)</td></tr></tbody></table></div><p>Only the open test measures generalization; the close test only shows the system remembers its training data.</p>
+</details>
+<div class="qpart"><p><b class="tag">5.</b> State the four steps of the k-means clustering algorithm. How does the modified k-means algorithm differ from it? <span class="marks">[1 mark]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<ol><li>Place k points in the space as the initial group centroids.</li><li>Assign each object to the group with the closest centroid.</li><li>When all objects are assigned, recalculate the k centroids (mean of each group).</li><li>Repeat steps 2–3 until the centroids no longer move.</li></ol><p><strong>Modified k-means</strong> changes only step 1: the initial centroids are selected <strong>cleverly</strong> — e.g. the two points farthest apart — instead of arbitrarily.</p>
+</details>
+</section>
+<h2 class="part">Part C — Fuzzy &amp; Crisp Logic</h2>
+<section class="glass-panel"><h2>Q5. Fuzzy Set Operations and Fuzzy Inference</h2>
+<p><strong>(a)</strong> Consider the two fuzzy sets:</p><div class="math-block">\[ A = \{0.8/1 + 0.4/2 + 0.6/3 + 0.1/4\} \qquad B = \{0.3/1 + 0.9/2 + 0.2/3 + 0.5/4\} \]</div>
+<div class="qpart"><p><b class="tag">(a)</b> Find \(A \cup B\), \(A \cap B\), the complement of \(A\), and the difference \(A - B\), stating the formula used for each. <span class="marks">[4 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<div class="math-block">\[ \begin{aligned} \mu_{A \cup B}(x) &amp;= \max(\mu_A(x),\ \mu_B(x)) &amp; \mu_{A \cap B}(x) &amp;= \min(\mu_A(x),\ \mu_B(x)) \\ \mu_{\bar{A}}(x) &amp;= 1 - \mu_A(x) &amp; \mu_{A - B}(x) &amp;= \min(\mu_A(x),\ 1 - \mu_B(x)) \end{aligned} \]</div><div class="table-wrap"><table><thead><tr><th>x</th><th>μA</th><th>μB</th><th>max</th><th>min</th><th>1 − μA</th><th>1 − μB</th><th>min(μA, 1 − μB)</th></tr></thead><tbody><tr><td>1</td><td>0.8</td><td>0.3</td><td>0.8</td><td>0.3</td><td>0.2</td><td>0.7</td><td>0.7</td></tr><tr><td>2</td><td>0.4</td><td>0.9</td><td>0.9</td><td>0.4</td><td>0.6</td><td>0.1</td><td>0.1</td></tr><tr><td>3</td><td>0.6</td><td>0.2</td><td>0.6</td><td>0.2</td><td>0.4</td><td>0.8</td><td>0.6</td></tr><tr><td>4</td><td>0.1</td><td>0.5</td><td>0.5</td><td>0.1</td><td>0.9</td><td>0.5</td><td>0.1</td></tr></tbody></table></div><div class="final">A ∪ B = {0.8/1 + 0.9/2 + 0.6/3 + 0.5/4}<br>A ∩ B = {0.3/1 + 0.4/2 + 0.2/3 + 0.1/4}<br>Ā = {0.2/1 + 0.6/2 + 0.4/3 + 0.9/4}<br>A − B = {0.7/1 + 0.1/2 + 0.6/3 + 0.1/4}</div><p class="check">Notation: each term is <em>membership / element</em> — 0.8/1 means element 1 has membership 0.8. It is not a fraction.</p>
+</details>
+<p style="margin-top:1.75rem"><strong>(b)</strong> A fuzzy system decides driving speed from temperature and cloud cover, using these membership functions:</p>
+<div class="table-wrap"><table><thead><tr><th>Linguistic variable</th><th>Fuzzy set</th><th>Membership function</th></tr></thead><tbody><tr><td>Temperature (°F)</td><td>Cool</td><td>Triangular: a = 30, b = 50, c = 70</td></tr><tr><td>Temperature (°F)</td><td>Warm</td><td>Triangular: a = 50, b = 70, c = 90</td></tr><tr><td>Cloud cover (%)</td><td>Sunny</td><td>1 up to 20%, falling linearly to 0 at 40%</td></tr><tr><td>Cloud cover (%)</td><td>Cloudy (Partly cloudy)</td><td>Triangular: a = 20, b = 50, c = 80</td></tr><tr><td>Speed (mph)</td><td>Slow</td><td>1 up to 25 mph, falling linearly to 0 at 75 mph</td></tr><tr><td>Speed (mph)</td><td>Fast</td><td>0 at 25 mph, rising linearly to 1 at 75 mph and above</td></tr></tbody></table></div>
+<p><strong>Rules:</strong></p><ul><li>Rule 1: If it is <strong>Sunny AND Warm</strong>, drive <strong>Fast</strong>.</li><li>Rule 2: If it is <strong>Cloudy AND Cool</strong>, drive <strong>Slow</strong>.</li></ul><p>For a day with a temperature of <strong>58 °F</strong> and <strong>35% cloud cover</strong>:</p>
+<div class="qpart"><p><b class="tag">(b) 1.</b> Fuzzify both inputs by calculating the membership values of Cool, Warm, Sunny and Cloudy. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<p>Triangular \((a, b, c)\): \(\mu = \dfrac{x-a}{b-a}\) on the rising side \((a \le x \le b)\), \(\mu = \dfrac{c-x}{c-b}\) on the falling side \((b \le x \le c)\), 0 outside.</p><div class="math-block">\[ \begin{aligned} \text{Cool}(58) &amp;= \frac{70 - 58}{70 - 50} = \frac{12}{20} = \mathbf{0.6} &amp;&amp; \text{(falling side, 50–70)} \\ \text{Warm}(58) &amp;= \frac{58 - 50}{70 - 50} = \frac{8}{20} = \mathbf{0.4} &amp;&amp; \text{(rising side, 50–70)} \\ \text{Sunny}(35) &amp;= \frac{40 - 35}{40 - 20} = \frac{5}{20} = \mathbf{0.25} &amp;&amp; \text{(falling part, 20–40)} \\ \text{Cloudy}(35) &amp;= \frac{35 - 20}{50 - 20} = \frac{15}{30} = \mathbf{0.5} &amp;&amp; \text{(rising side, 20–50)} \end{aligned} \]</div><div class="chart-grid"><div class="chart-wrap"><svg class="mf-chart" viewBox="0 0 330 215" role="img" aria-label="Temperature (°F) reading at 58">
+<line class="mf-axis" x1="46" y1="170" x2="318" y2="170"/><line class="mf-axis" x1="46" y1="170" x2="46" y2="22"/>
+<text class="mf-tick" x="40" y="174" text-anchor="end">0</text><text class="mf-tick" x="40" y="34" text-anchor="end">1</text>
+<text class="mf-tick" x="79.8" y="186" text-anchor="middle">30</text>
+<text class="mf-tick" x="147.2" y="186" text-anchor="middle">50</text>
+<text class="mf-tick" x="174.2" y="186" text-anchor="middle" font-weight="700">58</text>
+<text class="mf-tick" x="214.8" y="186" text-anchor="middle">70</text>
+<text class="mf-tick" x="282.2" y="186" text-anchor="middle">90</text>
+<text class="mf-axlab" x="182" y="206" text-anchor="middle">Temperature (°F)</text>
+<polyline class="mf-line mf-s1" points="79.8,170 147.2,30 214.8,170"/>
+<text class="mf-name mf-s1" x="147.2" y="18" text-anchor="middle">Cool</text>
+<line class="mf-guide" x1="46" y1="86" x2="174.2" y2="86"/>
+<circle class="mf-pt mf-s1" cx="174.2" cy="86" r="4.5"/>
+<text class="mf-val" x="182.2" y="90">0.6</text>
+<polyline class="mf-line mf-s3" points="147.2,170 214.8,30 282.2,170"/>
+<text class="mf-name mf-s3" x="214.8" y="18" text-anchor="middle">Warm</text>
+<line class="mf-guide" x1="46" y1="114" x2="174.2" y2="114"/>
+<circle class="mf-pt mf-s3" cx="174.2" cy="114" r="4.5"/>
+<text class="mf-val" x="182.2" y="118">0.4</text>
+<line class="mf-guide" x1="174.2" y1="170" x2="174.2" y2="26"/>
+</svg></div><div class="chart-wrap"><svg class="mf-chart" viewBox="0 0 330 215" role="img" aria-label="Cloud cover (%) reading at 35">
+<line class="mf-axis" x1="46" y1="170" x2="318" y2="170"/><line class="mf-axis" x1="46" y1="170" x2="46" y2="22"/>
+<text class="mf-tick" x="40" y="174" text-anchor="end">0</text><text class="mf-tick" x="40" y="34" text-anchor="end">1</text>
+<text class="mf-tick" x="46" y="186" text-anchor="middle">0</text>
+<text class="mf-tick" x="106" y="186" text-anchor="middle">20</text>
+<text class="mf-tick" x="151" y="186" text-anchor="middle" font-weight="700">35</text>
+<text class="mf-tick" x="196" y="186" text-anchor="middle">50</text>
+<text class="mf-tick" x="286" y="186" text-anchor="middle">80</text>
+<text class="mf-axlab" x="182" y="206" text-anchor="middle">Cloud cover (%)</text>
+<polyline class="mf-line mf-s3" points="46,30 106,30 166,170"/>
+<text class="mf-name mf-s3" x="76" y="18" text-anchor="middle">Sunny</text>
+<line class="mf-guide" x1="46" y1="135" x2="151" y2="135"/>
+<circle class="mf-pt mf-s3" cx="151" cy="135" r="4.5"/>
+<text class="mf-val" x="159" y="139">0.25</text>
+<polyline class="mf-line mf-s1" points="106,170 196,30 286,170"/>
+<text class="mf-name mf-s1" x="196" y="18" text-anchor="middle">Cloudy</text>
+<line class="mf-guide" x1="46" y1="100" x2="151" y2="100"/>
+<circle class="mf-pt mf-s1" cx="151" cy="100" r="4.5"/>
+<text class="mf-val" x="159" y="104">0.5</text>
+<line class="mf-guide" x1="151" y1="170" x2="151" y2="26"/>
+</svg></div></div><div class="final">Cool = 0.6, &nbsp;Warm = 0.4, &nbsp;Sunny = 0.25, &nbsp;Cloudy = 0.5</div><p class="check">✓ <strong>Check:</strong> Cool + Warm = 0.6 + 0.4 = 1, as it must be where two neighbouring triangles cross.</p>
+</details>
+<div class="qpart"><p><b class="tag">(b) 2.</b> Evaluate both rules using the min operator for AND, giving the strengths of Fast and Slow. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<div class="math-block">\[ \begin{aligned} \text{Rule 1: Fast} &amp;= \min(\text{Sunny},\ \text{Warm}) = \min(0.25,\ 0.4) = \mathbf{0.25} \\ \text{Rule 2: Slow} &amp;= \min(\text{Cloudy},\ \text{Cool}) = \min(0.5,\ 0.6) = \mathbf{0.5} \end{aligned} \]</div><div class="final">Fast = 0.25, &nbsp;Slow = 0.5</div>
+</details>
+<div class="qpart"><p><b class="tag">(b) 3.</b> Defuzzify using the weighted mean of the centroids (Slow = 25 mph, Fast = 75 mph) to find the driving speed. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<div class="math-block">\[ \text{Speed} = \frac{\text{Slow} \times 25 + \text{Fast} \times 75}{\text{Slow} + \text{Fast}} = \frac{0.5 \times 25 + 0.25 \times 75}{0.5 + 0.25} = \frac{12.5 + 18.75}{0.75} = \frac{31.25}{0.75} = 41.67 \]</div><div class="final">∴ Driving speed ≈ 41.67 mph</div><p class="check">✓ <strong>Check:</strong> Slow (0.5) is stronger than Fast (0.25), so the answer lies closer to 25 than to 75.</p>
+</details>
+</section>
+<section class="glass-panel"><h2>Q6. Fuzzy Logic Concepts</h2>
+<div class="qpart"><p><b class="tag">1.</b> What is fuzzy logic? Differentiate between crisp (Boolean) logic and fuzzy logic using the example of a 100 ml glass containing 30 ml of water. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<p><strong>Fuzzy logic</strong> is a superset of Boolean (crisp) logic that handles <strong>partial truth</strong> — truth values anywhere between 0 (completely false) and 1 (completely true). It deals with degrees of membership and degrees of truth.</p><ul><li><strong>Crisp logic:</strong> only two answers are allowed — the glass is either Full (1) or Empty (0).</li><li><strong>Fuzzy logic:</strong> the glass is <strong>0.3 full and 0.7 empty</strong> (30 ml out of 100 ml).</li></ul>
+</details>
+<div class="qpart"><p><b class="tag">2.</b> With a neat diagram of a trapezoidal membership function, define its core, support and boundary regions. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<div class="chart-wrap"><svg class="mf-chart diagram" viewBox="0 0 600 265" role="img" aria-label="Trapezoidal membership function with core from b to c, boundaries a to b and c to d, support a to d">
+<line class="mf-axis" x1="50" y1="180" x2="570" y2="180"/>
+<line class="mf-axis" x1="50" y1="180" x2="50" y2="25"/>
+<text class="mf-axlab" x="58" y="32">μ(x)</text><text class="mf-axlab" x="570" y="198" text-anchor="end">x</text>
+<text class="mf-tick" x="42" y="59" text-anchor="end">1</text><text class="mf-tick" x="42" y="184" text-anchor="end">0</text>
+<line class="mf-grid" x1="50" y1="55" x2="220" y2="55"/>
+<line class="mf-guide" x1="220" y1="55" x2="220" y2="180"/>
+<line class="mf-guide" x1="380" y1="55" x2="380" y2="180"/>
+<polyline class="mf-line mf-s2" points="60,180 110,180 220,55 380,55 490,180 550,180"/>
+<text class="mf-val" x="110" y="197" text-anchor="middle">a</text>
+<text class="mf-val" x="220" y="197" text-anchor="middle">b</text>
+<text class="mf-val" x="380" y="197" text-anchor="middle">c</text>
+<text class="mf-val" x="490" y="197" text-anchor="middle">d</text>
+<line class="mf-axis" x1="220" y1="37" x2="380" y2="37"/><line class="mf-axis" x1="220" y1="32" x2="220" y2="42"/><line class="mf-axis" x1="380" y1="32" x2="380" y2="42"/><text class="mf-name mf-s2" x="300" y="29" text-anchor="middle">Core (μ = 1)</text>
+<line class="mf-axis" x1="110" y1="212" x2="220" y2="212"/><line class="mf-axis" x1="110" y1="207" x2="110" y2="217"/><line class="mf-axis" x1="220" y1="207" x2="220" y2="217"/><text class="mf-name mf-s3" x="165" y="228" text-anchor="middle">boundary</text>
+<line class="mf-axis" x1="380" y1="212" x2="490" y2="212"/><line class="mf-axis" x1="380" y1="207" x2="380" y2="217"/><line class="mf-axis" x1="490" y1="207" x2="490" y2="217"/><text class="mf-name mf-s3" x="435" y="228" text-anchor="middle">boundary</text>
+<line class="mf-axis" x1="110" y1="240" x2="490" y2="240"/><line class="mf-axis" x1="110" y1="235" x2="110" y2="245"/><line class="mf-axis" x1="490" y1="235" x2="490" y2="245"/><text class="mf-name mf-s1" x="300" y="256" text-anchor="middle">Support (μ &gt; 0)</text>
+</svg></div><ul><li><strong>Core:</strong> region of full membership, \(\mu(x) = 1\) (from b to c).</li><li><strong>Support:</strong> region of non-zero membership, \(\mu(x) &gt; 0\) (from a to d).</li><li><strong>Boundary:</strong> region of partial membership, \(0 &lt; \mu(x) &lt; 1\) (a to b, and c to d).</li></ul>
+</details>
+<div class="qpart"><p><b class="tag">3.</b> Explain the difference between fuzzy logic and probability. Illustrate with the statement about a person being “old” with a value of 0.8. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<div class="table-wrap"><table><thead><tr><th></th><th>Probability</th><th>Fuzzy logic</th></tr></thead><tbody><tr><th>Statement</th><td>“There is an 80% chance that the person is old.”</td><td>“The person’s degree of membership in the set of old people is 0.8.”</td></tr><tr><th>Models</th><td><strong>Ignorance / uncertainty</strong> — the person either is or is not old; we just do not know which</td><td><strong>Vagueness</strong> — “old” has no sharp boundary; the person is old to a degree of 0.8</td></tr></tbody></table></div><p>Both use numbers from 0 to 1, but probability answers “how likely?” while fuzzy logic answers “to what degree?”.</p>
+</details>
+<div class="qpart"><p><b class="tag">4.</b> Draw and explain the three stages of a fuzzy inference system: fuzzification, fuzzy inference and defuzzification. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<div class="chart-wrap"><svg class="mf-chart" viewBox="0 0 660 215" role="img" aria-label="Crisp input goes through fuzzification, fuzzy inference using the rule base, and defuzzification to give a crisp output">
+<defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mc-head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<text class="ftxt" x="70" y="22" text-anchor="middle">Crisp input</text><text class="fsub" x="70" y="38" text-anchor="middle">58 °F, 35 %</text>
+<line class="mc-edge" x1="70" y1="44" x2="70" y2="62" marker-end="url(#ah2)"/>
+<rect class="fbox" x="10" y="66" width="120" height="54" rx="8"/><text class="ftxt" x="70" y="98" text-anchor="middle">Fuzzification</text>
+<line class="mc-edge" x1="132" y1="93" x2="232" y2="93" marker-end="url(#ah2)"/>
+<text class="fsub" x="182" y="85" text-anchor="middle">μ values</text>
+<rect class="fbox" x="236" y="66" width="170" height="54" rx="8"/><text class="ftxt" x="321" y="90" text-anchor="middle">Fuzzy inference</text><text class="fsub" x="321" y="107" text-anchor="middle">apply rules, AND = min</text>
+<line class="mc-edge" x1="408" y1="93" x2="508" y2="93" marker-end="url(#ah2)"/>
+<text class="fsub" x="458" y="85" text-anchor="middle">Fast, Slow</text>
+<rect class="fbox" x="512" y="66" width="138" height="54" rx="8"/><text class="ftxt" x="581" y="98" text-anchor="middle">Defuzzification</text>
+<line class="mc-edge" x1="581" y1="122" x2="581" y2="150" marker-end="url(#ah2)"/>
+<text class="ftxt" x="581" y="170" text-anchor="middle">Crisp output</text><text class="fsub" x="581" y="186" text-anchor="middle">41.67 mph</text>
+<rect class="fbox alt" x="261" y="160" width="120" height="44" rx="8"/><text class="ftxt" x="321" y="187" text-anchor="middle">Rule base</text>
+<line class="mc-edge" x1="321" y1="158" x2="321" y2="124" marker-end="url(#ah2)"/>
+</svg></div><ol><li><strong>Fuzzification:</strong> converts crisp numeric inputs into membership degrees (linguistic values) using membership functions — e.g. 58 °F → Cool 0.6, Warm 0.4.</li><li><strong>Fuzzy inference:</strong> applies the IF–THEN rules from the rule base to the membership degrees (AND = min) to get the strength of each output — e.g. Fast 0.25, Slow 0.5.</li><li><strong>Defuzzification:</strong> converts the fuzzy output back into one crisp number — e.g. weighted mean of centroids → 41.67 mph.</li></ol>
+</details>
+<div class="qpart"><p><b class="tag">5.</b> Give four reasons for using fuzzy logic and four real-world applications of it. <span class="marks">[2 marks]</span></p></div>
+<details class="ans"><summary>Answer</summary>
+<div class="table-wrap"><table><thead><tr><th></th><th>Reasons for using fuzzy logic</th><th>Real-world applications</th></tr></thead><tbody><tr><td>1</td><td>Flexible</td><td>Vehicle speed control / anti-lock braking (ABS)</td></tr><tr><td>2</td><td>Conceptually easy to understand</td><td>Air conditioners and refrigerators (temperature control)</td></tr><tr><td>3</td><td>Tolerant of imprecise data</td><td>Camera auto-focus</td></tr><tr><td>4</td><td>Based on natural language (can capture human expertise)</td><td>Washing machines, rice cookers, dishwashers</td></tr></tbody></table></div>
+</details>
+</section>
+    </div>
+
+    <script>
+        (function () {
+            var btn = document.getElementById('toggle-all');
+            var all = document.querySelectorAll('details.ans');
+            function sync() {
+                var open = Array.prototype.every.call(all, function (d) { return d.open; });
+                btn.textContent = open ? 'Hide all answers' : 'Show all answers';
+                return open;
+            }
+            btn.addEventListener('click', function () {
+                var open = !sync();
+                all.forEach(function (d) { d.open = open; });
+                sync();
+            });
+            all.forEach(function (d) { d.addEventListener('toggle', sync); });
+        })();
+    </script>
+</body>
+</html>
