@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Cheatsheet - AI Notes</title>
+    <meta name="description" content="One-page revision cheatsheet for CSE 3811 Artificial Intelligence: every examinable formula, algorithm and definition">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/theme.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        .container.wide { max-width: 1320px; }
+
+        .scope {
+            background: var(--accent-soft);
+            border-left: 3px solid var(--accent);
+            border-radius: 9px;
+            padding: 0.9rem 1.25rem;
+            margin: 0 0 1.25rem;
+            font-size: 0.95rem;
+        }
+        .scope p { margin: 0; }
+
+        .jump { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 2rem; }
+        .jump a {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.25rem 0.65rem;
+            border: 1px solid var(--border-strong);
+            border-radius: 999px;
+            color: var(--text);
+            background: var(--surface);
+        }
+        .jump a:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+        h2.group { margin: 2.25rem 0 1rem; }
+
+        /* Flowing columns, like a printed cheatsheet */
+        .sheet { columns: 3 340px; column-gap: 1rem; }
+
+        .card {
+            break-inside: avoid;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.1rem 0.6rem;
+            margin: 0 0 1rem;
+            font-size: 0.86rem;
+            line-height: 1.55;
+            box-shadow: var(--shadow);
+            scroll-margin-top: 1rem;
+        }
+        .card h3 {
+            margin: 0 0 0.6rem;
+            font-size: 1.02rem;
+            color: var(--heading);
+            padding-bottom: 0.35rem;
+            border-bottom: 2px solid var(--accent);
+        }
+        .card h3 .n { color: var(--accent); margin-right: 0.3rem; }
+        .card h4 {
+            margin: 0.75rem 0 0.3rem;
+            font-size: 0.72rem;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--accent-2);
+        }
+        .card p, .card ul, .card ol { margin-bottom: 0.5rem; }
+        .card ul, .card ol { padding-left: 1.15rem; }
+        .card li { margin-bottom: 0.15rem; }
+
+        .card .table-wrap { margin: 0.35rem 0 0.6rem; }
+        .card table { font-size: 0.78rem; }
+        .card th, .card td { padding: 0.28rem 0.4rem; }
+        .card thead th { white-space: normal; }
+        .card table.tight { font-size: 0.72rem; }
+        .card table.tight th, .card table.tight td { padding: 0.22rem 0.28rem; }
+
+        .fx {
+            background: var(--surface-2);
+            border-left: 3px solid var(--accent-2);
+            border-radius: 6px;
+            padding: 0.4rem 0.6rem;
+            margin: 0.35rem 0 0.6rem;
+            overflow-x: auto;
+        }
+        .fx mjx-container[display="true"] { margin: 0.2em 0 !important; }
+
+        .mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.92em; }
+
+        .tip {
+            background: var(--accent-soft);
+            border-radius: 6px;
+            padding: 0.35rem 0.6rem;
+            margin: 0.35rem 0 0.6rem;
+        }
+        .tip::before { content: '✎ '; color: var(--accent); font-weight: 700; }
+
+        @media print {
+            @page { size: A4; margin: 10mm; }
+            :root, :root[data-theme="dark"] {
+                color-scheme: light;
+                --bg: #fff; --surface: #fff; --surface-2: #f3f4f6;
+                --border: #c9ced6; --border-strong: #9aa1ad;
+                --text: #111; --text-muted: #444; --heading: #000;
+                --accent: #3b2fb0; --accent-2: #0a5f5c;
+                --accent-soft: #eeecfb; --shadow: none;
+            }
+            body { font-size: 9pt; background: #fff; }
+            .container.wide { max-width: none; padding: 0; }
+            .nav, .jump, .theme-toggle, header > p { display: none !important; }
+            h1 { font-size: 15pt; margin: 0 0 4pt; }
+            .scope { font-size: 8pt; padding: 4pt 8pt; margin-bottom: 6pt; }
+            h2.group { font-size: 11pt; margin: 6pt 0 4pt; padding-bottom: 2pt; break-after: avoid; }
+            .sheet { columns: 3; column-gap: 6pt; }
+            .card { font-size: 7.4pt; line-height: 1.32; padding: 5pt 6pt 2pt; margin-bottom: 5pt; border-radius: 4pt; }
+            .card h3 { font-size: 9pt; margin-bottom: 3pt; padding-bottom: 2pt; }
+            .card h4 { font-size: 6.5pt; margin: 4pt 0 1pt; }
+            .card table { font-size: 6.6pt; }
+            .card th, .card td { padding: 1pt 2pt; }
+            .card table.tight { font-size: 5.8pt; }
+            .card table.tight th, .card table.tight td { padding: 1pt 1.2pt; }
+            .fx, .tip { padding: 2pt 4pt; margin: 2pt 0 3pt; }
+            .card mjx-container { font-size: 92% !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container wide">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link"><span>←</span> Back to Table of Contents</a>
+        </nav>
+
+        <header>
+            <h1>Course Cheatsheet</h1>
+            <p style="text-align: center; margin-top: -1rem; margin-bottom: 1.75rem;">Every examinable definition, formula and algorithm for CSE 3811, on one page</p>
+        </header>
+
+        <div class="scope">
+            <p><strong>Covers the whole syllabus except Bayesian network inference and decision tree learning.</strong> Each card links to its full notes. Printing this page (Ctrl + P) gives a compact 3-column, light-theme version.</p>
+        </div>
+
+        <div class="jump">
+            <a href="#intro">Intro</a><a href="#agents">Agents</a><a href="#uninformed">Uninformed search</a><a href="#informed">Informed search</a><a href="#local">Local search</a><a href="#adversarial">Adversarial</a><a href="#csp">CSP</a><a href="#prob">Probability</a><a href="#nb">Naive Bayes</a><a href="#ml">ML &amp; K-means</a><a href="#regression">Regression</a><a href="#fuzzy">Fuzzy logic</a><a href="#nn">Neural nets</a><a href="#markov">Markov</a><a href="#mc">Monte Carlo</a><a href="#fol">FOL</a>
+        </div>
+
+        <h2 class="group">Mid Term</h2>
+        <div class="sheet">
+
+            <div class="card" id="intro">
+                <h3><span class="n">1</span><a href="introduction_and_agents.html">Introduction to AI</a></h3>
+                <p>Term coined <strong>1956</strong>, Dartmouth workshop, <strong>John McCarthy</strong>.</p>
+                <div class="table-wrap"><table>
+                    <thead><tr><th></th><th>Humanly</th><th>Rationally</th></tr></thead>
+                    <tbody>
+                        <tr><th>Thinking</th><td>Thinking humanly</td><td>Thinking rationally</td></tr>
+                        <tr><th>Acting</th><td>Acting humanly (Turing test)</td><td><strong>Acting rationally</strong> (this course)</td></tr>
+                    </tbody>
+                </table></div>
+                <ul>
+                    <li><strong>Rational</strong> = maximally achieving pre-defined goals = maximizing <strong>expected</strong> utility. Concerns the decisions made, not the thought process.</li>
+                    <li>Rationality ≠ perfection: rational maximizes <em>expected</em> performance, perfection maximizes <em>actual</em>. Rationality does not need omniscience.</li>
+                    <li><strong>Turing test</strong> (1950) needs: NLP, knowledge representation, automated reasoning, machine learning. <strong>Total</strong> Turing test adds computer vision + robotics.</li>
+                    <li>Turing test problem: not reproducible, constructive or amenable to mathematical analysis.</li>
+                    <li>AI ⊃ ML ⊃ DL (deep learning uses neural networks).</li>
+                </ul>
+                <h4>Timeline</h4>
+                <p>1956 Dartmouth · 1997 Deep Blue beats Kasparov · 2002 Roomba · 2005 STANLEY wins DARPA Grand Challenge · 2011 IBM Watson wins Jeopardy! · 2016 AlphaGo · 2018 self-driving cars.</p>
+            </div>
+
+            <div class="card" id="agents">
+                <h3><span class="n">1</span><a href="introduction_and_agents.html">Agents &amp; Environments</a></h3>
+                <ul>
+                    <li><strong>Agent</strong>: perceives its environment through <strong>sensors</strong>, acts on it through <strong>actuators</strong>.</li>
+                    <li><strong>Percept</strong>: input at one instant. <strong>Percept sequence</strong>: complete history of percepts.</li>
+                    <li><strong>Agent function</strong> maps percept sequences to actions: \(f: \mathcal{P}^* \rightarrow \mathcal{A}\).</li>
+                    <li><strong>Rational agent</strong>: for each percept sequence, selects the action expected to maximize its performance measure, given the percepts and built-in knowledge.</li>
+                    <li>Rationality depends on 4 things: performance measure · prior knowledge · available actions · percept sequence to date.</li>
+                </ul>
+                <h4>PEAS — automated taxi</h4>
+                <div class="table-wrap"><table><tbody>
+                    <tr><th>P</th><td>Safe, fast, legal, comfortable trip; maximize profits</td></tr>
+                    <tr><th>E</th><td>Roads, other traffic, pedestrians, customers</td></tr>
+                    <tr><th>A</th><td>Steering, accelerator, brake, signal, horn, display</td></tr>
+                    <tr><th>S</th><td>Cameras, sonar, speedometer, GPS, odometer, accelerometer, engine sensors, keyboard</td></tr>
+                </tbody></table></div>
+                <h4>Environment properties</h4>
+                <ul>
+                    <li><strong>Fully</strong> vs <strong>partially</strong> observable (unobservable = no sensors).</li>
+                    <li><strong>Single</strong> vs <strong>multi</strong>-agent — competitive (chess) or cooperative / partially competitive (automated car).</li>
+                    <li><strong>Deterministic</strong> (next state fixed by state + action) vs <strong>stochastic</strong>.</li>
+                    <li><strong>Episodic</strong> (action doesn't affect future) vs <strong>sequential</strong>.</li>
+                    <li><strong>Static</strong> vs <strong>dynamic</strong>; <strong>semi-dynamic</strong> = environment fixed but score changes with time (chess with a clock).</li>
+                    <li><strong>Discrete</strong> vs <strong>continuous</strong>; <strong>known</strong> vs <strong>unknown</strong> (rules, not observability).</li>
+                </ul>
+                <div class="table-wrap"><table class="tight">
+                    <thead><tr><th>Task</th><th>Obs</th><th>Agents</th><th>Det</th><th>Epis</th><th>Static</th><th>Disc</th></tr></thead>
+                    <tbody>
+                        <tr><td>Crossword</td><td>Full</td><td>Single</td><td>Det</td><td>Seq</td><td>Static</td><td>Disc</td></tr>
+                        <tr><td>Chess+clock</td><td>Full</td><td>Multi</td><td>Det</td><td>Seq</td><td>Semi</td><td>Disc</td></tr>
+                        <tr><td>Poker</td><td>Part</td><td>Multi</td><td>Stoch</td><td>Seq</td><td>Static</td><td>Disc</td></tr>
+                        <tr><td>Backgammon</td><td>Full</td><td>Multi</td><td>Stoch</td><td>Seq</td><td>Static</td><td>Disc</td></tr>
+                        <tr><td>Taxi driving</td><td>Part</td><td>Multi</td><td>Stoch</td><td>Seq</td><td>Dyn</td><td>Cont</td></tr>
+                        <tr><td>Medical</td><td>Part</td><td>Single</td><td>Stoch</td><td>Seq</td><td>Dyn</td><td>Cont</td></tr>
+                        <tr><td>Image</td><td>Full</td><td>Single</td><td>Det</td><td>Epis</td><td>Semi</td><td>Cont</td></tr>
+                        <tr><td>Part-picker</td><td>Part</td><td>Single</td><td>Stoch</td><td>Epis</td><td>Dyn</td><td>Cont</td></tr>
+                        <tr><td>Tutor</td><td>Part</td><td>Multi</td><td>Stoch</td><td>Seq</td><td>Dyn</td><td>Disc</td></tr>
+                    </tbody>
+                </table></div>
+                <p class="tip">Hardest case: partially observable, multi-agent, stochastic, sequential, dynamic, continuous, unknown. Justify each label in one phrase.</p>
+            </div>
+
+            <div class="card" id="uninformed">
+                <h3><span class="n">2</span><a href="uninformed_search.html">Uninformed Search</a></h3>
+                <ul>
+                    <li><strong>Search problem</strong>: state space · successor function (actions, costs) · start state · goal test. <strong>Solution</strong> = action sequence (plan) from start to goal.</li>
+                    <li><strong>State space graph</strong>: each state once. <strong>Search tree</strong>: nodes are plans (paths); can be infinite with cycles.</li>
+                    <li><strong>Fringe</strong> = generated, not yet expanded. Algorithms differ only in which fringe node they expand next.</li>
+                    <li>Judge by: <strong>complete</strong>, <strong>optimal</strong>, <strong>time</strong>, <strong>space</strong>.</li>
+                </ul>
+                <p>b = branching factor, m = max depth, s = shallowest solution depth, ℓ = depth limit, C* = optimal cost, ε = min arc cost.</p>
+                <div class="table-wrap"><table>
+                    <thead><tr><th>Alg.</th><th>Fringe</th><th>Complete</th><th>Optimal</th><th>Time</th><th>Space</th></tr></thead>
+                    <tbody>
+                        <tr><td>DFS</td><td>LIFO stack</td><td>only if cycles prevented</td><td>No</td><td>\(b^m\)</td><td>\(bm\)</td></tr>
+                        <tr><td>BFS</td><td>FIFO queue</td><td>Yes</td><td>if costs all 1</td><td>\(b^s\)</td><td>\(b^s\)</td></tr>
+                        <tr><td>DLS</td><td>stack, limit ℓ</td><td>No (ℓ &lt; s)</td><td>No</td><td>\(b^\ell\)</td><td>\(b\ell\)</td></tr>
+                        <tr><td>IDS</td><td>DLS, ℓ = 0,1,2…</td><td>Yes</td><td>if costs all 1</td><td>\(b^s\)</td><td>\(bs\)</td></tr>
+                        <tr><td>UCS</td><td>priority queue by g(n)</td><td>Yes</td><td>Yes</td><td>\(b^{C^*/\epsilon}\)</td><td>\(b^{C^*/\epsilon}\)</td></tr>
+                    </tbody>
+                </table></div>
+                <ul>
+                    <li><strong>IDS</strong>: DFS's memory + BFS's completeness. Overhead small — b = 10, s = 5: 123,456 vs 111,111 nodes (≈ 11%).</li>
+                    <li><strong>BFS better</strong>: shortest path, shallow/wide space, solution near root. <strong>DFS better</strong>: deep/narrow space, little memory, any solution will do.</li>
+                    <li><strong>UCS</strong> = cheapest g(n) first; explores cost contours in every direction (no goal information).</li>
+                </ul>
+            </div>
+
+            <div class="card" id="informed">
+                <h3><span class="n">3</span><a href="informed_search.html">Informed Search &amp; Heuristics</a></h3>
+                <p><strong>Heuristic</strong> h(n): estimate of distance to a goal, designed per problem (Manhattan, Euclidean, straight-line distance).</p>
+                <div class="table-wrap"><table>
+                    <thead><tr><th>Algorithm</th><th>Orders fringe by</th></tr></thead>
+                    <tbody>
+                        <tr><td>UCS</td><td>g(n) — backward cost</td></tr>
+                        <tr><td>Greedy</td><td>h(n) — forward cost; can go straight to the wrong goal</td></tr>
+                        <tr><td>A*</td><td>f(n) = g(n) + h(n)</td></tr>
+                    </tbody>
+                </table></div>
+                <ul>
+                    <li>A* stops when a goal is <strong>dequeued</strong>, not enqueued.</li>
+                    <li><strong>Admissible</strong>: \(0 \le h(n) \le h^*(n)\) (never overestimates).</li>
+                    <li><strong>Consistent</strong>: \(h(A) - h(C) \le \text{cost}(A \to C)\) on every arc ⇒ f never decreases along a path.</li>
+                    <li>Consistent ⇒ admissible (not the reverse).</li>
+                    <li>A* <strong>tree</strong> search optimal if h admissible; A* <strong>graph</strong> search optimal if h consistent.</li>
+                    <li>h = 0 turns A* into UCS. Admissible heuristics usually come from <strong>relaxed problems</strong>.</li>
+                    <li><strong>Dominance</strong>: \(h_a \ge h_c\) for all n ⇒ h<sub>a</sub> expands no more nodes. max(h<sub>a</sub>, h<sub>b</sub>) of admissible heuristics is admissible.</li>
+                </ul>
+                <h4>8-puzzle</h4>
+                <p>Misplaced tiles (h = 8 at start) and total Manhattan distance (h = 18) are both admissible; Manhattan dominates. At depth 12: UCS 3.6 × 10⁶ nodes, tiles 227, Manhattan 73.</p>
+                <h4>Graph search</h4>
+                <p>Tree search + <strong>closed set</strong> (never expand a state twice; store as a set). Keeps completeness, but with a merely admissible h it can lose optimality.</p>
+            </div>
+
+            <div class="card" id="local">
+                <h3><span class="n">4</span><a href="local_search.html">Local Search</a></h3>
+                <ul>
+                    <li>Keeps one (or k) current states, no paths ⇒ constant memory; works in huge/continuous spaces. Use when only the <strong>final state</strong> matters (8-queens).</li>
+                    <li>Landscape: cost → find global minimum; objective → global maximum.</li>
+                </ul>
+                <h4>Hill climbing (steepest ascent)</h4>
+                <ul>
+                    <li>Move to the best neighbour; stop when no neighbour is better. "Greedy local search".</li>
+                    <li>Gets stuck on <strong>local maxima</strong>, <strong>ridges</strong>, <strong>plateaux</strong> (flat local max or shoulder).</li>
+                    <li>8-queens: 8 × 7 = 56 successors, h = attacking pairs. Solves 14% (4 steps avg); 100 sideways moves → 94%.</li>
+                    <li>Variants: stochastic (random uphill move), first-choice (generate until better), <strong>random-restart</strong> (trivially complete).</li>
+                </ul>
+                <h4>Simulated annealing</h4>
+                <ul>
+                    <li>Pick a random move. ΔE &gt; 0 → always accept; otherwise accept with</li>
+                </ul>
+                <div class="fx">\[ P = e^{\Delta E / T} \]</div>
+                <ul>
+                    <li>Worse moves and lower T → smaller P. Lower T slowly enough → global optimum with probability → 1. Used for VLSI layout, scheduling.</li>
+                </ul>
+                <h4>Local beam search</h4>
+                <p>Keep k states; generate all successors of all k; keep the best k. Shares information between threads (not k independent restarts). Risk: lack of diversity. <strong>Stochastic</strong> beam: choose k with probability increasing with value.</p>
+                <h4>Genetic algorithm</h4>
+                <ul>
+                    <li><strong>Population</strong> of k strings → <strong>fitness</strong> function (8-queens: non-attacking pairs, 28 = solution).</li>
+                    <li><strong>Selection</strong> ∝ fitness → <strong>crossover</strong> at random point → <strong>mutation</strong> with small probability.</li>
+                    <li>Power comes from crossover combining useful blocks (<strong>schema</strong>, e.g. 246*****).</li>
+                </ul>
+            </div>
+
+            <div class="card" id="adversarial">
+                <h3><span class="n">5</span><a href="adversarial_search.html">Adversarial Search</a></h3>
+                <ul>
+                    <li>Typical game: deterministic, turn-taking, two-player, <strong>zero-sum</strong> (one's gain = other's loss), perfect information.</li>
+                    <li>Formal game: S<sub>0</sub>, PLAYER(s), ACTIONS(s), RESULT(s, a), TERMINAL-TEST(s), UTILITY(s, p).</li>
+                </ul>
+                <h4>Minimax</h4>
+                <div class="fx">\[ \text{MM}(s) = \begin{cases} \text{UTILITY}(s) & \text{terminal} \\ \max_{c} \text{MM}(c) & \text{MAX} \\ \min_{c} \text{MM}(c) & \text{MIN} \end{cases} \]</div>
+                <p>c ranges over the children RESULT(s, a) of s.</p>
+                <p>Complete depth-first. Complete if tree finite; optimal vs optimal opponent. Time \(O(b^m)\), space \(O(bm)\).</p>
+                <p><strong>Resource limits</strong>: cut off at a depth, use an <strong>evaluation function</strong> at non-terminal nodes — loses the optimality guarantee.</p>
+                <h4>Alpha-beta pruning</h4>
+                <ul>
+                    <li><strong>α</strong> = best (highest) value for MAX so far on the path; <strong>β</strong> = best (lowest) for MIN. Start α = −∞, β = +∞.</li>
+                    <li><strong>MAX node</strong>: v = max(v, child); if <strong>v ≥ β prune</strong>; else α = max(α, v).</li>
+                    <li><strong>MIN node</strong>: v = min(v, child); if <strong>v ≤ α prune</strong>; else β = min(β, v).</li>
+                    <li>α, β are passed <strong>down</strong>; values are returned <strong>up</strong>.</li>
+                    <li>Same root decision as minimax; inner values may only be bounds.</li>
+                    <li>Worst ordering \(O(b^m)\); perfect ordering \(O(b^{m/2})\) ⇒ effective branching \(\sqrt{b}\), search twice as deep.</li>
+                </ul>
+                <p class="tip">Example leaves 4 6 7 9 1 2 0 1: left MIN → β = 6; 7 ≥ 6 prunes 9; root α = 6; right gets 2 ≤ 6 so 0, 1 pruned. Root = 6.</p>
+            </div>
+        </div>
+
+        <h2 class="group">Final Term</h2>
+        <div class="sheet">
+
+            <div class="card" id="csp">
+                <h3><span class="n">6</span><a href="csp.html">Constraint Satisfaction Problems</a></h3>
+                <ul>
+                    <li><strong>Variables</strong> X<sub>i</sub>, <strong>domains</strong> D, <strong>constraints</strong> on allowed combinations. Solution = complete assignment satisfying all constraints. For <em>identification</em> (goal matters, not path).</li>
+                    <li>Map colouring: WA, NT, Q, NSW, V, SA, T; D = {R, G, B}; adjacent ≠.</li>
+                    <li>N-queens: Q<sub>k</sub> = row of queen in column k; \(Q_i \ne Q_j\), \(|Q_i - Q_j| \ne |i - j|\).</li>
+                    <li>Constraints: <strong>unary</strong> (1 var) · <strong>binary</strong> (2) · <strong>higher-order</strong> (3+, cryptarithmetic) · <strong>soft</strong> (preferences, costs).</li>
+                    <li>Finite domains: \(O(d^n)\) complete assignments. <strong>Constraint graph</strong>: nodes = variables, arcs = constraints.</li>
+                </ul>
+                <h4>Backtracking search</h4>
+                <p>= DFS + <strong>one variable at a time</strong> (fixed order) + <strong>check constraints as you go</strong> (fail on violation). Plain: n-queens n ≈ 25.</p>
+                <h4>Improvements</h4>
+                <ul>
+                    <li><strong>Forward checking</strong>: after assigning, cross off conflicting values in neighbours' domains. Empty domain ⇒ backtrack now.</li>
+                    <li><strong>Constraint propagation</strong>: also checks unassigned–unassigned (WA = R, Q = G leaves NT = SA = {B} — FC misses it).</li>
+                    <li><strong>MRV</strong> (variable order): fewest legal values left — "most constrained", fail-fast.</li>
+                    <li><strong>LCV</strong> (value order): value ruling out the fewest values in neighbours — keep options open.</li>
+                    <li><strong>Structure</strong>: independent subproblems (Tasmania) solved separately.</li>
+                    <li>MRV + LCV ⇒ 1000-queens feasible.</li>
+                </ul>
+                <p class="tip">Paper trace: one row per step — variable assigned, then every unassigned domain with crossed-out values; mark backtracks clearly.</p>
+            </div>
+
+            <div class="card" id="prob">
+                <h3><span class="n">7</span><a href="naive_bayes.html">Probability</a></h3>
+                <ul>
+                    <li>Distribution: \(P(x) \ge 0\), \(\sum_x P(x) = 1\). Joint over n variables of domain d has \(d^n\) rows.</li>
+                    <li>Event: sum its rows. \(P(A \cup B) = P(A) + P(B) - P(A \cap B)\).</li>
+                </ul>
+                <div class="table-wrap"><table>
+                    <thead><tr><th>Rule</th><th>Formula</th></tr></thead>
+                    <tbody>
+                        <tr><td>Marginal</td><td>\(P(x) = \sum_y P(x, y)\)</td></tr>
+                        <tr><td>Conditional</td><td>\(P(a \mid b) = \dfrac{P(a,b)}{P(b)}\)</td></tr>
+                        <tr><td>Product</td><td>\(P(a,b) = P(a \mid b)P(b)\)</td></tr>
+                        <tr><td>Chain</td><td>\(P(x_1..x_n) = \prod_i P(x_i \mid x_1..x_{i-1})\)</td></tr>
+                        <tr><td>Bayes</td><td>\(P(a \mid b) = \dfrac{P(b \mid a)P(a)}{P(b)}\)</td></tr>
+                        <tr><td>Independent</td><td>\(P(x,y) = P(x)P(y)\) for <strong>all</strong> x, y</td></tr>
+                        <tr><td>Cond. indep.</td><td>\(P(x,y \mid z) = P(x \mid z)P(y \mid z)\)</td></tr>
+                        <tr><td>Bayes' net</td><td>\(P(x_1..x_n) = \prod_i P(x_i \mid \text{parents}(X_i))\)</td></tr>
+                    </tbody>
+                </table></div>
+                <ul>
+                    <li>Bayes' rule turns causal \(P(\text{effect} \mid \text{cause})\) into diagnostic \(P(\text{cause} \mid \text{effect})\); expand \(P(b) = \sum_a P(b \mid a)P(a)\).</li>
+                    <li>Meningitis: \(P(+m \mid +s) \approx 0.0079\) — a tiny prior keeps the posterior small.</li>
+                    <li>Bayes' net: DAG + a CPT per node; arcs ≈ direct influence, encode conditional independence.</li>
+                </ul>
+            </div>
+
+            <div class="card" id="nb">
+                <h3><span class="n">7</span><a href="naive_bayes.html">Naive Bayes</a></h3>
+                <p>Label Y is the parent of every feature; features conditionally independent given Y.</p>
+                <div class="fx">\[ P(Y, F_1..F_n) = P(Y) \prod_i P(F_i \mid Y) \]</div>
+                <p>Parameters: \(|Y| + n\,|F|\,|Y|\) — <strong>linear</strong> in n (full joint: \(|Y|\,|F|^n\)).</p>
+                <h4>Classify</h4>
+                <ol>
+                    <li>Count: \(P(y) = \frac{\#y}{N}\), \(P(f \mid y) = \frac{\#(f, y)}{\#y}\).</li>
+                    <li>Score each label: \(P(y)\prod_i P(f_i \mid y)\).</li>
+                    <li>Normalize: divide each score by their sum (α). Pick the largest.</li>
+                </ol>
+                <h4>Laplace smoothing (strength k)</h4>
+                <div class="fx">\[ P(x) = \frac{c(x) + k}{N + k|X|} \qquad P(x \mid y) = \frac{c(x,y) + k}{c(y) + k|X|} \]</div>
+                <ul>
+                    <li>|X| = number of <strong>values</strong> of that variable, not rows. Denominator for a conditional uses c(y).</li>
+                    <li>Fixes zero counts (one zero would veto a whole class). Larger k → closer to uniform.</li>
+                </ul>
+                <p class="tip">Golf data: Sunny, Hot, Normal, No wind → Yes ≈ 0.82 (k = 0), ≈ 0.73 (k = 2).</p>
+            </div>
+
+            <div class="card" id="ml">
+                <h3><span class="n">8</span><a href="kmeans_clustering.html">Machine Learning &amp; K-Means</a></h3>
+                <p><strong>ML</strong>: algorithms that recognise complex patterns and make intelligent decisions based on input data. Input → learning algorithm → intelligent decision.</p>
+                <div class="table-wrap"><table>
+                    <thead><tr><th></th><th>Supervised</th><th>Unsupervised</th></tr></thead>
+                    <tbody>
+                        <tr><th>Data</th><td>Labelled (input + output, teacher)</td><td>Unlabelled (input only)</td></tr>
+                        <tr><th>Goal</th><td>Infer a function</td><td>Find hidden structure</td></tr>
+                        <tr><th>Examples</th><td>ANN, decision tree, SVM, Bayesian net, HMM</td><td>K-means, modified K-means, hierarchical, fuzzy C-means</td></tr>
+                    </tbody>
+                </table></div>
+                <ul>
+                    <li><strong>Generalization</strong>: performing accurately on new, unseen examples after training.</li>
+                    <li><strong>Data mining</strong>: discovering unknown properties in data.</li>
+                    <li><strong>Close test</strong>: test with known (training) data. <strong>Open test</strong>: unseen data — measures generalization.</li>
+                </ul>
+                <h4>K-means</h4>
+                <ol>
+                    <li>Place k initial centroids.</li>
+                    <li>Assign each point to the nearest centroid: \(d = \sqrt{(x_1-x_2)^2 + (y_1-y_2)^2}\).</li>
+                    <li>Recompute each centroid as the mean of its points.</li>
+                    <li>Repeat 2–3 until the centroids stop moving.</li>
+                </ol>
+                <p><strong>Modified K-means</strong> changes only step 1: pick initial centroids cleverly — the two points farthest apart (distance matrix, \(n(n-1)/2\) distances). Usually fewer iterations.</p>
+                <p class="tip">Per iteration: distance table (one column per centroid) → class → new centroid as (sum/count). State ties and the stopping condition.</p>
+            </div>
+
+            <div class="card" id="regression">
+                <h3><span class="n">9</span><a href="regression.html">Regression</a></h3>
+                <h4>Linear: \(y = a_0 + a_1x + e\)</h4>
+                <p>a₀ intercept, a₁ slope, e error (residual). Build table x, y, x², xy → sums → averages.</p>
+                <div class="fx">\[ a_1 = \frac{\overline{xy} - \bar{x}\,\bar{y}}{\overline{x^2} - \bar{x}^2} \qquad a_0 = \bar{y} - a_1\bar{x} \]</div>
+                <ul>
+                    <li>\(\overline{x^2}\) = mean of squares ≠ \(\bar{x}^2\) = square of mean.</li>
+                    <li>Check: line passes through \((\bar{x}, \bar{y})\).</li>
+                </ul>
+                <h4>Logistic (classification)</h4>
+                <div class="fx">\[ z = \log(\text{odds}) = \ln\frac{p}{1-p} \qquad p = \frac{1}{1 + e^{-z}} \]</div>
+                <ul>
+                    <li>Sigmoid range (0, 1); \(s(0) = 0.5\). Classify 1 if p ≥ 0.5 ⇔ z ≥ 0 (decision boundary z = 0).</li>
+                    <li>Target probability p → \(z = \ln\frac{p}{1-p}\) (0.9 → ln 9 = 2.197; 0.95 → ln 19 = 2.944) → solve for x.</li>
+                    <li>Linear is wrong for pass/fail: output unbounded, not a probability.</li>
+                </ul>
+            </div>
+
+            <div class="card" id="fuzzy">
+                <h3><span class="n">10</span><a href="fuzzy_logic.html">Fuzzy &amp; Crisp Logic</a></h3>
+                <ul>
+                    <li><strong>Fuzzy logic</strong>: superset of Boolean logic with partial truth — degrees of membership in [0, 1]. Zadeh. Glass with 30 of 100 ml: 0.3 full, 0.7 empty.</li>
+                    <li>Crisp set: sharp boundary. Fuzzy set: blurred boundary.</li>
+                    <li><strong>Core</strong> μ = 1 · <strong>support</strong> μ &gt; 0 · <strong>boundary</strong> 0 &lt; μ &lt; 1.</li>
+                    <li>Probability models <strong>ignorance</strong> ("80% chance Jane is old"); fuzzy models <strong>vagueness</strong> ("Jane is old to degree 0.8").</li>
+                </ul>
+                <h4>Operations (element by element)</h4>
+                <div class="table-wrap"><table><tbody>
+                    <tr><td>Union A ∪ B</td><td>max(μA, μB)</td></tr>
+                    <tr><td>Intersection A ∩ B</td><td>min(μA, μB)</td></tr>
+                    <tr><td>Complement Ā</td><td>1 − μA</td></tr>
+                    <tr><td>Difference A − B</td><td>min(μA, 1 − μB)</td></tr>
+                </tbody></table></div>
+                <p><span class="mono">0.8/1</span> = element 1 with membership 0.8. Unlisted elements have μ = 0 (so they are 1 in the complement).</p>
+                <h4>Membership functions</h4>
+                <ul>
+                    <li><strong>Triangular</strong> (a, b, c): rising \(\frac{x-a}{b-a}\), falling \(\frac{c-x}{c-b}\), else 0.</li>
+                    <li><strong>Trapezoidal</strong> (a, b, c, d): rising \(\frac{x-a}{b-a}\), 1 on [b, c], falling \(\frac{d-x}{d-c}\).</li>
+                    <li><strong>Gaussian</strong>: \(e^{-(x-c)^2/2\sigma^2}\). <strong>Singleton</strong>: 1 only at x = a.</li>
+                </ul>
+                <h4>Fuzzy inference system</h4>
+                <ol>
+                    <li><strong>Fuzzification</strong>: crisp input → membership degrees.</li>
+                    <li><strong>Inference</strong>: apply rules; AND = min (OR = max).</li>
+                    <li><strong>Defuzzification</strong>: weighted mean of centroids \(\frac{\sum \mu_i c_i}{\sum \mu_i}\).</li>
+                </ol>
+                <p>Why: flexible, easy to understand, tolerant of imprecise data, natural language. Uses: vehicle speed / ABS, AC &amp; fridges, camera autofocus, washing machines, rice cookers.</p>
+                <p class="tip">Neighbouring triangles crossing: memberships sum to 1 (Cool 0.6 + Warm 0.4).</p>
+            </div>
+
+            <div class="card" id="nn">
+                <h3><span class="n">11</span><a href="neural_networks.html">Neural Networks</a></h3>
+                <div class="fx">\[ v = \sum_i I_i w_i + b \qquad y = \varphi(v) \]</div>
+                <p>v = induced local field. φ decides whether the neuron activates.</p>
+                <div class="table-wrap"><table>
+                    <thead><tr><th>Function</th><th>φ(v)</th><th>Range</th></tr></thead>
+                    <tbody>
+                        <tr><td>Threshold</td><td>1 if v ≥ 0, else 0</td><td>{0, 1}</td></tr>
+                        <tr><td>Piecewise-linear</td><td>1 if v ≥ ½; v + ½ if −½ &lt; v &lt; ½; 0 if v ≤ −½</td><td>[0, 1]</td></tr>
+                        <tr><td>Sigmoid</td><td>\(\frac{1}{1+e^{-av}}\), a = slope</td><td>(0, 1)</td></tr>
+                        <tr><td>Signum (tanh)</td><td>tanh(v)</td><td>(−1, 1)</td></tr>
+                    </tbody>
+                </table></div>
+                <p>At v = 0.2: threshold 1, piecewise 0.7, sigmoid 0.5498, tanh 0.1974.</p>
+                <h4>Stochastic neuron</h4>
+                <p>State +1 with probability \(P(v) = \frac{1}{1 + e^{-v/T}}\), else −1. T = pseudo-temperature: T → 0 deterministic (threshold); T → ∞ gives P = ½ (pure noise).</p>
+                <h4>Perceptron training (sigmoid, per pattern)</h4>
+                <div class="fx">\[ \begin{gathered} \delta = f(1-f)(d-f) \\ \Delta w_i = \eta\, I_i\, \delta \qquad \Delta b = \eta\, \delta \end{gathered} \]</div>
+                <ul>
+                    <li>Forward pass (v, f) → δ → update every weight and the bias → next pattern → test with final weights.</li>
+                    <li>Input 0 ⇒ that weight is unchanged. Sign of δ: f &lt; d ⇒ weights rise.</li>
+                </ul>
+            </div>
+
+            <div class="card" id="markov">
+                <h3><span class="n">12</span><a href="markov_models.html">Markov Models</a></h3>
+                <ul>
+                    <li><strong>Markov property</strong>: \(X_t \perp X_1..X_{t-2} \mid X_{t-1}\) — future depends on the past only through the present.</li>
+                    <li><strong>Stationarity</strong>: \(P(X_t \mid X_{t-1})\) is the same at every t.</li>
+                    <li>Parameters: initial \(P(X_1)\) + transition table.</li>
+                </ul>
+                <div class="fx">\[ P(X_1..X_T) = P(X_1)\prod_{t=2}^{T} P(X_t \mid X_{t-1}) \]</div>
+                <h4>Mini-forward algorithm</h4>
+                <div class="fx">\[ P(x_t) = \sum_{x_{t-1}} P(x_t \mid x_{t-1})\, P(x_{t-1}) \]</div>
+                <h4>Stationary distribution</h4>
+                <ul>
+                    <li>\(P_\infty(x) = \sum_{x'} P(x \mid x')\, P_\infty(x')\) — one more step leaves it unchanged; independent of the start.</li>
+                    <li>Write one balance equation per state, keep n − 1, add \(\sum P_\infty = 1\), solve.</li>
+                    <li>Matrix: <strong>row = from</strong>, column = to; rows sum to 1. Use column x for \(P_\infty(x)\).</li>
+                </ul>
+                <p class="tip">Weather (sun→sun 0.9, rain→sun 0.3): \(P_\infty\) = ⟨0.75, 0.25⟩.</p>
+            </div>
+
+            <div class="card" id="mc">
+                <h3><span class="n">13</span><a href="monte_carlo.html">Monte Carlo Methods</a></h3>
+                <p>Repeated random sampling to <strong>estimate</strong> a quantity — heuristic, not exact.</p>
+                <div class="table-wrap"><table><tbody>
+                    <tr><td>Expected value</td><td>\(\hat{\mu} = \frac{1}{N}\sum X_i\)</td></tr>
+                    <tr><td>Probability</td><td>\(\hat{P}(A) = \frac{1}{N}\sum I_i\) (indicator)</td></tr>
+                    <tr><td>Why it works</td><td>Law of large numbers: \(\hat{\mu} \to \mu\)</td></tr>
+                    <tr><td>Error</td><td>\(SE = \sigma/\sqrt{N}\) — 100× runs ⇒ 10× less error</td></tr>
+                    <tr><td>π</td><td>\(\hat{\pi} = 4N_c/N\), inside if \(x^2 + y^2 \le 1\)</td></tr>
+                    <tr><td>Action value</td><td>\(\hat{Q}(s,a) = \frac{G_1 + .. + G_N}{N}\)</td></tr>
+                    <tr><td>MCTS</td><td>\(Q(s,a) = W(s,a)/N(s,a)\)</td></tr>
+                </tbody></table></div>
+                <p>Steps: define problem → model inputs → run simulations → analyse the distribution of results.</p>
+                <h4>Simulation problems (e.g. clinic queue)</h4>
+                <ol>
+                    <li>Cumulative probabilities → random-number intervals (0.30 → 00–29, next 0.15 → 30–44 …).</li>
+                    <li>Map each random number to a category / service time.</li>
+                    <li>Event table: start = <strong>max(arrival, server free)</strong>; wait = start − arrival; idle = gaps.</li>
+                    <li>Average waiting time = total wait / n.</li>
+                </ol>
+            </div>
+
+            <div class="card" id="fol">
+                <h3><span class="n">14</span><a href="first_order_logic.html">First-Order Logic</a></h3>
+                <p><strong>FOL / predicate logic</strong>: knowledge representation of objects, properties, relationships and rules, so AI can reason from known facts.</p>
+                <ul>
+                    <li><strong>Constants</strong> (John) · <strong>variables</strong> (x) · <strong>predicates</strong> — true/false (Brother(John, Bob)) · <strong>functions</strong> — return an object (FatherOf(John)) · <strong>quantifiers</strong> ∀ ∃ · <strong>connectives</strong> ∧ ∨ → ↔ ¬.</li>
+                    <li>P → Q is false only when P true, Q false.</li>
+                </ul>
+                <div class="table-wrap"><table>
+                    <thead><tr><th>English</th><th>FOL</th></tr></thead>
+                    <tbody>
+                        <tr><td>All P are Q</td><td class="mono">∀x (P(x) → Q(x))</td></tr>
+                        <tr><td>Some P is Q</td><td class="mono">∃x (P(x) ∧ Q(x))</td></tr>
+                        <tr><td>No P is Q</td><td class="mono">∀x (P(x) → ¬Q(x))</td></tr>
+                        <tr><td>Every P has some R</td><td class="mono">∀x (P(x) → ∃y R(x,y))</td></tr>
+                    </tbody>
+                </table></div>
+                <h4>Universal instantiation + modus ponens</h4>
+                <p class="mono">Rule: ∀x (Human(x) → Mortal(x))<br>Fact: Human(Socrates)<br>UI, x = Socrates: Human(Socrates) → Mortal(Socrates)<br>MP: ∴ Mortal(Socrates)</p>
+                <ul>
+                    <li>With ∧ in the if-part, show every condition true first.</li>
+                    <li>Only forwards: Mortal(Tom) does <strong>not</strong> give Human(Tom).</li>
+                    <li>∀x∃y ≠ ∃y∀x. State argument order, e.g. Father(y, x): y is father of x.</li>
+                </ul>
+                <p>Applications: knowledge representation, theorem proving, NLP, expert systems, semantic web.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
