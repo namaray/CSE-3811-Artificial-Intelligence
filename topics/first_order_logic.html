@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First-Order Logic - AI Notes</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/theme.js"></script>
+    <style>
+        /* FOL formulas are written in monospace, the way they go on paper */
+        .fol {
+            font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.92em;
+            white-space: nowrap;
+        }
+
+        .math-block.fol { white-space: normal; line-height: 1.9; }
+
+        /* Two-column derivation: step label | formula */
+        .steps {
+            display: grid;
+            grid-template-columns: max-content 1fr;
+            gap: 0.3rem 1.1rem;
+            align-items: baseline;
+        }
+        .steps > .lbl {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 0.85rem;
+            font-weight: 650;
+            color: var(--text-muted);
+        }
+        .steps > .f { white-space: nowrap; }
+        .steps > .f.conclude { font-weight: 700; color: var(--heading); }
+
+        /* Whole-cell formulas may wrap so wide tables fit; short inline ones stay on one line */
+        td.fol { white-space: normal; }
+
+        details.ans {
+            background: var(--accent-2-soft);
+            border: 1px solid var(--accent-2-line);
+            border-radius: 10px;
+            padding: 0.1rem 1.2rem;
+            margin: 0.75rem 0 1.5rem;
+        }
+        details.ans > summary {
+            cursor: pointer;
+            list-style: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--accent-secondary);
+            padding: 0.85rem 0;
+            user-select: none;
+        }
+        details.ans > summary::-webkit-details-marker { display: none; }
+        details.ans > summary::before { content: '▶ '; font-size: 0.75rem; }
+        details.ans[open] > summary::before { content: '▼ '; }
+        details.ans[open] > summary { border-bottom: 1px solid var(--accent-2-line); margin-bottom: 0.9rem; }
+        details.ans > *:last-child { margin-bottom: 1rem; }
+        details.ans .math-block { background: var(--surface); }
+
+        .qpart {
+            border-left: 3px solid var(--glass-border);
+            padding-left: 1.1rem;
+            margin: 1.25rem 0 0;
+        }
+        .qpart b.tag { color: var(--accent-primary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link"><span>←</span> Back to Table of Contents</a>
+        </nav>
+
+        <header>
+            <h1>First-Order Logic</h1>
+            <p style="text-align: center; margin-top: -1rem; margin-bottom: 2.5rem;">Representing objects, properties and relationships — and reasoning from them with universal instantiation and modus ponens</p>
+        </header>
+
+        <section class="glass-panel">
+            <h2>What is First-Order Logic?</h2>
+            <p><strong>First-Order Logic (FOL)</strong>, also called <strong>predicate logic</strong>, is a powerful <strong>knowledge representation</strong> tool in AI. It expands simple true/false statements into structured models of <strong>objects, properties and relationships</strong>, allowing machines to perform complex logical reasoning. It is commonly applied in NLP, expert systems and theorem proving.</p>
+
+            <h3>Use of FOL in AI</h3>
+            <p>FOL is useful for <strong>knowledge representation and reasoning</strong>. An AI system can use it to represent facts about a domain and <strong>infer conclusions</strong> from those facts. It has applications in expert systems, automated theorem proving, semantic reasoning, planning, and some forms of natural-language understanding.</p>
+
+            <div class="callout">
+                <p><strong>In short:</strong> First-Order Logic gives AI a precise way to represent <strong>objects, properties, relationships and rules</strong>, so that the system can reason logically from known information.</p>
+            </div>
+
+            <h3>Why not just true/false statements?</h3>
+            <p>In plain true/false (propositional) logic, “Socrates is mortal” is a single symbol, say <span class="fol">P</span>, with no inside structure. There is no way to say “<em>all</em> humans are mortal” except by writing a separate symbol for every human. FOL breaks a statement into <strong>objects</strong> (Socrates) and <strong>properties</strong> (Human, Mortal), and adds <strong>variables</strong> and <strong>quantifiers</strong>, so one rule can cover every object at once:</p>
+            <div class="math-block fol">∀x (Human(x) → Mortal(x))</div>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Core Components</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Component</th><th>What it is</th><th>Example</th></tr></thead>
+                    <tbody>
+                        <tr><th>Constants</th><td>Specific, named objects</td><td><span class="fol">John</span>, <span class="fol">NewYork</span>, <span class="fol">Socrates</span></td></tr>
+                        <tr><th>Variables</th><td>Placeholders that can stand for any object</td><td><span class="fol">x</span>, <span class="fol">y</span></td></tr>
+                        <tr><th>Predicates</th><td>Properties, traits or relations — they are either <strong>true or false</strong></td><td><span class="fol">Human(x)</span>, <span class="fol">Brother(John, Bob)</span></td></tr>
+                        <tr><th>Functions</th><td>Map one object to another object — they return an <strong>object</strong>, not true/false</td><td><span class="fol">FatherOf(John)</span></td></tr>
+                        <tr><th>Quantifiers</th><td>Say how many objects a statement covers</td><td><span class="fol">∀</span> “for all”, <span class="fol">∃</span> “there exists”</td></tr>
+                        <tr><th>Logical connectives</th><td>Join or modify statements</td><td><span class="fol">∧ ∨ → ↔ ¬</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout">
+                <p><strong>Predicate vs function — a common mix-up.</strong> <span class="fol">Father(Ali, Rahim)</span> is a <em>predicate</em>: it is a statement, true or false (“Ali is the father of Rahim”). <span class="fol">FatherOf(Rahim)</span> is a <em>function</em>: it names a person (“Rahim's father”) and is not true or false by itself. You can put a function inside a predicate — <span class="fol">Brother(John, FatherOf(Bob))</span> — but not the other way round.</p>
+            </div>
+
+            <h3>Argument order matters</h3>
+            <p>A predicate with two arguments has a fixed reading, and you must state it and stick to it. In the handout, <span class="fol">Father(y, x)</span> means “<strong>y is the father of x</strong>”, so <span class="fol">Father(Ali, Rahim)</span> means Ali is Rahim's father — not the reverse. When you introduce a predicate in an exam answer, write its meaning once, e.g. “Studies(x, y): x studies course y”.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Logical Connectives</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Symbol</th><th>Name</th><th>Read as</th><th>True when…</th></tr></thead>
+                    <tbody>
+                        <tr><td class="fol">¬P</td><td>Negation</td><td>not P</td><td>P is false</td></tr>
+                        <tr><td class="fol">P ∧ Q</td><td>Conjunction</td><td>P and Q</td><td>both are true</td></tr>
+                        <tr><td class="fol">P ∨ Q</td><td>Disjunction</td><td>P or Q</td><td>at least one is true</td></tr>
+                        <tr><td class="fol">P → Q</td><td>Implication</td><td>if P then Q</td><td>every case <strong>except</strong> P true and Q false</td></tr>
+                        <tr><td class="fol">P ↔ Q</td><td>Biconditional</td><td>P if and only if Q</td><td>both have the same value</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Truth table</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>P</th><th>Q</th><th>¬P</th><th>P ∧ Q</th><th>P ∨ Q</th><th>P → Q</th><th>P ↔ Q</th></tr></thead>
+                    <tbody>
+                        <tr><td>T</td><td>T</td><td>F</td><td>T</td><td>T</td><td>T</td><td>T</td></tr>
+                        <tr><td>T</td><td>F</td><td>F</td><td>F</td><td>T</td><td><strong>F</strong></td><td>F</td></tr>
+                        <tr><td>F</td><td>T</td><td>T</td><td>F</td><td>T</td><td>T</td><td>F</td></tr>
+                        <tr><td>F</td><td>F</td><td>T</td><td>F</td><td>F</td><td>T</td><td>T</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>The implication row to remember: <span class="fol">P → Q</span> is only false when P is true and Q is false. That is why, once we know a rule <span class="fol">P → Q</span> holds <em>and</em> P is true, Q must be true — the basis of every inference on this page.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Quantifiers</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Quantifier</th><th>Name</th><th>Meaning</th><th>Example</th></tr></thead>
+                    <tbody>
+                        <tr><td class="fol">∀x</td><td>Universal</td><td>“for all x” — true for <strong>every</strong> object</td><td><span class="fol">∀x (Human(x) → Mortal(x))</span><br>All humans are mortal.</td></tr>
+                        <tr><td class="fol">∃x</td><td>Existential</td><td>“there exists an x” — true for <strong>at least one</strong> object</td><td><span class="fol">∃y Studies(Rahim, y)</span><br>Rahim studies at least one course.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>The two patterns to remember</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>English</th><th>FOL</th><th>Connective</th></tr></thead>
+                    <tbody>
+                        <tr><td>All students are intelligent.</td><td class="fol">∀x (Student(x) → Intelligent(x))</td><td><span class="fol">∀</span> goes with <span class="fol">→</span></td></tr>
+                        <tr><td>Some student is intelligent.</td><td class="fol">∃x (Student(x) ∧ Intelligent(x))</td><td><span class="fol">∃</span> goes with <span class="fol">∧</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="callout">
+                <p><strong>Why not swap them?</strong> <span class="fol">∀x (Student(x) ∧ Intelligent(x))</span> says “<em>everything</em> is a student and intelligent” — far too strong. <span class="fol">∃x (Student(x) → Intelligent(x))</span> is true as soon as there is any non-student, because an implication with a false “if” part is true — far too weak.</p>
+            </div>
+
+            <h3>Two quantifiers together — order matters</h3>
+            <p>Problem 2 below uses <span class="fol">∀x [Student(x) → ∃y Studies(x, y)]</span>: <em>for every</em> student there is <em>some</em> course they study — each student may study a different course. Swapping the order to <span class="fol">∃y ∀x</span> would mean there is <em>one single course</em> that every student studies, which is a different claim.</p>
+
+            <h3>“No …” statements</h3>
+            <p>“No student is a professor” (Problem 5) can be written two equivalent ways:</p>
+            <div class="math-block fol">
+                ∀x [Student(x) → ¬Professor(x)] &nbsp;&nbsp; — every student is not a professor<br>
+                ¬∃x [Student(x) ∧ Professor(x)] &nbsp;&nbsp; — there is no one who is both
+            </div>
+            <p>The handout uses the first form; either is accepted.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Translating English into FOL</h2>
+            <p>Most exam questions start with English sentences. These templates cover nearly all of them:</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>English pattern</th><th>FOL template</th><th>From the handout</th></tr></thead>
+                    <tbody>
+                        <tr><td>a is a P</td><td class="fol">P(a)</td><td class="fol">Student(Rahim)</td></tr>
+                        <tr><td>a is related to b</td><td class="fol">R(a, b)</td><td class="fol">Father(Ali, Rahim)</td></tr>
+                        <tr><td>All P are Q</td><td class="fol">∀x (P(x) → Q(x))</td><td class="fol">∀x (Human(x) → Mortal(x))</td></tr>
+                        <tr><td>Some P is Q</td><td class="fol">∃x (P(x) ∧ Q(x))</td><td>—</td></tr>
+                        <tr><td>No P is Q</td><td class="fol">∀x (P(x) → ¬Q(x))</td><td class="fol">∀x [Student(x) → ¬Professor(x)]</td></tr>
+                        <tr><td>Every P has some R</td><td class="fol">∀x (P(x) → ∃y R(x, y))</td><td class="fol">∀x [Student(x) → ∃y Studies(x, y)]</td></tr>
+                        <tr><td>If P and Q then R</td><td class="fol">∀x ((P(x) ∧ Q(x)) → R(x))</td><td class="fol">∀x [(Student(x) ∧ Studies(x, AI)) → AIStudent(x)]</td></tr>
+                        <tr><td>Every R-relation is an S-relation</td><td class="fol">∀x ∀y (R(y, x) → S(y, x))</td><td class="fol">∀x ∀y [Father(y, x) → Parent(y, x)]</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <ol>
+                <li>Pick the <strong>objects</strong> → constants (Rahim, Ali, AI).</li>
+                <li>Pick the <strong>properties and relations</strong> → predicates, and write what each one means.</li>
+                <li>Look for “all / every / any” → <span class="fol">∀</span> with <span class="fol">→</span>; “some / at least one / there is” → <span class="fol">∃</span> with <span class="fol">∧</span>; “no / none” → <span class="fol">∀</span> with <span class="fol">→ ¬</span>.</li>
+            </ol>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Reasoning: Universal Instantiation + Modus Ponens</h2>
+            <p>Almost every reasoning question in this course follows one pattern:</p>
+            <div class="math-block fol">
+                Rule: &nbsp; ∀x (P(x) → Q(x))<br>
+                Fact: &nbsp; P(a)<br>
+                Infer: &nbsp;Q(a)
+            </div>
+            <p>It is two steps glued together:</p>
+            <ol>
+                <li><strong>Universal Instantiation (UI)</strong> — a rule that is true <em>for all x</em> is true for any particular object, so substitute it: from <span class="fol">∀x (P(x) → Q(x))</span> get <span class="fol">P(a) → Q(a)</span> by putting <span class="fol">x = a</span>.</li>
+                <li><strong>Modus Ponens (MP)</strong> — from <span class="fol">P → Q</span> and <span class="fol">P</span>, conclude <span class="fol">Q</span>.</li>
+            </ol>
+            <div class="callout">
+                <p><strong>How to write it in the exam</strong> — four labelled lines:</p>
+                <div class="math-block"><div class="steps fol">
+                    <span class="lbl">Rule</span><span class="f">∀x (Student(x) → Intelligent(x))</span>
+                    <span class="lbl">Fact</span><span class="f">Student(Ali)</span>
+                    <span class="lbl">UI, x = Ali</span><span class="f">Student(Ali) → Intelligent(Ali)</span>
+                    <span class="lbl">MP</span><span class="f conclude">∴ Intelligent(Ali)</span>
+                </div></div>
+            </div>
+            <p><strong>Watch out:</strong> modus ponens only works <em>forwards</em>. From <span class="fol">∀x (Human(x) → Mortal(x))</span> and <span class="fol">Mortal(Tom)</span> you <strong>cannot</strong> conclude <span class="fol">Human(Tom)</span> — Tom could be a mortal cat.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Worked Problems from the Handout</h2>
+
+            <h3>Problem 1 — Socrates</h3>
+            <p>Fact: Socrates is a human. Rule: All humans are mortal.</p>
+            <div class="math-block">
+                <div class="steps fol">
+                    <span class="lbl">Fact</span><span class="f">Human(Socrates)</span>
+                    <span class="lbl">Rule</span><span class="f">∀x (Human(x) → Mortal(x))</span>
+                    <span class="lbl">UI, x = Socrates</span><span class="f">Human(Socrates) → Mortal(Socrates)</span>
+                    <span class="lbl">MP</span><span class="f conclude">∴ Mortal(Socrates)</span>
+                </div>
+            </div>
+            <p>“Socrates is mortal.”</p>
+
+            <h3>Problem 2 — Students and courses</h3>
+            <p>Rahim is a student. Every student studies at least one course. Therefore, Rahim studies a course.</p>
+            <p>Predicates: <span class="fol">Student(x)</span>: x is a student; <span class="fol">Studies(x, y)</span>: x studies course y.</p>
+            <div class="math-block">
+                <div class="steps fol">
+                    <span class="lbl">Fact</span><span class="f">Student(Rahim)</span>
+                    <span class="lbl">Rule</span><span class="f">∀x [Student(x) → ∃y Studies(x, y)]</span>
+                    <span class="lbl">UI, x = Rahim</span><span class="f">Student(Rahim) → ∃y Studies(Rahim, y)</span>
+                    <span class="lbl">Since</span><span class="f">Student(Rahim) = True</span>
+                    <span class="lbl">MP</span><span class="f conclude">∴ ∃y Studies(Rahim, y)</span>
+                </div>
+            </div>
+            <p><strong>Meaning:</strong> there exists at least one course that Rahim studies. Note the conclusion still has <span class="fol">∃y</span> — we know such a course exists, but the knowledge base never says <em>which</em> one, so we cannot name it.</p>
+
+            <h3>Problem 3 — Family relationship</h3>
+            <p>Everyone's father is a parent. Ali is Rahim's father.</p>
+            <p>Predicates: <span class="fol">Father(y, x)</span>: y is the father of x; <span class="fol">Parent(y, x)</span>: y is a parent of x.</p>
+            <div class="math-block">
+                <div class="steps fol">
+                    <span class="lbl">Rule</span><span class="f">∀x ∀y [Father(y, x) → Parent(y, x)]</span>
+                    <span class="lbl">Given</span><span class="f">Father(Ali, Rahim)</span>
+                    <span class="lbl">UI, y = Ali, x = Rahim</span><span class="f">Father(Ali, Rahim) → Parent(Ali, Rahim)</span>
+                    <span class="lbl">MP</span><span class="f conclude">∴ Parent(Ali, Rahim)</span>
+                </div>
+            </div>
+            <p>With two variables, instantiate <strong>both</strong>. Match by position: the first slot of <span class="fol">Father(y, x)</span> lines up with Ali, so y = Ali; the second with Rahim, so x = Rahim.</p>
+
+            <h3>Problem 4 — Using AND (∧)</h3>
+            <p>If a person is a student and studies AI, then the person is an AI student. Tanvir is a student and studies AI.</p>
+            <div class="math-block">
+                <div class="steps fol">
+                    <span class="lbl">Rule</span><span class="f">∀x [(Student(x) ∧ Studies(x, AI)) → AIStudent(x)]</span>
+                    <span class="lbl">Given</span><span class="f">Student(Tanvir), &nbsp;Studies(Tanvir, AI)</span>
+                    <span class="lbl">UI, x = Tanvir</span><span class="f">(Student(Tanvir) ∧ Studies(Tanvir, AI)) → AIStudent(Tanvir)</span>
+                    <span class="lbl">Since</span><span class="f">Student(Tanvir) ∧ Studies(Tanvir, AI) = True</span>
+                    <span class="lbl">MP</span><span class="f conclude">∴ AIStudent(Tanvir)</span>
+                </div>
+            </div>
+            <p>With <span class="fol">∧</span> in the “if” part, you must show <strong>every</strong> condition is true before firing the rule. Here <span class="fol">AI</span> is a constant (the course), not a variable.</p>
+
+            <h3>Problem 5 — Using NOT (¬)</h3>
+            <p>No student is a professor. Rahim is a student.</p>
+            <div class="math-block">
+                <div class="steps fol">
+                    <span class="lbl">Rule</span><span class="f">∀x [Student(x) → ¬Professor(x)]</span>
+                    <span class="lbl">Given</span><span class="f">Student(Rahim)</span>
+                    <span class="lbl">UI, x = Rahim</span><span class="f">Student(Rahim) → ¬Professor(Rahim)</span>
+                    <span class="lbl">MP</span><span class="f conclude">∴ ¬Professor(Rahim)</span>
+                </div>
+            </div>
+            <p>The AI can conclude that Rahim is <strong>not</strong> a professor. A negated conclusion is still an ordinary modus ponens step.</p>
+
+            <h3>Problem 6 — A typical AI reasoning problem</h3>
+            <p>Knowledge base:</p>
+            <div class="math-block fol">
+                Human(Ali)<br>
+                Human(Rahim)<br>
+                ∀x [Human(x) → Mortal(x)]
+            </div>
+            <p><strong>Question:</strong> Is Ali mortal?</p>
+            <div class="math-block">
+                <div class="steps fol">
+                    <span class="lbl">UI, x = Ali</span><span class="f">Human(Ali) → Mortal(Ali)</span>
+                    <span class="lbl">Since</span><span class="f">Human(Ali) = True</span>
+                    <span class="lbl">MP</span><span class="f conclude">∴ Mortal(Ali)</span>
+                </div>
+            </div>
+            <p>Yes, Ali is mortal. The same rule can be instantiated again for another object — similarly, <span class="fol">x = Rahim</span> gives <span class="fol">Mortal(Rahim)</span>. One universal rule, used as many times as needed.</p>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Applications</h2>
+            <ul>
+                <li><strong>Knowledge representation:</strong> represents objects, properties and relationships in a structured form for reasoning tasks.</li>
+                <li><strong>Automated theorem proving:</strong> applies logical rules to prove mathematical statements and verify system correctness.</li>
+                <li><strong>Natural language processing (NLP):</strong> helps convert natural language into logical representations for understanding and reasoning.</li>
+                <li><strong>Expert systems:</strong> encode domain knowledge to support decision-making, e.g. medical or legal assistants.</li>
+                <li><strong>Semantic web:</strong> defines relationships between web resources for better search and information retrieval.</li>
+            </ul>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Practice Questions</h2>
+            <p>Try each one on paper first, then open the answer.</p>
+
+            <div class="qpart"><p><b class="tag">1.</b> Translate into FOL: (a) All birds can fly. (b) Some students like AI. (c) No cat is a dog. (d) Every person has a mother. (e) Karim is a teacher and teaches AI.</p></div>
+            <details class="ans"><summary>Answer</summary>
+                <div class="math-block"><div class="steps fol">
+                    <span class="lbl">(a)</span><span class="f">∀x (Bird(x) → CanFly(x))</span>
+                    <span class="lbl">(b)</span><span class="f">∃x (Student(x) ∧ Likes(x, AI))</span>
+                    <span class="lbl">(c)</span><span class="f">∀x (Cat(x) → ¬Dog(x))</span>
+                    <span class="lbl">(d)</span><span class="f">∀x (Person(x) → ∃y Mother(y, x))</span>
+                    <span class="lbl">(e)</span><span class="f">Teacher(Karim) ∧ Teaches(Karim, AI)</span>
+                </div></div>
+                <p style="margin-top:0.8rem">In (d), <span class="fol">Mother(y, x)</span> means y is the mother of x. (b) uses <span class="fol">∧</span> because it starts with <span class="fol">∃</span>; (e) has no quantifier because it is about one named person.</p>
+            </details>
+
+            <div class="qpart"><p><b class="tag">2.</b> In <span class="fol">Brother(John, FatherOf(Bob))</span>, identify every constant, predicate and function, and say what the sentence means.</p></div>
+            <details class="ans"><summary>Answer</summary>
+                <ul>
+                    <li><strong>Constants:</strong> John, Bob</li>
+                    <li><strong>Predicate:</strong> Brother — true or false</li>
+                    <li><strong>Function:</strong> FatherOf — returns an object (Bob's father)</li>
+                </ul>
+                <p>Meaning: “John is the brother of Bob's father” — i.e. John is Bob's uncle.</p>
+            </details>
+
+            <div class="qpart"><p><b class="tag">3.</b> Knowledge base: if a student passes AI, the student graduates. Nadia is a student. Nadia passes AI. Write the KB in FOL and prove that Nadia graduates.</p></div>
+            <details class="ans"><summary>Answer</summary>
+                <div class="math-block"><div class="steps fol">
+                    <span class="lbl">Rule</span><span class="f">∀x [(Student(x) ∧ Passes(x, AI)) → Graduates(x)]</span>
+                    <span class="lbl">Facts</span><span class="f">Student(Nadia), &nbsp;Passes(Nadia, AI)</span>
+                    <span class="lbl">UI, x = Nadia</span><span class="f">(Student(Nadia) ∧ Passes(Nadia, AI)) → Graduates(Nadia)</span>
+                    <span class="lbl">Since</span><span class="f">Student(Nadia) ∧ Passes(Nadia, AI) = True</span>
+                    <span class="lbl">MP</span><span class="f conclude">∴ Graduates(Nadia)</span>
+                </div></div>
+            </details>
+
+            <div class="qpart"><p><b class="tag">4.</b> Knowledge base: <span class="fol">∀x (Bird(x) → HasWings(x))</span>, <span class="fol">∀x (HasWings(x) → CanFly(x))</span>, <span class="fol">Bird(Tweety)</span>. Prove <span class="fol">CanFly(Tweety)</span>.</p></div>
+            <details class="ans"><summary>Answer</summary>
+                <p>Apply the pattern twice — the conclusion of the first step is the fact for the second.</p>
+                <div class="math-block"><div class="steps fol">
+                    <span class="lbl">UI, x = Tweety</span><span class="f">Bird(Tweety) → HasWings(Tweety)</span>
+                    <span class="lbl">MP</span><span class="f">HasWings(Tweety)</span>
+                    <span class="lbl">UI, x = Tweety</span><span class="f">HasWings(Tweety) → CanFly(Tweety)</span>
+                    <span class="lbl">MP</span><span class="f conclude">∴ CanFly(Tweety)</span>
+                </div></div>
+            </details>
+
+            <div class="qpart"><p><b class="tag">5.</b> Knowledge base: <span class="fol">∀x (Human(x) → Mortal(x))</span> and <span class="fol">Mortal(Tom)</span>. Can the AI conclude <span class="fol">Human(Tom)</span>? Explain.</p></div>
+            <details class="ans"><summary>Answer</summary>
+                <p><strong>No.</strong> The rule only says humans are mortal; it does not say that only humans are mortal. Modus ponens needs the <em>“if” part</em> (<span class="fol">Human(Tom)</span>) to be known, and here we only know the <em>“then” part</em>. Reasoning backwards like this is a fallacy (affirming the consequent) — Tom could be a mortal animal.</p>
+            </details>
+
+            <div class="qpart"><p><b class="tag">6.</b> Explain the difference between <span class="fol">∀x ∃y Loves(x, y)</span> and <span class="fol">∃y ∀x Loves(x, y)</span>.</p></div>
+            <details class="ans"><summary>Answer</summary>
+                <ul>
+                    <li><span class="fol">∀x ∃y Loves(x, y)</span>: everyone loves <em>somebody</em> — each person may love a different person.</li>
+                    <li><span class="fol">∃y ∀x Loves(x, y)</span>: there is <em>one particular person</em> whom everyone loves.</li>
+                </ul>
+                <p>The second is a much stronger claim. Changing the order of different quantifiers changes the meaning.</p>
+            </details>
+        </section>
+
+        <section class="glass-panel">
+            <h2>Exam Checklist</h2>
+            <ul>
+                <li>Define FOL: predicate logic — a knowledge representation tool for <strong>objects, properties, relationships and rules</strong> that lets AI reason from known facts.</li>
+                <li>Name the six core components — constants, variables, predicates, functions, quantifiers, connectives — with an example of each.</li>
+                <li>Know that a <strong>predicate</strong> is true/false while a <strong>function</strong> returns an object.</li>
+                <li><span class="fol">∀</span> goes with <span class="fol">→</span>; <span class="fol">∃</span> goes with <span class="fol">∧</span>; “no P is Q” is <span class="fol">∀x (P(x) → ¬Q(x))</span>.</li>
+                <li>State what each predicate's arguments mean, especially the order in two-argument predicates.</li>
+                <li>For inference, write <strong>Rule → Fact → UI (x = a) → MP → ∴ conclusion</strong>, one line each.</li>
+                <li>With <span class="fol">∧</span> in the “if” part, show every condition is true before concluding.</li>
+                <li>Modus ponens only goes forwards: knowing Q does not give you P.</li>
+                <li>List the applications: knowledge representation, theorem proving, NLP, expert systems, semantic web.</li>
+            </ul>
+        </section>
+    </div>
+</body>
+</html>
