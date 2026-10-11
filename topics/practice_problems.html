@@ -211,8 +211,93 @@ P(goal = Yes | Sports) = 4/8      P(goal = No | Sports) = 4/8      sum = 8/8 = 1
 <p class="check">✓ The denominator for P(x|c) is the class total + 2 (6 + 2 = 8, 5 + 2 = 7), never 11 + 2.</p>
 </details>
 </section>
+<section class="glass-panel"><h2>P2. Martial arts tournament (Laplace k = 2)</h2>
+<figure class="qshot"><img src="img/practice/p05.png" width="952" height="683" alt="Question: 10 fighters with Race, Power Level and Transformation labelled Win or Lose; classify a Namekian, Medium power, transformed fighter with Naive Bayes and Laplace smoothing k = 2, and explain how smoothing helps if no winner were Namekian" loading="lazy"></figure>
+<details class="ans"><summary>Solution</summary>
+<p><strong>Ans:</strong></p>
+<div class="paper">Let,  c<sub>1</sub> = Win
+      c<sub>2</sub> = Lose
+
+      x<sub>1</sub> = Race = Namekian
+      x<sub>2</sub> = Power Level = Medium
+      x<sub>3</sub> = Transformation = Yes</div>
+<p>From the table: Win = 6 fighters (IDs 1, 2, 3, 5, 8, 10), Lose = 4 fighters (IDs 4, 6, 7, 9), total = 10.</p>
+
+<h3>Step 1 — Without Laplacian correction (check whether it is needed)</h3>
+<div class="paper">P(c<sub>1</sub>) = 6/10                       P(c<sub>2</sub>) = 4/10
+
+P(x<sub>1</sub>|c<sub>1</sub>) = 2/6                      P(x<sub>1</sub>|c<sub>2</sub>) = 1/4
+P(x<sub>2</sub>|c<sub>1</sub>) = 3/6                      P(x<sub>2</sub>|c<sub>2</sub>) = 2/4
+P(x<sub>3</sub>|c<sub>1</sub>) = 3/6                      P(x<sub>3</sub>|c<sub>2</sub>) = 1/4</div>
+<div class="paper">∴ P(c<sub>1</sub>|X) = P(X|c<sub>1</sub>) P(c<sub>1</sub>) / P(X)
+
+            ≅ P(X|c<sub>1</sub>) P(c<sub>1</sub>)
+
+            = P(x<sub>1</sub> x<sub>2</sub> x<sub>3</sub> | c<sub>1</sub>) P(c<sub>1</sub>)            ; [Here X = x<sub>1</sub> x<sub>2</sub> x<sub>3</sub>]
+
+            = P(x<sub>1</sub>|c<sub>1</sub>) P(x<sub>2</sub>|c<sub>1</sub>) P(x<sub>3</sub>|c<sub>1</sub>) P(c<sub>1</sub>)
+
+            = 2/6 * 3/6 * 3/6 * 6/10
+
+            = <b>0.05</b>
+
+
+∴ P(c<sub>2</sub>|X) ≅ P(X|c<sub>2</sub>) P(c<sub>2</sub>)
+
+            = P(x<sub>1</sub>|c<sub>2</sub>) P(x<sub>2</sub>|c<sub>2</sub>) P(x<sub>3</sub>|c<sub>2</sub>) P(c<sub>2</sub>)
+
+            = 1/4 * 2/4 * 1/4 * 4/10
+
+            = <b>0.0125</b></div>
+<p>No conditional probability is 0, so <strong>Laplacian correction is not needed</strong> to get an answer:</p>
+<div class="paper">∴ Max{ P(c<sub>1</sub>|X) , P(c<sub>2</sub>|X) } = max( 0.05 , 0.0125 ) = 0.05   →  Win</div>
+
+<h3>Step 2 — With Laplacian smoothing (k = 2), as the question asks</h3>
+<div class="paper">P(y)     = ( c(y) + k ) / ( N + k·|classes| )
+P(x | y) = ( c(x,y) + k ) / ( c(y) + k·|values of that attribute| )
+
+k = 2   |classes| = 2   |Race| = 3   |Power Level| = 3   |Transformation| = 2</div>
+<div class="paper">P(c<sub>1</sub>) = (6 + 2) / (10 + 2×2) = <b>8/14</b>          P(c<sub>2</sub>) = (4 + 2) / (10 + 2×2) = <b>6/14</b>
+
+P(x<sub>1</sub>|c<sub>1</sub>) = (2+2) / (6+2×3) = 4/12            P(x<sub>1</sub>|c<sub>2</sub>) = (1+2) / (4+2×3) = 3/10
+P(x<sub>2</sub>|c<sub>1</sub>) = (3+2) / (6+2×3) = 5/12            P(x<sub>2</sub>|c<sub>2</sub>) = (2+2) / (4+2×3) = 4/10
+P(x<sub>3</sub>|c<sub>1</sub>) = (3+2) / (6+2×2) = 5/10            P(x<sub>3</sub>|c<sub>2</sub>) = (1+2) / (4+2×2) = 3/8</div>
+<div class="paper">∴ P(c<sub>1</sub>|X) ≅ P(X|c<sub>1</sub>) P(c<sub>1</sub>)
+
+            = P(x<sub>1</sub>|c<sub>1</sub>) P(x<sub>2</sub>|c<sub>1</sub>) P(x<sub>3</sub>|c<sub>1</sub>) P(c<sub>1</sub>)
+
+            = 4/12 * 5/12 * 5/10 * 8/14
+
+            = <b>0.0397</b>
+
+
+∴ P(c<sub>2</sub>|X) ≅ P(X|c<sub>2</sub>) P(c<sub>2</sub>)
+
+            = P(x<sub>1</sub>|c<sub>2</sub>) P(x<sub>2</sub>|c<sub>2</sub>) P(x<sub>3</sub>|c<sub>2</sub>) P(c<sub>2</sub>)
+
+            = 3/10 * 4/10 * 3/8 * 6/14
+
+            = <b>0.0193</b></div>
+<div class="paper">∴ Max{ P(c<sub>1</sub>|X) , P(c<sub>2</sub>|X) } ≅ max{ P(X|c<sub>1</sub>) P(c<sub>1</sub>) , P(X|c<sub>2</sub>) P(c<sub>2</sub>) }
+
+                         = max( 0.0397 , 0.0193 )
+
+                         = <b>0.0397</b></div>
+<div class="final">∴ Prediction: The Namekian fighter (Medium power, transformed) is more likely to Win. &nbsp;Ans.</div>
+<p class="check">✓ Both methods agree. Normalized, Win is 0.05 / 0.0625 = 80% without smoothing and 0.0397 / 0.0590 ≈ 67% with k = 2 — smoothing pulls the estimate toward 50/50 but does not change the decision.</p>
+<p class="check">✓ The question gives k = 2, so the k = 2 calculation is the one that earns the marks; Step 1 only shows that a zero count would not have blocked the plain version.</p>
+<p class="check">✓ Watch the bottoms: Race and Power Level have 3 values (+2×3 = +6), Transformation has 2 values (+2×2 = +4), and the prior has 2 classes (+4).</p>
+
+<h3>b) If no winning fighter were Namekian</h3>
+<div class="paper">Without smoothing:  P(Namekian | Win) = 0/6 = 0
+                    ⇒ P(Win | X) ∝ 0 × (anything) = 0
+
+With k = 2:         P(Namekian | Win) = (0 + 2) / (6 + 2×3) = 2/12 ≈ 0.167</div>
+<p>Without smoothing, one zero count makes the whole Win product 0, so every new Namekian fighter would be predicted to Lose — no matter how strong their power level or transformation evidence. Laplacian smoothing adds k to every count, so an unseen combination gets a small non-zero probability instead of 0. The other attributes can then still influence the result, and the classifier avoids being overconfident from limited training data.</p>
+</details>
+</section>
 <h2 class="part" id="csp">Constraint Satisfaction Problems</h2>
-<section class="glass-panel"><h2>P2. Presentation rooms (MRV + LCV)</h2>
+<section class="glass-panel"><h2>P3. Presentation rooms (MRV + LCV)</h2>
 <figure class="qshot"><img src="img/practice/p02.png" width="910" height="419" alt="Question: assign six student groups G1 to G6 to four rooms R1 to R4 under six constraints; model as a CSP, solve with MRV and LCV, and explain the MRV heuristic" loading="lazy"></figure>
 <details class="ans"><summary>Solution</summary>
 <h3>1 (i) Modelling as a CSP</h3><ul><li><strong>Variables:</strong> G1, G2, G3, G4, G5, G6 (the room of each group)</li><li><strong>Domain:</strong> D = {R1, R2, R3, R4} for every variable</li><li><strong>Constraints:</strong><ul><li>G1 ≠ R1 <span class="dim">(unary)</span></li><li>G2 ≠ R4 <span class="dim">(unary)</span></li><li>G3 ≠ G1</li><li>G4 ≠ G2</li><li>G5 ≠ G2 and G5 ≠ R3 <span class="dim">(unary)</span></li><li>G6 = G2</li></ul></li></ul><p><strong>Constraint graph</strong> (unary constraints written beside their node):</p><div class="chart-wrap"><svg class="mf-chart diagram g" viewBox="0 0 580 265" role="img" aria-label="Constraint graph: G1 differs from G3; G2 differs from G4 and G5; G6 equals G2">
@@ -239,10 +324,10 @@ P(goal = Yes | Sports) = 4/8      P(goal = No | Sports) = 4/8      sum = 8/8 = 1
 <text class="g-note" x="90" y="38" text-anchor="middle">G1 ≠ R1</text>
 <text class="g-note" x="300" y="103" text-anchor="middle">G2 ≠ R4</text>
 <text class="g-note" x="540" y="165" text-anchor="middle">G5 ≠ R3</text>
-</svg></div><h3>Domain reduction from the unary constraints</h3><p>Apply the one-variable constraints before searching (node consistency):</p><div class="table-wrap"><table><thead><tr><th>Variable</th><th>Initial domain</th><th>Unary constraint</th><th>Reduced domain</th></tr></thead><tbody><tr><th>G1</th><td>{R1, R2, R3, R4}</td><td>G1 ≠ R1</td><td>{R2, R3, R4}</td></tr><tr><th>G2</th><td>{R1, R2, R3, R4}</td><td>G2 ≠ R4</td><td>{R1, R2, R3}</td></tr><tr><th>G3</th><td>{R1, R2, R3, R4}</td><td>—</td><td>{R1, R2, R3, R4}</td></tr><tr><th>G4</th><td>{R1, R2, R3, R4}</td><td>—</td><td>{R1, R2, R3, R4}</td></tr><tr><th>G5</th><td>{R1, R2, R3, R4}</td><td>G5 ≠ R3</td><td>{R1, R2, R4}</td></tr><tr><th>G6</th><td>{R1, R2, R3, R4}</td><td>—</td><td>{R1, R2, R3, R4}</td></tr></tbody></table></div><h3>1 (ii) Solving with MRV + LCV</h3><p>Convention: forward checking after each assignment; MRV picks the variable with the fewest remaining values; a tie is broken by the degree heuristic (most constraints on unassigned variables), then by the lower group number; LCV picks the value that removes the fewest values from neighbouring domains; a remaining tie takes the lowest room number.</p><p><strong>Trace</strong> (forward checking after every assignment; assigned values in bold):</p><div class="table-wrap"><table class=trace><thead><tr><th>Step</th><th>G1</th><th>G2</th><th>G3</th><th>G4</th><th>G5</th><th>G6</th></tr></thead><tbody><tr><td>After unary</td><td>R2, R3, R4</td><td>R1, R2, R3</td><td>R1, R2, R3, R4</td><td>R1, R2, R3, R4</td><td>R1, R2, R4</td><td>R1, R2, R3, R4</td></tr><tr><td>1. G2 = R3</td><td>R2, R3, R4</td><td><strong>R3</strong></td><td>R1, R2, R3, R4</td><td>R1, R2, R4</td><td>R1, R2, R4</td><td>R3</td></tr><tr><td>2. G6 = R3</td><td>R2, R3, R4</td><td><span class="done">R3</span></td><td>R1, R2, R3, R4</td><td>R1, R2, R4</td><td>R1, R2, R4</td><td><strong>R3</strong></td></tr><tr><td>3. G1 = R2</td><td><strong>R2</strong></td><td><span class="done">R3</span></td><td>R1, R3, R4</td><td>R1, R2, R4</td><td>R1, R2, R4</td><td><span class="done">R3</span></td></tr><tr><td>4. G3 = R1</td><td><span class="done">R2</span></td><td><span class="done">R3</span></td><td><strong>R1</strong></td><td>R1, R2, R4</td><td>R1, R2, R4</td><td><span class="done">R3</span></td></tr><tr><td>5. G4 = R1</td><td><span class="done">R2</span></td><td><span class="done">R3</span></td><td><span class="done">R1</span></td><td><strong>R1</strong></td><td>R1, R2, R4</td><td><span class="done">R3</span></td></tr><tr><td>6. G5 = R1</td><td><span class="done">R2</span></td><td><span class="done">R3</span></td><td><span class="done">R1</span></td><td><span class="done">R1</span></td><td><strong>R1</strong></td><td><span class="done">R3</span></td></tr></tbody></table></div><ol class="steps"><li><strong>MRV</strong>: tie between G1, G2, G5 (3 values each). <strong>Degree</strong> tie-break: G2 has the most constraints on unassigned variables (3). <strong>LCV</strong>: R1 rules out 5, R2 rules out 5, R3 rules out 4 → least constraining is R3: <strong>G2 = R3</strong>.</li><li><strong>MRV</strong>: G6 has the fewest remaining value (1). Only R3 is left → <strong>G6 = R3</strong>.</li><li><strong>MRV</strong>: tie between G1, G4, G5 (3 values each). <strong>Degree</strong> tie-break: G1 has the most constraints on unassigned variables (1). <strong>LCV</strong>: R2 rules out 1, R3 rules out 1, R4 rules out 1 → tie, take R2: <strong>G1 = R2</strong>.</li><li><strong>MRV</strong>: tie between G3, G4, G5 (3 values each). <strong>Degree</strong> tie-break: still tied (0 each) → pick G3. <strong>LCV</strong>: R1 rules out 0, R3 rules out 0, R4 rules out 0 → tie, take R1: <strong>G3 = R1</strong>.</li><li><strong>MRV</strong>: tie between G4, G5 (3 values each). <strong>Degree</strong> tie-break: still tied (0 each) → pick G4. <strong>LCV</strong>: R1 rules out 0, R2 rules out 0, R4 rules out 0 → tie, take R1: <strong>G4 = R1</strong>.</li><li><strong>MRV</strong>: G5 has the fewest remaining values (3). <strong>LCV</strong>: R1 rules out 0, R2 rules out 0, R4 rules out 0 → tie, take R1: <strong>G5 = R1</strong>.</li></ol><div class="final">G1 = R2, G2 = R3, G3 = R1, G4 = R1, G5 = R1, G6 = R3</div><p class="check">✓ Step 1 is the key LCV decision: R1 and R2 would each remove a value from both G4 and G5, but R3 removes nothing from G5 because G5 already cannot use R3 — so R3 is least constraining (4 removals instead of 5).</p><p class="check">✓ Check: G1 ≠ R1 ✓, G2 ≠ R4 ✓, G3 (R1) ≠ G1 (R2) ✓, G4 (R1) ≠ G2 (R3) ✓, G5 (R1) ≠ G2 and ≠ R3 ✓, G6 = G2 = R3 ✓. Several groups sharing R1 is allowed, because presentations happen at different times.</p><h3>2. What is the MRV heuristic?</h3><p><strong>Minimum Remaining Values (MRV)</strong> is a variable-ordering heuristic for backtracking search: at each step, choose the unassigned variable that has the <strong>fewest legal values left</strong> in its domain. It is also called the "most constrained variable" or "fail-first" heuristic.</p><ul><li><strong>Why:</strong> if a variable is going to fail, MRV makes it fail now, near the top of the search tree, instead of after many other assignments — this prunes large parts of the tree and avoids wasted backtracking.</li><li><strong>Ties</strong> are usually broken with the <strong>degree heuristic</strong> (the variable involved in the most constraints on unassigned variables).</li><li>MRV chooses <em>which variable</em> to assign; LCV then chooses <em>which value</em> to try first.</li></ul><p><strong>Example</strong> (Australia map colouring, colours {R, G, B}): after WA = Red and NT = Green, forward checking leaves SA with only {Blue}, while Q, NSW and V still have two or three colours. MRV picks <strong>SA</strong> next, because it has just 1 remaining value. In P2 above, the same thing happens in step 2: once G2 = R3, G6 is left with only {R3}, so MRV assigns G6 immediately.</p>
+</svg></div><h3>Domain reduction from the unary constraints</h3><p>Apply the one-variable constraints before searching (node consistency):</p><div class="table-wrap"><table><thead><tr><th>Variable</th><th>Initial domain</th><th>Unary constraint</th><th>Reduced domain</th></tr></thead><tbody><tr><th>G1</th><td>{R1, R2, R3, R4}</td><td>G1 ≠ R1</td><td>{R2, R3, R4}</td></tr><tr><th>G2</th><td>{R1, R2, R3, R4}</td><td>G2 ≠ R4</td><td>{R1, R2, R3}</td></tr><tr><th>G3</th><td>{R1, R2, R3, R4}</td><td>—</td><td>{R1, R2, R3, R4}</td></tr><tr><th>G4</th><td>{R1, R2, R3, R4}</td><td>—</td><td>{R1, R2, R3, R4}</td></tr><tr><th>G5</th><td>{R1, R2, R3, R4}</td><td>G5 ≠ R3</td><td>{R1, R2, R4}</td></tr><tr><th>G6</th><td>{R1, R2, R3, R4}</td><td>—</td><td>{R1, R2, R3, R4}</td></tr></tbody></table></div><h3>1 (ii) Solving with MRV + LCV</h3><p>Convention: forward checking after each assignment; MRV picks the variable with the fewest remaining values; a tie is broken by the degree heuristic (most constraints on unassigned variables), then by the lower group number; LCV picks the value that removes the fewest values from neighbouring domains; a remaining tie takes the lowest room number.</p><p><strong>Trace</strong> (forward checking after every assignment; assigned values in bold):</p><div class="table-wrap"><table class=trace><thead><tr><th>Step</th><th>G1</th><th>G2</th><th>G3</th><th>G4</th><th>G5</th><th>G6</th></tr></thead><tbody><tr><td>After unary</td><td>R2, R3, R4</td><td>R1, R2, R3</td><td>R1, R2, R3, R4</td><td>R1, R2, R3, R4</td><td>R1, R2, R4</td><td>R1, R2, R3, R4</td></tr><tr><td>1. G2 = R3</td><td>R2, R3, R4</td><td><strong>R3</strong></td><td>R1, R2, R3, R4</td><td>R1, R2, R4</td><td>R1, R2, R4</td><td>R3</td></tr><tr><td>2. G6 = R3</td><td>R2, R3, R4</td><td><span class="done">R3</span></td><td>R1, R2, R3, R4</td><td>R1, R2, R4</td><td>R1, R2, R4</td><td><strong>R3</strong></td></tr><tr><td>3. G1 = R2</td><td><strong>R2</strong></td><td><span class="done">R3</span></td><td>R1, R3, R4</td><td>R1, R2, R4</td><td>R1, R2, R4</td><td><span class="done">R3</span></td></tr><tr><td>4. G3 = R1</td><td><span class="done">R2</span></td><td><span class="done">R3</span></td><td><strong>R1</strong></td><td>R1, R2, R4</td><td>R1, R2, R4</td><td><span class="done">R3</span></td></tr><tr><td>5. G4 = R1</td><td><span class="done">R2</span></td><td><span class="done">R3</span></td><td><span class="done">R1</span></td><td><strong>R1</strong></td><td>R1, R2, R4</td><td><span class="done">R3</span></td></tr><tr><td>6. G5 = R1</td><td><span class="done">R2</span></td><td><span class="done">R3</span></td><td><span class="done">R1</span></td><td><span class="done">R1</span></td><td><strong>R1</strong></td><td><span class="done">R3</span></td></tr></tbody></table></div><ol class="steps"><li><strong>MRV</strong>: tie between G1, G2, G5 (3 values each). <strong>Degree</strong> tie-break: G2 has the most constraints on unassigned variables (3). <strong>LCV</strong>: R1 rules out 5, R2 rules out 5, R3 rules out 4 → least constraining is R3: <strong>G2 = R3</strong>.</li><li><strong>MRV</strong>: G6 has the fewest remaining value (1). Only R3 is left → <strong>G6 = R3</strong>.</li><li><strong>MRV</strong>: tie between G1, G4, G5 (3 values each). <strong>Degree</strong> tie-break: G1 has the most constraints on unassigned variables (1). <strong>LCV</strong>: R2 rules out 1, R3 rules out 1, R4 rules out 1 → tie, take R2: <strong>G1 = R2</strong>.</li><li><strong>MRV</strong>: tie between G3, G4, G5 (3 values each). <strong>Degree</strong> tie-break: still tied (0 each) → pick G3. <strong>LCV</strong>: R1 rules out 0, R3 rules out 0, R4 rules out 0 → tie, take R1: <strong>G3 = R1</strong>.</li><li><strong>MRV</strong>: tie between G4, G5 (3 values each). <strong>Degree</strong> tie-break: still tied (0 each) → pick G4. <strong>LCV</strong>: R1 rules out 0, R2 rules out 0, R4 rules out 0 → tie, take R1: <strong>G4 = R1</strong>.</li><li><strong>MRV</strong>: G5 has the fewest remaining values (3). <strong>LCV</strong>: R1 rules out 0, R2 rules out 0, R4 rules out 0 → tie, take R1: <strong>G5 = R1</strong>.</li></ol><div class="final">G1 = R2, G2 = R3, G3 = R1, G4 = R1, G5 = R1, G6 = R3</div><p class="check">✓ Step 1 is the key LCV decision: R1 and R2 would each remove a value from both G4 and G5, but R3 removes nothing from G5 because G5 already cannot use R3 — so R3 is least constraining (4 removals instead of 5).</p><p class="check">✓ Check: G1 ≠ R1 ✓, G2 ≠ R4 ✓, G3 (R1) ≠ G1 (R2) ✓, G4 (R1) ≠ G2 (R3) ✓, G5 (R1) ≠ G2 and ≠ R3 ✓, G6 = G2 = R3 ✓. Several groups sharing R1 is allowed, because presentations happen at different times.</p><h3>2. What is the MRV heuristic?</h3><p><strong>Minimum Remaining Values (MRV)</strong> is a variable-ordering heuristic for backtracking search: at each step, choose the unassigned variable that has the <strong>fewest legal values left</strong> in its domain. It is also called the "most constrained variable" or "fail-first" heuristic.</p><ul><li><strong>Why:</strong> if a variable is going to fail, MRV makes it fail now, near the top of the search tree, instead of after many other assignments — this prunes large parts of the tree and avoids wasted backtracking.</li><li><strong>Ties</strong> are usually broken with the <strong>degree heuristic</strong> (the variable involved in the most constraints on unassigned variables).</li><li>MRV chooses <em>which variable</em> to assign; LCV then chooses <em>which value</em> to try first.</li></ul><p><strong>Example</strong> (Australia map colouring, colours {R, G, B}): after WA = Red and NT = Green, forward checking leaves SA with only {Blue}, while Q, NSW and V still have two or three colours. MRV picks <strong>SA</strong> next, because it has just 1 remaining value. In P3 above, the same thing happens in step 2: once G2 = R3, G6 is left with only {R3}, so MRV assigns G6 immediately.</p>
 </details>
 </section>
-<section class="glass-panel"><h2>P3. Exam timetable (MRV + LCV)</h2>
+<section class="glass-panel"><h2>P4. Exam timetable (MRV + LCV)</h2>
 <figure class="qshot"><img src="img/practice/p03.png" width="926" height="507" alt="Question: schedule five courses DS, AL, DB, AI, CN into four exam time slots T1 to T4 under eight constraints, formulated as a CSP and solved with MRV and LCV" loading="lazy"></figure>
 <details class="ans"><summary>Solution</summary>
 <h3>Formulation</h3><ul><li><strong>Variables:</strong> DS, AL, DB, AI, CN (the time slot of each course)</li><li><strong>Domain:</strong> D = {T1, T2, T3, T4} for every variable (Day 1 = T1, T2; Day 2 = T3, T4)</li><li><strong>Constraints:</strong><ol><li>DS ≠ AL</li><li>AL ≠ AI</li><li>CN &lt; DB (CN is scheduled before DB)</li><li>AI ≠ T1 <span class="dim">(unary)</span></li><li>CN ∈ {T3, T4} <span class="dim">(unary)</span></li><li>Day(DS) = Day(DB), i.e. both in {T1, T2} or both in {T3, T4}</li><li>At most two courses in any one slot <span class="dim">(global constraint over all five variables)</span></li><li>If AL = T2 then CN = T4</li></ol></li></ul><p><strong>Constraint graph</strong> (binary constraints as edges, unary ones beside their node; constraint 7 involves every course, so it is checked whenever a slot already holds two courses):</p><div class="chart-wrap"><svg class="mf-chart diagram g" viewBox="0 0 590 290" role="img" aria-label="Constraint graph: DS differs from AL, AL differs from AI, DS same day as DB, CN before DB, AL equals T2 implies CN equals T4">
@@ -285,7 +370,7 @@ Tie → take the earlier slot: <strong>DS = T3</strong>.</li>
 </ol><h3>Final schedule</h3><div class="table-wrap"><table><thead><tr><th>Slot</th><th>Day</th><th>Courses</th></tr></thead><tbody><tr><td>T1</td><td>Day 1</td><td>AL</td></tr><tr><td>T2</td><td>Day 1</td><td>AI</td></tr><tr><td>T3</td><td>Day 2</td><td>CN, DS</td></tr><tr><td>T4</td><td>Day 2</td><td>DB</td></tr></tbody></table></div><div class="final">DS = T3, AL = T1, DB = T4, AI = T2, CN = T3</div><p class="check">✓ Check: DS ≠ AL (T3 ≠ T1) ✓ · AL ≠ AI (T1 ≠ T2) ✓ · CN before DB (T3 &lt; T4) ✓ · AI ≠ T1 ✓ · CN ∈ {T3, T4} ✓ · DS and DB both on Day 2 ✓ · no slot has more than two courses (T3 has exactly two) ✓ · AL is not T2, so the last rule is not triggered ✓</p><p class="check">✓ Step 1 shows why forward checking matters with LCV: CN = T4 empties DB's domain, so it is rejected straight away rather than being explored and backtracked.</p><p class="check">✓ This is one of 6 valid schedules; MRV + LCV reaches it with no backtracking. If your tie-breaks differ (e.g. DS = T4 in step 3), you reach a different valid schedule — state the tie-break rule you used.</p>
 </details>
 </section>
-<section class="glass-panel"><h2>P4. Library study rooms (MRV + LCV)</h2>
+<section class="glass-panel"><h2>P5. Library study rooms (MRV + LCV)</h2>
 <figure class="qshot"><img src="img/practice/p04.png" width="921" height="440" alt="Question: assign six students Imran, Bushra, Kamal, Nusrat, Rafi and Tahsin to four study rooms R1 to R4 under nine constraints, formulated as a CSP and solved with MRV and LCV" loading="lazy"></figure>
 <details class="ans"><summary>Solution</summary>
 <h3>Formulation</h3><ul><li><strong>Variables:</strong> I, B, K, N, R, T (the room of Imran, Bushra, Kamal, Nusrat, Rafi, Tahsin)</li><li><strong>Domain:</strong> D = {R1, R2, R3, R4} for every variable</li><li><strong>Constraints:</strong><ol class="roman"><li>I ≠ R4 <span class="dim">(unary)</span></li><li>B = K</li><li>N ∈ {R1, R2} <span class="dim">(unary)</span></li><li>R ≠ T</li><li>T = I</li><li>At most two students in R3 <span class="dim">(global constraint over all six variables)</span></li><li>I ≠ B</li><li>T ≠ R2 <span class="dim">(unary)</span></li><li>R = R4 <span class="dim">(unary)</span></li></ol></li></ul><p><strong>Constraint graph</strong> (binary constraints as edges, unary ones beside their node; constraint vi involves every student and only matters once R3 already holds two people):</p><div class="chart-wrap"><svg class="mf-chart diagram g" viewBox="0 0 600 280" role="img" aria-label="Constraint graph: Imran differs from Bushra, Bushra equals Kamal, Tahsin equals Imran, Rafi differs from Tahsin; Nusrat has only unary constraints">
