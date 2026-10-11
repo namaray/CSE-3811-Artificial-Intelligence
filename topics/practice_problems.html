@@ -61,6 +61,9 @@
             border-radius: 8px; padding: 0.8rem 1rem; margin: 0.6rem 0 1rem; color: var(--text);
         }
         .paper b { color: var(--heading); }
+        .callout.why { margin: 1.25rem 0 1.5rem; }
+        .callout.why .paper { margin: 0.5rem 0 0.9rem; }
+        .callout.why ul { margin-bottom: 0; }
         .dim { color: var(--text-muted); font-size: 0.88em; }
 
         h2.part { margin: 2.75rem 0 1.25rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--border-strong); }
@@ -141,6 +144,28 @@ P(x<sub>4</sub>|c<sub>1</sub>) = (3+1)/8 = 4/8          P(x<sub>4</sub>|c<sub>2<
 P(x<sub>5</sub>|c<sub>1</sub>) = (2+1)/8 = 3/8          P(x<sub>5</sub>|c<sub>2</sub>) = (4+1)/7 = 5/7
 P(x<sub>6</sub>|c<sub>1</sub>) = (4+1)/8 = 5/8          P(x<sub>6</sub>|c<sub>2</sub>) = (3+1)/7 = 4/7
 P(x<sub>7</sub>|c<sub>1</sub>) = (4+1)/8 = 5/8          P(x<sub>7</sub>|c<sub>2</sub>) = (1+1)/7 = 2/7</div>
+
+<div class="callout why">
+<p><strong>Why 8 and 7?</strong> Smoothing adds k to the count of <em>every</em> option of the attribute, not only the one being asked about. goal can be Yes or No, so both get +1 and the class total grows by 2:</p>
+<div class="paper">                  Raw     Smoothed
+goal = Yes         3   →   3 + 1 = 4
+goal = No          3   →   3 + 1 = 4
+Sports total       6   →   6 + 2 = <b>8</b>     (both options got +1)
+
+P(goal = Yes | Sports) = 4/8      P(goal = No | Sports) = 4/8      sum = 8/8 = 1 ✓</div>
+<p>Informatics has 5 documents, so its bottom is 5 + 2 = <strong>7</strong>. Using 6 + 1 = 7 instead would give 4/7 + 4/7 = 8/7 &gt; 1, which is impossible.</p>
+<p><strong>Rule: +k on top, +k × (number of options) on the bottom.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Attribute</th><th>Options</th><th>Top</th><th>Bottom</th></tr></thead><tbody>
+<tr><td>goal (Yes / No)</td><td>2</td><td>count + 1</td><td>class count + 2</td></tr>
+<tr><td>Age (youth / middle / senior)</td><td>3</td><td>count + 1</td><td>class count + 3</td></tr>
+<tr><td>Weather (sunny / windy / rain / snowy)</td><td>4</td><td>count + 1</td><td>class count + 4</td></tr>
+</tbody></table></div>
+<ul>
+<li><strong>Start from the raw class count</strong> (Sports 6, Informatics 5), not from the prior's numerator. Here 7 + 1 = 8 only by coincidence; with a 3-option attribute the bottom is 6 + 3 = 9, and with k = 2 it is 6 + 2×2 = 10.</li>
+<li><strong>Prior vs likelihood:</strong> the prior's +2 (11 + 2 = 13) counts the <em>classes</em>; the likelihood's +2 (6 + 2 = 8) counts the <em>options of the word</em>. They are both 2 here only because there are 2 classes and every word is Yes/No.</li>
+<li><strong>When k is given, smooth from the very start</strong> — priors and every conditional, for every class, even if no count is zero. Only when no k is given do you work with raw counts first and apply the "Laplacian correction" if a zero appears, as in the handwritten notes.</li>
+</ul>
+</div>
 
 <h3>For c<sub>1</sub> (Sports)</h3>
 <div class="paper">∴ P(c<sub>1</sub>|X) = P(X|c<sub>1</sub>) P(c<sub>1</sub>) / P(X)
