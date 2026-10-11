@@ -88,6 +88,7 @@
         table.trace td:first-child { font-weight: 600; color: var(--heading); }
         table.trace .done { color: var(--text-muted); }
         ol.steps li { margin-bottom: 0.5rem; }
+        ol.roman { list-style-type: lower-roman; }
 
         /* Constraint graphs and Bayes nets */
         .mf-chart.g { min-width: 380px; max-width: 560px; margin: 0 auto; }
@@ -282,6 +283,51 @@ Tie → take the earlier slot: <strong>DS = T3</strong>.</li>
 <br><strong>LCV</strong>: AL = T1 → AI loses nothing (0). AL = T4 → AI loses T4, since AL ≠ AI (1). Least constraining → <strong>AL = T1</strong>.</li>
 <li><strong>MRV</strong>: only AI is left, with {T2, T4}. <strong>LCV</strong>: no unassigned neighbours, so both remove 0 → tie, take the earlier slot: <strong>AI = T2</strong>.</li>
 </ol><h3>Final schedule</h3><div class="table-wrap"><table><thead><tr><th>Slot</th><th>Day</th><th>Courses</th></tr></thead><tbody><tr><td>T1</td><td>Day 1</td><td>AL</td></tr><tr><td>T2</td><td>Day 1</td><td>AI</td></tr><tr><td>T3</td><td>Day 2</td><td>CN, DS</td></tr><tr><td>T4</td><td>Day 2</td><td>DB</td></tr></tbody></table></div><div class="final">DS = T3, AL = T1, DB = T4, AI = T2, CN = T3</div><p class="check">✓ Check: DS ≠ AL (T3 ≠ T1) ✓ · AL ≠ AI (T1 ≠ T2) ✓ · CN before DB (T3 &lt; T4) ✓ · AI ≠ T1 ✓ · CN ∈ {T3, T4} ✓ · DS and DB both on Day 2 ✓ · no slot has more than two courses (T3 has exactly two) ✓ · AL is not T2, so the last rule is not triggered ✓</p><p class="check">✓ Step 1 shows why forward checking matters with LCV: CN = T4 empties DB's domain, so it is rejected straight away rather than being explored and backtracked.</p><p class="check">✓ This is one of 6 valid schedules; MRV + LCV reaches it with no backtracking. If your tie-breaks differ (e.g. DS = T4 in step 3), you reach a different valid schedule — state the tie-break rule you used.</p>
+</details>
+</section>
+<section class="glass-panel"><h2>P4. Library study rooms (MRV + LCV)</h2>
+<figure class="qshot"><img src="img/practice/p04.png" width="921" height="440" alt="Question: assign six students Imran, Bushra, Kamal, Nusrat, Rafi and Tahsin to four study rooms R1 to R4 under nine constraints, formulated as a CSP and solved with MRV and LCV" loading="lazy"></figure>
+<details class="ans"><summary>Solution</summary>
+<h3>Formulation</h3><ul><li><strong>Variables:</strong> I, B, K, N, R, T (the room of Imran, Bushra, Kamal, Nusrat, Rafi, Tahsin)</li><li><strong>Domain:</strong> D = {R1, R2, R3, R4} for every variable</li><li><strong>Constraints:</strong><ol class="roman"><li>I ≠ R4 <span class="dim">(unary)</span></li><li>B = K</li><li>N ∈ {R1, R2} <span class="dim">(unary)</span></li><li>R ≠ T</li><li>T = I</li><li>At most two students in R3 <span class="dim">(global constraint over all six variables)</span></li><li>I ≠ B</li><li>T ≠ R2 <span class="dim">(unary)</span></li><li>R = R4 <span class="dim">(unary)</span></li></ol></li></ul><p><strong>Constraint graph</strong> (binary constraints as edges, unary ones beside their node; constraint vi involves every student and only matters once R3 already holds two people):</p><div class="chart-wrap"><svg class="mf-chart diagram g" viewBox="0 0 600 280" role="img" aria-label="Constraint graph: Imran differs from Bushra, Bushra equals Kamal, Tahsin equals Imran, Rafi differs from Tahsin; Nusrat has only unary constraints">
+<line class="g-edge" x1="110" y1="70" x2="330" y2="70"/>
+<text class="g-elbl" x="220" y="64" text-anchor="middle">≠</text>
+<line class="g-edge" x1="330" y1="70" x2="500" y2="70"/>
+<text class="g-elbl" x="415" y="64" text-anchor="middle">=</text>
+<line class="g-edge" x1="110" y1="70" x2="110" y2="220"/>
+<text class="g-elbl" x="110" y="139" text-anchor="middle">=</text>
+<line class="g-edge" x1="110" y1="220" x2="330" y2="220"/>
+<text class="g-elbl" x="220" y="214" text-anchor="middle">≠</text>
+<ellipse class="g-node" cx="110" cy="70" rx="23" ry="17"/>
+<text class="g-lbl" x="110" y="74.5" text-anchor="middle">I</text>
+<ellipse class="g-node" cx="330" cy="70" rx="23" ry="17"/>
+<text class="g-lbl" x="330" y="74.5" text-anchor="middle">B</text>
+<ellipse class="g-node" cx="500" cy="70" rx="23" ry="17"/>
+<text class="g-lbl" x="500" y="74.5" text-anchor="middle">K</text>
+<ellipse class="g-node" cx="110" cy="220" rx="23" ry="17"/>
+<text class="g-lbl" x="110" y="224.5" text-anchor="middle">T</text>
+<ellipse class="g-node" cx="330" cy="220" rx="23" ry="17"/>
+<text class="g-lbl" x="330" y="224.5" text-anchor="middle">R</text>
+<ellipse class="g-node" cx="500" cy="220" rx="23" ry="17"/>
+<text class="g-lbl" x="500" y="224.5" text-anchor="middle">N</text>
+<text class="g-note" x="110" y="38" text-anchor="middle">I ≠ R4</text>
+<text class="g-note" x="110" y="262" text-anchor="middle">T ≠ R2</text>
+<text class="g-note" x="330" y="262" text-anchor="middle">R = R4</text>
+<text class="g-note" x="500" y="262" text-anchor="middle">N ∈ {R1, R2}</text>
+</svg></div><h3>Domain reduction from the unary constraints</h3><div class="table-wrap"><table><thead><tr><th>Variable</th><th>Initial domain</th><th>Unary constraint</th><th>Reduced domain</th></tr></thead><tbody><tr><th>I</th><td>{R1, R2, R3, R4}</td><td>I ≠ R4</td><td>{R1, R2, R3}</td></tr><tr><th>N</th><td>{R1, R2, R3, R4}</td><td>N ∈ {R1, R2}</td><td>{R1, R2}</td></tr><tr><th>R</th><td>{R1, R2, R3, R4}</td><td>R = R4</td><td>{R4}</td></tr><tr><th>T</th><td>{R1, R2, R3, R4}</td><td>T ≠ R2</td><td>{R1, R3, R4}</td></tr><tr><th>B, K</th><td>{R1, R2, R3, R4}</td><td>—</td><td>{R1, R2, R3, R4}</td></tr></tbody></table></div><h3>Solving with MRV + LCV</h3><p>Convention: forward checking after each assignment; MRV picks the variable with the fewest remaining values; a tie is broken by the degree heuristic, then by the order the students are listed in the question; LCV picks the value that removes the fewest values from the other domains; a remaining tie takes the lower room number.</p><p><strong>Trace</strong> (assigned values in bold):</p><div class="table-wrap"><table class=trace><thead><tr><th>Step</th><th>I</th><th>B</th><th>K</th><th>N</th><th>R</th><th>T</th></tr></thead><tbody><tr><td>After unary</td><td>R1, R2, R3</td><td>R1, R2, R3, R4</td><td>R1, R2, R3, R4</td><td>R1, R2</td><td>R4</td><td>R1, R3, R4</td></tr><tr><td>1. R = R4</td><td>R1, R2, R3</td><td>R1, R2, R3, R4</td><td>R1, R2, R3, R4</td><td>R1, R2</td><td><strong>R4</strong></td><td>R1, R3</td></tr><tr><td>2. T = R1</td><td>R1</td><td>R1, R2, R3, R4</td><td>R1, R2, R3, R4</td><td>R1, R2</td><td><span class="done">R4</span></td><td><strong>R1</strong></td></tr><tr><td>3. I = R1</td><td><strong>R1</strong></td><td>R2, R3, R4</td><td>R1, R2, R3, R4</td><td>R1, R2</td><td><span class="done">R4</span></td><td><span class="done">R1</span></td></tr><tr><td>4. N = R1</td><td><span class="done">R1</span></td><td>R2, R3, R4</td><td>R1, R2, R3, R4</td><td><strong>R1</strong></td><td><span class="done">R4</span></td><td><span class="done">R1</span></td></tr><tr><td>5. B = R2</td><td><span class="done">R1</span></td><td><strong>R2</strong></td><td>R2</td><td><span class="done">R1</span></td><td><span class="done">R4</span></td><td><span class="done">R1</span></td></tr><tr><td>6. K = R2</td><td><span class="done">R1</span></td><td><span class="done">R2</span></td><td><strong>R2</strong></td><td><span class="done">R1</span></td><td><span class="done">R4</span></td><td><span class="done">R1</span></td></tr></tbody></table></div><ol class="steps">
+<li><strong>MRV</strong>: R has only 1 value left {R4} → <strong>R = R4</strong>.
+<br>Forward checking: Rafi ≠ Tahsin → T loses R4 → T = {R1, R3}.</li>
+<li><strong>MRV</strong>: tie between N {R1, R2} and T {R1, R3} (2 values each). <strong>Degree</strong>: T is still linked to I (T = I) → 1; N has no constraints with other students → 0 → choose <strong>T</strong>.
+<br><strong>LCV</strong>: T = R1 → I must also be R1, so I loses R2, R3 (2). T = R3 → I loses R1, R2 (2). Tie → take the lower room: <strong>T = R1</strong>.
+<br>Forward checking: I = {R1}.</li>
+<li><strong>MRV</strong>: I has only 1 value left {R1} → <strong>I = R1</strong>.
+<br>Forward checking: Imran ≠ Bushra → B loses R1 → B = {R2, R3, R4}.</li>
+<li><strong>MRV</strong>: N has 2 values; B has 3 and K has 4 → choose <strong>N</strong>.
+<br><strong>LCV</strong>: N is not linked to any other student, so R1 and R2 both remove 0 (Room 3's limit is not affected) → tie, take the lower room: <strong>N = R1</strong>.</li>
+<li><strong>MRV</strong>: B has 3 values, K has 4 → choose <strong>B</strong>.
+<br><strong>LCV</strong>: B = K, so whichever room B takes, K loses its other 3 rooms: R2 → 3, R3 → 3, R4 → 3. Tie → take the lower room: <strong>B = R2</strong>.
+<br>Forward checking: K = {R2}.</li>
+<li><strong>MRV</strong>: only K is left, with {R2} → <strong>K = R2</strong>.</li>
+</ol><h3>Final assignment</h3><div class="table-wrap"><table><thead><tr><th>Room</th><th>Students</th></tr></thead><tbody><tr><td>R1</td><td>Imran, Nusrat, Tahsin</td></tr><tr><td>R2</td><td>Bushra, Kamal</td></tr><tr><td>R3</td><td>—</td></tr><tr><td>R4</td><td>Rafi</td></tr></tbody></table></div><div class="final">I = R1, B = R2, K = R2, N = R1, R = R4, T = R1</div><p class="check">✓ Check: (i) I ≠ R4 ✓ · (ii) B = K = R2 ✓ · (iii) N = R1 ✓ · (iv) R (R4) ≠ T (R1) ✓ · (v) T = I = R1 ✓ · (vi) R3 has 0 students ✓ · (vii) I (R1) ≠ B (R2) ✓ · (viii) T ≠ R2 ✓ · (ix) R = R4 ✓</p><p class="check">✓ Several students may share a room — constraint (ii) requires it, and only Room 3 has a limit.</p><p class="check">✓ Rafi's fixed room makes R the obvious first MRV pick (1 value). This is one of 12 valid assignments; different tie-breaks (e.g. T = R3 in step 2) give another valid answer — state the rule you used.</p>
 </details>
 </section>
     </div>
