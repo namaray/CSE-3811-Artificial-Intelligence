@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice Problems - AI Notes</title>
+    <meta name="description" content="Extra CSE 3811 practice problems with step-by-step solutions laid out the way they are written in an exam">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/theme.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        .qshot {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.5rem;
+            margin: 0.25rem 0 1rem;
+        }
+        .qshot img { display: block; width: 100%; height: auto; }
+
+        details.ans {
+            background: var(--accent-2-soft);
+            border: 1px solid var(--accent-2-line);
+            border-radius: 10px;
+            padding: 0.1rem 1.2rem;
+            margin: 0.5rem 0 0.5rem;
+        }
+        details.ans > summary {
+            cursor: pointer;
+            list-style: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--accent-secondary);
+            padding: 0.85rem 0;
+            user-select: none;
+        }
+        details.ans > summary::-webkit-details-marker { display: none; }
+        details.ans > summary::before { content: '▶ '; font-size: 0.75rem; }
+        details.ans[open] > summary::before { content: '▼ '; }
+        details.ans[open] > summary { border-bottom: 1px solid var(--accent-2-line); margin-bottom: 0.9rem; }
+        details.ans > *:last-child { margin-bottom: 1rem; }
+        details.ans h3 { font-size: 1.02rem; margin: 1.3rem 0 0.5rem; }
+        details.ans .math-block, details.ans .chart-wrap { background: var(--surface); }
+
+        .final {
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            padding: 0.7rem 1rem;
+            margin: 1rem 0;
+            font-weight: 650;
+            color: var(--heading);
+            background: var(--surface);
+        }
+        .check { color: var(--text-muted); font-size: 0.9rem; }
+        .paper {
+            font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.88rem; line-height: 1.75; white-space: pre; overflow-x: auto;
+            background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent-2);
+            border-radius: 8px; padding: 0.8rem 1rem; margin: 0.6rem 0 1rem; color: var(--text);
+        }
+        .paper b { color: var(--heading); }
+        .dim { color: var(--text-muted); font-size: 0.88em; }
+
+        h2.part { margin: 2.75rem 0 1.25rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--border-strong); }
+
+        .toolbar { display: flex; justify-content: flex-end; margin: -0.5rem 0 1rem; }
+        .toolbar button {
+            font: inherit; font-size: 0.88rem; font-weight: 600;
+            padding: 0.45rem 0.95rem; border-radius: 8px;
+            border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); cursor: pointer;
+        }
+        .toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+
+        .scope {
+            background: var(--accent-soft); border-left: 4px solid var(--accent-primary);
+            border-radius: 8px; padding: 1rem 1.5rem; margin: 1.5rem 0;
+        }
+        .scope p:last-child { margin-bottom: 0; }
+
+        /* CSP domain trace */
+        table.trace { font-size: 0.82rem; }
+        table.trace th, table.trace td { padding: 0.4rem 0.5rem; white-space: nowrap; }
+        table.trace td:first-child { font-weight: 600; color: var(--heading); }
+        table.trace .done { color: var(--text-muted); }
+        ol.steps li { margin-bottom: 0.5rem; }
+
+        /* Constraint graphs and Bayes nets */
+        .mf-chart.g { min-width: 380px; max-width: 560px; margin: 0 auto; }
+        .g-edge { stroke: var(--line-strong); stroke-width: 2; }
+        .g-head { fill: var(--line-strong); }
+        .g-node { fill: var(--surface); stroke: var(--accent); stroke-width: 2; }
+        .g-node.cR { fill: color-mix(in srgb, var(--c-red) 28%, var(--surface)); stroke: var(--c-red); }
+        .g-node.cG { fill: color-mix(in srgb, var(--c-green) 28%, var(--surface)); stroke: var(--c-green); }
+        .g-node.cB { fill: color-mix(in srgb, var(--c-blue) 28%, var(--surface)); stroke: var(--c-blue); }
+        .g-lbl { fill: var(--heading); font: 650 12.5px 'Inter', system-ui, sans-serif; }
+        .g-elbl, .g-note { fill: var(--accent-2); font: 700 12px 'Inter', system-ui, sans-serif; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="../index.html" class="nav-link"><span>←</span> Back to Table of Contents</a>
+        </nav>
+
+        <header>
+            <h1>Practice Problems</h1>
+            <p style="text-align: center; margin-top: -1.5rem; margin-bottom: 3rem;">Extra exam-style questions, each solved step by step the way you would write it on paper</p>
+        </header>
+
+        <div class="scope">
+            <p><strong>How to use this page.</strong> Each question is a screenshot of the original problem. Try it on paper first, then open its solution. For the full final-term sheet, see <a href="final_practice.html">Final Practice Solutions</a>.</p>
+        </div>
+
+        <div class="toolbar"><button type="button" id="toggle-all">Show all solutions</button></div>
+
+<h2 class="part" id="nb">Naive Bayes</h2>
+<section class="glass-panel"><h2>P1. Sports or Informatics (Laplace k = 1)</h2>
+<figure class="qshot"><img src="img/practice/p01.png" width="933" height="457" alt="Question: 11 training documents labelled Sports or Informatics by the presence of seven words; predict the category of goal=Yes, tutor=No, variance=No, speed=Yes, defence=No, performance=Yes, field=Yes with Naive Bayes and Laplace smoothing k = 1" loading="lazy"></figure>
+<details class="ans"><summary>Solution</summary>
+<h3>Step 1 — Formulas</h3>
+<div class="paper">P(y)     = ( c(y) + k ) / ( N + k·|Y| )
+P(x | y) = ( c(x,y) + k ) / ( c(y) + k·|X| )
+
+k = 1,  N = 11 documents,  |Y| = 2 classes,  |X| = 2 (every word is Yes/No)</div>
+<h3>Step 2 — Priors</h3>
+<p>Count the labels: Sports = 6, Informatics = 5.</p>
+<div class="paper">P(Sports) = (6 + 1) / (11 + 1×2) = <b>7/13</b>
+P(Info)   = (5 + 1) / (11 + 1×2) = <b>6/13</b></div>
+<h3>Step 3 — Likelihoods</h3>
+<p>Count each query value inside each class. Denominators: Sports 6 + 2 = <strong>8</strong>, Informatics 5 + 2 = <strong>7</strong>.</p>
+<div class="table-wrap"><table><thead><tr><th>Word = value</th><th>Sports: count → (c+1)/8</th><th>Informatics: count → (c+1)/7</th></tr></thead><tbody><tr><th>goal = Yes</th><td>3 → 4/8</td><td>1 → 2/7</td></tr><tr><th>tutor = No</th><td>5 → 6/8</td><td>2 → 3/7</td></tr><tr><th>variance = No</th><td>4 → 5/8</td><td>2 → 3/7</td></tr><tr><th>speed = Yes</th><td>3 → 4/8</td><td>1 → 2/7</td></tr><tr><th>defence = No</th><td>2 → 3/8</td><td>4 → 5/7</td></tr><tr><th>performance = Yes</th><td>4 → 5/8</td><td>3 → 4/7</td></tr><tr><th>field = Yes</th><td>4 → 5/8</td><td>1 → 2/7</td></tr></tbody></table></div>
+<h3>Step 4 — Multiply prior × likelihoods</h3>
+<div class="paper">P(Sports | doc) ∝ 7/13 × 4/8 × 6/8 × 5/8 × 4/8 × 3/8 × 5/8 × 5/8
+                = <b>0.00924</b>
+
+P(Info | doc)   ∝ 6/13 × 2/7 × 3/7 × 3/7 × 2/7 × 5/7 × 4/7 × 2/7
+                = <b>0.000807</b></div>
+<h3>Step 5 — Normalize</h3>
+<div class="paper">P(Sports | doc) = 0.00924  / (0.00924 + 0.000807) ≈ <b>0.92</b>
+P(Info | doc)   = 0.000807 / (0.00924 + 0.000807) ≈ <b>0.08</b></div>
+<div class="final">Since 0.00924 &gt; 0.000807, the new document is classified as Sports (≈ 92%)</div>
+<p class="check">✓ With k = 1 and Yes/No words: add 1 on top and 2 at the bottom of every likelihood; the prior's bottom also gets +2 because there are 2 classes.</p>
+<p class="check">✓ The likelihood denominator comes from the class count (6 or 5), never from N = 11.</p>
+<p class="check">✓ Comparing the two products already decides the class — normalize only when the question asks for the probability.</p>
+</details>
+</section>
+    </div>
+
+    <script>
+        (function () {
+            var btn = document.getElementById('toggle-all');
+            var all = document.querySelectorAll('details.ans');
+            function sync() {
+                var open = Array.prototype.every.call(all, function (d) { return d.open; });
+                btn.textContent = open ? 'Hide all solutions' : 'Show all solutions';
+                return open;
+            }
+            btn.addEventListener('click', function () {
+                var open = !sync();
+                all.forEach(function (d) { d.open = open; });
+                sync();
+            });
+            all.forEach(function (d) { d.addEventListener('toggle', sync); });
+        })();
+    </script>
+</body>
+</html>
