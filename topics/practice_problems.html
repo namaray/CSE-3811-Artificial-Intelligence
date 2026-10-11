@@ -119,31 +119,69 @@
 <section class="glass-panel"><h2>P1. Sports or Informatics (Laplace k = 1)</h2>
 <figure class="qshot"><img src="img/practice/p01.png" width="933" height="457" alt="Question: 11 training documents labelled Sports or Informatics by the presence of seven words; predict the category of goal=Yes, tutor=No, variance=No, speed=Yes, defence=No, performance=Yes, field=Yes with Naive Bayes and Laplace smoothing k = 1" loading="lazy"></figure>
 <details class="ans"><summary>Solution</summary>
-<h3>Step 1 — Formulas</h3>
-<div class="paper">P(y)     = ( c(y) + k ) / ( N + k·|Y| )
-P(x | y) = ( c(x,y) + k ) / ( c(y) + k·|X| )
+<p><strong>Ans:</strong></p>
+<div class="paper">Let,  c<sub>1</sub> = Sports document
+      c<sub>2</sub> = Informatics document
 
-k = 1,  N = 11 documents,  |Y| = 2 classes,  |X| = 2 (every word is Yes/No)</div>
-<h3>Step 2 — Priors</h3>
-<p>Count the labels: Sports = 6, Informatics = 5.</p>
-<div class="paper">P(Sports) = (6 + 1) / (11 + 1×2) = <b>7/13</b>
-P(Info)   = (5 + 1) / (11 + 1×2) = <b>6/13</b></div>
-<h3>Step 3 — Likelihoods</h3>
-<p>Count each query value inside each class. Denominators: Sports 6 + 2 = <strong>8</strong>, Informatics 5 + 2 = <strong>7</strong>.</p>
-<div class="table-wrap"><table><thead><tr><th>Word = value</th><th>Sports: count → (c+1)/8</th><th>Informatics: count → (c+1)/7</th></tr></thead><tbody><tr><th>goal = Yes</th><td>3 → 4/8</td><td>1 → 2/7</td></tr><tr><th>tutor = No</th><td>5 → 6/8</td><td>2 → 3/7</td></tr><tr><th>variance = No</th><td>4 → 5/8</td><td>2 → 3/7</td></tr><tr><th>speed = Yes</th><td>3 → 4/8</td><td>1 → 2/7</td></tr><tr><th>defence = No</th><td>2 → 3/8</td><td>4 → 5/7</td></tr><tr><th>performance = Yes</th><td>4 → 5/8</td><td>3 → 4/7</td></tr><tr><th>field = Yes</th><td>4 → 5/8</td><td>1 → 2/7</td></tr></tbody></table></div>
-<h3>Step 4 — Multiply prior × likelihoods</h3>
-<div class="paper">P(Sports | doc) ∝ 7/13 × 4/8 × 6/8 × 5/8 × 4/8 × 3/8 × 5/8 × 5/8
-                = <b>0.00924</b>
+      x<sub>1</sub> = goal = Yes          x<sub>5</sub> = defence = No
+      x<sub>2</sub> = tutor = No          x<sub>6</sub> = performance = Yes
+      x<sub>3</sub> = variance = No       x<sub>7</sub> = field = Yes
+      x<sub>4</sub> = speed = Yes</div>
 
-P(Info | doc)   ∝ 6/13 × 2/7 × 3/7 × 3/7 × 2/7 × 5/7 × 4/7 × 2/7
-                = <b>0.000807</b></div>
-<h3>Step 5 — Normalize</h3>
-<div class="paper">P(Sports | doc) = 0.00924  / (0.00924 + 0.000807) ≈ <b>0.92</b>
-P(Info | doc)   = 0.000807 / (0.00924 + 0.000807) ≈ <b>0.08</b></div>
-<div class="final">Since 0.00924 &gt; 0.000807, the new document is classified as Sports (≈ 92%)</div>
-<p class="check">✓ With k = 1 and Yes/No words: add 1 on top and 2 at the bottom of every likelihood; the prior's bottom also gets +2 because there are 2 classes.</p>
-<p class="check">✓ The likelihood denominator comes from the class count (6 or 5), never from N = 11.</p>
-<p class="check">✓ Comparing the two products already decides the class — normalize only when the question asks for the probability.</p>
+<h3>Prior probabilities</h3>
+<p>Sports = 6 documents, Informatics = 5 documents, total = 11. Laplace smoothing with k = 1 and 2 classes adds 1 on top and 2 at the bottom:</p>
+<div class="paper">P(c<sub>1</sub>) = (6 + 1) / (11 + 2) = <b>7/13</b>          P(c<sub>2</sub>) = (5 + 1) / (11 + 2) = <b>6/13</b></div>
+
+<h3>Conditional probabilities</h3>
+<p>Every word has 2 values (Yes / No), so add 1 to each count and 2 to the class total: c<sub>1</sub> gives (count + 1)/8, c<sub>2</sub> gives (count + 1)/7.</p>
+<div class="paper">P(x<sub>1</sub>|c<sub>1</sub>) = (3+1)/8 = 4/8          P(x<sub>1</sub>|c<sub>2</sub>) = (1+1)/7 = 2/7
+P(x<sub>2</sub>|c<sub>1</sub>) = (5+1)/8 = 6/8          P(x<sub>2</sub>|c<sub>2</sub>) = (2+1)/7 = 3/7
+P(x<sub>3</sub>|c<sub>1</sub>) = (4+1)/8 = 5/8          P(x<sub>3</sub>|c<sub>2</sub>) = (2+1)/7 = 3/7
+P(x<sub>4</sub>|c<sub>1</sub>) = (3+1)/8 = 4/8          P(x<sub>4</sub>|c<sub>2</sub>) = (1+1)/7 = 2/7
+P(x<sub>5</sub>|c<sub>1</sub>) = (2+1)/8 = 3/8          P(x<sub>5</sub>|c<sub>2</sub>) = (4+1)/7 = 5/7
+P(x<sub>6</sub>|c<sub>1</sub>) = (4+1)/8 = 5/8          P(x<sub>6</sub>|c<sub>2</sub>) = (3+1)/7 = 4/7
+P(x<sub>7</sub>|c<sub>1</sub>) = (4+1)/8 = 5/8          P(x<sub>7</sub>|c<sub>2</sub>) = (1+1)/7 = 2/7</div>
+
+<h3>For c<sub>1</sub> (Sports)</h3>
+<div class="paper">∴ P(c<sub>1</sub>|X) = P(X|c<sub>1</sub>) P(c<sub>1</sub>) / P(X)
+
+            ≅ P(X|c<sub>1</sub>) P(c<sub>1</sub>)
+
+            = P(x<sub>1</sub> x<sub>2</sub> x<sub>3</sub> x<sub>4</sub> x<sub>5</sub> x<sub>6</sub> x<sub>7</sub> | c<sub>1</sub>) P(c<sub>1</sub>)     ; [Here X = x<sub>1</sub> x<sub>2</sub> x<sub>3</sub> x<sub>4</sub> x<sub>5</sub> x<sub>6</sub> x<sub>7</sub>]
+
+            = P(x<sub>1</sub>|c<sub>1</sub>) P(x<sub>2</sub>|c<sub>1</sub>) P(x<sub>3</sub>|c<sub>1</sub>) P(x<sub>4</sub>|c<sub>1</sub>) P(x<sub>5</sub>|c<sub>1</sub>) P(x<sub>6</sub>|c<sub>1</sub>) P(x<sub>7</sub>|c<sub>1</sub>) P(c<sub>1</sub>)
+
+            = 4/8 * 6/8 * 5/8 * 4/8 * 3/8 * 5/8 * 5/8 * 7/13
+
+            = <b>0.00924</b></div>
+
+<h3>For c<sub>2</sub> (Informatics)</h3>
+<div class="paper">∴ P(c<sub>2</sub>|X) = P(X|c<sub>2</sub>) P(c<sub>2</sub>) / P(X)
+
+            ≅ P(X|c<sub>2</sub>) P(c<sub>2</sub>)
+
+            = P(x<sub>1</sub> x<sub>2</sub> x<sub>3</sub> x<sub>4</sub> x<sub>5</sub> x<sub>6</sub> x<sub>7</sub> | c<sub>2</sub>) P(c<sub>2</sub>)     ; [Here X = x<sub>1</sub> x<sub>2</sub> x<sub>3</sub> x<sub>4</sub> x<sub>5</sub> x<sub>6</sub> x<sub>7</sub>]
+
+            = P(x<sub>1</sub>|c<sub>2</sub>) P(x<sub>2</sub>|c<sub>2</sub>) P(x<sub>3</sub>|c<sub>2</sub>) P(x<sub>4</sub>|c<sub>2</sub>) P(x<sub>5</sub>|c<sub>2</sub>) P(x<sub>6</sub>|c<sub>2</sub>) P(x<sub>7</sub>|c<sub>2</sub>) P(c<sub>2</sub>)
+
+            = 2/7 * 3/7 * 3/7 * 2/7 * 5/7 * 4/7 * 2/7 * 6/13
+
+            = <b>0.000807</b></div>
+
+<h3>Maximum probability</h3>
+<div class="paper">∴ Max{ P(c<sub>i</sub>|X) } ≅ max{ P(X|c<sub>1</sub>) P(c<sub>1</sub>) , P(X|c<sub>2</sub>) P(c<sub>2</sub>) }
+
+                   = max{ P(c<sub>1</sub>|X) , P(c<sub>2</sub>|X) }
+
+                   = max( 0.00924 , 0.000807 )
+
+                   = <b>0.00924</b></div>
+
+<div class="final">∴ Prediction: The new document belongs to the Sports category. &nbsp;Ans.</div>
+
+<p class="check">✓ The handwritten notes' "Laplacian correction" example (pages 9–10) only corrects the class that has a zero count, by adding one virtual record per value. This question asks for Laplace smoothing with k = 1, so every count gets +1 for both classes, as above.</p>
+<p class="check">✓ P(X) is the same for both classes, so it is dropped (written ≅). Compare P(X|c<sub>i</sub>)P(c<sub>i</sub>) directly.</p>
+<p class="check">✓ The denominator for P(x|c) is the class total + 2 (6 + 2 = 8, 5 + 2 = 7), never 11 + 2.</p>
 </details>
 </section>
     </div>
